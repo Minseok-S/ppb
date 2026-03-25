@@ -7,6 +7,7 @@ const S = {
   effectiveDate: "",
   collectNoConsent: [],
   collectConsent: [],
+  collectOther: [],
   collectAuto: [],
   child: "no",
   childMethod: "",
@@ -223,6 +224,52 @@ function syncCollect(type) {
 function removeAndSync(id, type) {
   document.getElementById(id)?.remove();
   syncCollect(type);
+  updatePreview();
+}
+
+// ════════════════════════════════════════
+//  DYNAMIC ROWS — COLLECT OTHER (3가)
+// ════════════════════════════════════════
+function addCollectOther() {
+  const id = "ci_other_" + Date.now();
+  const container = document.getElementById("collectOther");
+  const num = container.children.length + 1;
+  const div = document.createElement("div");
+  div.className = "card-item";
+  div.id = id;
+  div.innerHTML = `
+    <div class="card-header"><span class="card-title">#${num}</span><button class="btn-icon" onclick="removeAndSyncCollectOther('${id}')">✕</button></div>
+    <div class="field-group"><label class="field-label">법적 근거</label><select data-field="basis" onchange="syncCollectOther();updatePreview()">${basisOpts.map((o) => `<option value="${o.v}">${o.l}</option>`).join("")}</select></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">수집 목적</label><input type="text" data-field="purpose" placeholder="예: 간편로그인" oninput="syncCollectOther();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 이름, 생년월일, CI" oninput="syncCollectOther();updatePreview()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">제공하는 자 <span style="color:#aaa;font-size:11px;">(선택)</span></label><input type="text" data-field="provider" placeholder="예: OOO" oninput="syncCollectOther();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">보유기간</label><input type="text" data-field="retention" placeholder="예: 회원 탈퇴 시까지" oninput="syncCollectOther();updatePreview()"></div>
+    </div>
+  `;
+  container.appendChild(div);
+  syncCollectOther();
+}
+
+function syncCollectOther() {
+  S.collectOther = [];
+  document.querySelectorAll("#collectOther .card-item").forEach((d) => {
+    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
+    S.collectOther.push({
+      basis: g("basis") || "consent",
+      purpose: g("purpose"),
+      items: g("items"),
+      provider: g("provider"),
+      retention: g("retention"),
+    });
+  });
+}
+
+function removeAndSyncCollectOther(id) {
+  document.getElementById(id)?.remove();
+  syncCollectOther();
   updatePreview();
 }
 
@@ -587,6 +634,31 @@ function buildCollectTable(arr, showBasis) {
   return `<table class="pp-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
+function buildCollectOtherTable(arr) {
+  if (!arr.length || !arr.some((r) => r.purpose || r.items))
+    return '<p style="color:#aaa;font-style:italic;font-size:12px;">← 항목을 추가해 주세요</p>';
+  return `<table class="pp-table">
+  <thead><tr>
+    <th style="width:22%">법적 근거</th>
+    <th style="width:20%">수집 목적</th>
+    <th style="width:28%">수집 항목</th>
+    <th style="width:16%">제공하는 자 (선택)</th>
+    <th style="width:14%">보유기간</th>
+  </tr></thead>
+  <tbody>${arr
+    .map(
+      (r) => `<tr>
+    <td class="c" style="font-size:11px;vertical-align:middle;">${basisMap[r.basis] || r.basis || "-"}</td>
+    <td>${r.purpose || "-"}</td>
+    <td>${r.items || "-"}</td>
+    <td class="c">${r.provider || "-"}</td>
+    <td class="c">${r.retention || "-"}</td>
+  </tr>`,
+    )
+    .join("")}</tbody>
+</table>`;
+}
+
 // ════════════════════════════════════════
 //  BUILD PREVIEW HTML
 // ════════════════════════════════════════
@@ -837,13 +909,13 @@ function buildPreview() {
 <h2 class="pp-h2">${svc} 개인정보 처리방침</h2>
 <div class="pp-date-row"><div class="pp-date-badge">${eff} 시행</div></div>
 
-<p class="pp-intro">${co} ${svc}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다. 이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
+<p class="pp-intro">${co} ${svc}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다.</p>
+<p class="pp-intro">이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
 
 <div class="pp-icon-nav">
   ${icons.map((ic, i) => `<div class="pp-icon-item"><div class="pp-icon-circle" style="background:${iconColors[i]}22">${ic.e}</div><div class="pp-icon-label">${ic.l}</div></div>`).join("")}
 </div>
 
-<p class="pp-intro" style="font-size:11px;color:#e87d31;margin-top:4px;">※ 해당 없는 항목은 자동으로 목차에서 제외됩니다.</p>
 
 <p class="pp-sub-title">[ 목 차 ]</p>
 <div class="pp-toc-box">
@@ -854,6 +926,7 @@ function buildPreview() {
     })
     .join("")}</ul>
 </div>
+<p class="pp-intro" style="font-size:11px;color:#e87d31;margin-top:4px;">※ 목차를 클릭 시 해당 본문으로 이동됩니다.</p>
 
 ${sec("collect", "개인정보의 처리 목적, 처리 항목, 보유 및 이용기간")}
 <p>${alias}는 「개인정보 보호법」에 따라 서비스 제공을 위해 필요 최소한의 범위에서 개인정보를 수집·이용합니다.</p>
@@ -878,16 +951,39 @@ ${buildCollectTable(S.collectConsent, true)}`
     : ""
 }
 
+${(() => {
+  const hasGa =
+    S.collectOther.length > 0 &&
+    S.collectOther.some((r) => r.purpose || r.items);
+  const hasNa =
+    S.collectAuto.length > 0 &&
+    S.collectAuto.some((r) => r.category || r.items);
+  if (!hasGa && !hasNa) return "";
+  const n1 =
+    S.collectNoConsent.length > 0 &&
+    S.collectNoConsent.some((r) => r.category || r.items);
+  const n2 =
+    S.collectConsent.length > 0 &&
+    S.collectConsent.some((r) => r.category || r.items);
+  const secNum = n1 && n2 ? 3 : n1 || n2 ? 2 : 1;
+  return `
+<p class="pp-sub-title">${secNum}. 그 밖에 수집하는 개인정보</p>
 ${
-  S.collectAuto.length > 0 && S.collectAuto.some((r) => r.category || r.items)
-    ? `
-<p class="pp-sub-title">서비스 이용 과정에서 자동으로 생성·수집되는 개인정보</p>
-<p>웹 서비스 이용 과정에서 아래 항목이 자동으로 생성되어 수집될 수 있습니다.</p>
+  hasGa
+    ? `<p class="pp-sub-title" style="font-size:12px;padding-left:4px;">가. 정보주체 이외로부터 수집한 개인정보</p>
+${buildCollectOtherTable(S.collectOther)}`
+    : ""
+}
+${
+  hasNa
+    ? `<p class="pp-sub-title" style="font-size:12px;padding-left:4px;">${hasGa ? "나" : "가"}. 서비스 이용 과정에서 자동으로 생성·수집되는 개인정보</p>
 ${buildCollectTable(S.collectAuto, false)}`
     : ""
 }
+`;
+})()}
 
-${!S.collectNoConsent.some((r) => r.category || r.items) && !S.collectConsent.some((r) => r.category || r.items) && !S.collectAuto.some((r) => r.category || r.items) ? '<p style="color:#aaa;font-style:italic;">← STEP 2에서 수집 항목을 추가해 주세요.</p>' : ""}
+${!S.collectNoConsent.some((r) => r.category || r.items) && !S.collectConsent.some((r) => r.category || r.items) && !S.collectOther.some((r) => r.purpose || r.items) && !S.collectAuto.some((r) => r.category || r.items) ? '<p style="color:#aaa;font-style:italic;">← STEP 2에서 수집 항목을 추가해 주세요.</p>' : ""}
 
 <!-- 02 아동 -->
 ${
@@ -1247,7 +1343,6 @@ function showToast(msg, type = "") {
 window.onload = function () {
   addCollect("noConsent");
   addCollect("consent");
-  addCollect("auto");
   updatePreview();
 };
 

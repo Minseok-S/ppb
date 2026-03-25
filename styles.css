@@ -727,10 +727,8 @@ textarea {
   color: #4f6ef7;
 }
 .pp-toc-num {
-  font-family: "Courier New", monospace;
   font-size: 10px;
   font-weight: 700;
-  color: #4f6ef7;
   min-width: 20px;
   flex-shrink: 0;
 }
