@@ -107,18 +107,35 @@ header {
 
 /* LAYOUT */
 .app-layout {
-  display: grid;
-  grid-template-columns: 430px 1fr;
+  display: flex;
   height: calc(100vh - 61px);
+}
+
+/* RESIZE HANDLE */
+.resize-handle {
+  width: 5px;
+  cursor: col-resize;
+  background: var(--sb-border);
+  flex-shrink: 0;
+  transition: background 0.15s;
+  position: relative;
+}
+.resize-handle:hover,
+.resize-handle.dragging {
+  background: var(--accent);
 }
 
 /* SIDEBAR */
 .sidebar {
+  width: 430px;
+  min-width: 280px;
+  max-width: 700px;
   background: var(--sb-bg);
-  border-right: 1px solid var(--sb-border);
+  border-right: none;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 .sidebar::-webkit-scrollbar {
   width: 4px;
@@ -552,6 +569,8 @@ textarea {
 .preview-panel {
   background: var(--preview-bg);
   overflow-y: auto;
+  flex: 1;
+  min-width: 0;
 }
 .preview-panel::-webkit-scrollbar {
   width: 5px;

@@ -827,7 +827,7 @@ function buildPreview() {
       "</div>" +
       label +
       (opt
-        ? ' <span style="font-size:11px;color:#aaa;font-weight:400;">[해당시]</span>'
+        ? ' <span style="font-size:11px;color:#aaa;font-weight:400;"></span>'
         : "") +
       "</div>"
     );
@@ -850,7 +850,7 @@ function buildPreview() {
   <ul>${visibleToc
     .map((t, i) => {
       const n = numMap[t.k];
-      return `<li><a href="#pp-${t.k}" class="pp-toc-link"><span class="pp-toc-num">${n}</span>${t.l}${t.opt ? '<span class="pp-toc-opt">[해당시]</span>' : ""}</a></li>`;
+      return `<li><a href="#pp-${t.k}" class="pp-toc-link"><span class="pp-toc-num">${n}</span>${t.l}${t.opt ? '<span class="pp-toc-opt"></span>' : ""}</a></li>`;
     })
     .join("")}</ul>
 </div>
@@ -1250,3 +1250,35 @@ window.onload = function () {
   addCollect("auto");
   updatePreview();
 };
+
+// SIDEBAR RESIZE
+(function () {
+  const handle = document.getElementById('resizeHandle');
+  const sidebar = document.querySelector('.sidebar');
+  let dragging = false;
+  let startX, startWidth;
+
+  handle.addEventListener('mousedown', function (e) {
+    dragging = true;
+    startX = e.clientX;
+    startWidth = sidebar.offsetWidth;
+    handle.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const delta = e.clientX - startX;
+    const newWidth = Math.min(700, Math.max(280, startWidth + delta));
+    sidebar.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', function () {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+})();
