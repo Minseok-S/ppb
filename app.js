@@ -837,7 +837,7 @@ function buildPreview() {
 <h2 class="pp-h2">${svc} 개인정보 처리방침</h2>
 <div class="pp-date-row"><div class="pp-date-badge">${eff} 시행</div></div>
 
-<p class="pp-intro"><strong>${co} ${svc}</strong>(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다. 이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
+<p class="pp-intro">${co} ${svc}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다. 이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
 
 <div class="pp-icon-nav">
   ${icons.map((ic, i) => `<div class="pp-icon-item"><div class="pp-icon-circle" style="background:${iconColors[i]}22">${ic.e}</div><div class="pp-icon-label">${ic.l}</div></div>`).join("")}
@@ -1143,7 +1143,7 @@ ${sec("agent", "국내대리인 지정", true)}
 
 ${sec("change", "개인정보 처리방침의 변경")}
 <p class="pp-eff-date">① 이 개인정보 처리방침은 <strong>${eff}</strong>부터 적용됩니다.</p>
-<p style="margin-top:6px;font-size:12px;color:#888;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다. (시행일자별 링크 제공)</p>
+<p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다. (시행일자별 링크 제공)</p>
 `;
 }
 
@@ -1253,32 +1253,32 @@ window.onload = function () {
 
 // SIDEBAR RESIZE
 (function () {
-  const handle = document.getElementById('resizeHandle');
-  const sidebar = document.querySelector('.sidebar');
+  const handle = document.getElementById("resizeHandle");
+  const sidebar = document.querySelector(".sidebar");
   let dragging = false;
   let startX, startWidth;
 
-  handle.addEventListener('mousedown', function (e) {
+  handle.addEventListener("mousedown", function (e) {
     dragging = true;
     startX = e.clientX;
     startWidth = sidebar.offsetWidth;
-    handle.classList.add('dragging');
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
+    handle.classList.add("dragging");
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
   });
 
-  document.addEventListener('mousemove', function (e) {
+  document.addEventListener("mousemove", function (e) {
     if (!dragging) return;
     const delta = e.clientX - startX;
     const newWidth = Math.min(700, Math.max(280, startWidth + delta));
-    sidebar.style.width = newWidth + 'px';
+    sidebar.style.width = newWidth + "px";
   });
 
-  document.addEventListener('mouseup', function () {
+  document.addEventListener("mouseup", function () {
     if (!dragging) return;
     dragging = false;
-    handle.classList.remove('dragging');
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
+    handle.classList.remove("dragging");
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
   });
 })();

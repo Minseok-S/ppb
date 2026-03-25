@@ -633,7 +633,7 @@ textarea {
 /* ── PREVIEW DOC STYLES ── */
 .pp {
   padding: 48px 56px;
-  color: #333;
+  color: #000;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -656,11 +656,11 @@ textarea {
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 600;
-  color: #555;
+  color: #000;
   border: 1px solid #e0e0e0;
 }
 .pp-intro {
-  color: #555;
+  color: #000;
   font-size: 13px;
   line-height: 1.85;
   margin-bottom: 8px;
@@ -694,7 +694,7 @@ textarea {
 .pp-icon-label {
   font-size: 11px;
   font-weight: 700;
-  color: #333;
+  color: #000;
   word-break: keep-all;
 }
 .pp-toc-box {
@@ -767,7 +767,7 @@ textarea {
 } */
 .pp p {
   font-size: 13px;
-  color: #666;
+  color: #000;
   margin-bottom: 7px;
   line-height: 1.8;
 }
@@ -783,12 +783,12 @@ textarea {
   text-align: center;
   border: 1px solid #ddd;
   font-weight: 700;
-  color: #333;
+  color: #000;
 }
 .pp-table td {
   padding: 7px 9px;
   border: 1px solid #ddd;
-  color: #555;
+  color: #000;
   vertical-align: top;
 }
 .pp-table td.c {
@@ -802,16 +802,12 @@ textarea {
 }
 .pp ul.pp-list li {
   font-size: 13px;
-  color: #666;
-  padding: 2px 0 2px 16px;
-  position: relative;
+  color: #000;
+  padding: 2px 0;
   line-height: 1.7;
 }
 .pp ul.pp-list li::before {
-  content: "·";
-  position: absolute;
-  left: 5px;
-  color: #aaa;
+  content: none;
 }
 .pp-contact-box {
   background: #f8f9fa;
@@ -822,25 +818,22 @@ textarea {
 .pp-contact-title {
   font-weight: 700;
   font-size: 13px;
-  color: #333;
+  color: #000;
   margin-bottom: 5px;
 }
 .pp-contact-info {
   font-size: 12px;
-  color: #555;
+  color: #000;
   line-height: 1.8;
 }
 .pp-eff-date {
   font-size: 13px;
-  color: #555;
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid #eee;
+  color: #000;
 }
 .pp-sub-title {
   font-size: 13px;
   font-weight: 700;
-  color: #444;
+  color: #000;
   margin: 14px 0 6px;
 }
 .pp-placeholder {
