@@ -13,13 +13,15 @@ const S = {
   childItems: "",
   childMethod: "",
   retention: { contract: true, dispute: true, ad: true, log: true },
-  customRetention: [],
+  customRetentionLegal: [],
+  customRetentionOther: [],
   destroy: { electronic: true, paper: true },
   thirdParty: "no",
   tpConsent: [],
   tpLegal: [],
   delegate: "no",
   dlItems: [],
+  dlSubItems: [],
   overseas: "no",
   otItems: [],
   security: {
@@ -333,37 +335,61 @@ function selectChildPreset(el) {
 // ════════════════════════════════════════
 //  DYNAMIC — CUSTOM RETENTION
 // ════════════════════════════════════════
-function addCustomRetention() {
-  const id = "cr_" + Date.now(),
-    c = document.getElementById("customRetention");
+function addCustomRetentionLegal() {
+  const id = "crl_" + Date.now(),
+    c = document.getElementById("customRetentionLegal");
   const d = document.createElement("div");
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">추가 항목</span><button class="btn-icon" onclick="removeAndSyncCR('${id}')">✕</button></div>
-    <div class="field-group"><label class="field-label">보존 항목명</label><input type="text" data-field="label" placeholder="예: 전자금융거래 기록" oninput="syncCR();updatePreview()"></div>
+    <div class="card-header"><span class="card-title">법적 보존항목</span><button class="btn-icon" onclick="removeAndSyncCRL('${id}')">✕</button></div>
+    <div class="field-group"><label class="field-label">보존 항목명</label><input type="text" data-field="label" placeholder="예: 전자금융거래 기록" oninput="syncCRL();updatePreview()"></div>
     <div class="field-row">
-      <div class="field-group"><label class="field-label">근거 법령</label><input type="text" data-field="basis" placeholder="예: 전자금융거래법 제22조" oninput="syncCR();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보존 기간</label><input type="text" data-field="period" placeholder="예: 5년" oninput="syncCR();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">근거 법령</label><input type="text" data-field="basis" placeholder="예: 전자금융거래법 제22조" oninput="syncCRL();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">보존 기간</label><input type="text" data-field="period" placeholder="예: 5년" oninput="syncCRL();updatePreview()"></div>
     </div>
   `;
   c.appendChild(d);
 }
-function removeAndSyncCR(id) {
+function removeAndSyncCRL(id) {
   document.getElementById(id)?.remove();
+  syncCRL();
   updatePreview();
 }
-function syncCR() {
-  S.customRetention = [];
-  document.querySelectorAll("#customRetention .card-item").forEach((d) => {
+function syncCRL() {
+  S.customRetentionLegal = [];
+  document.querySelectorAll("#customRetentionLegal .card-item").forEach((d) => {
     const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.customRetention.push({
-      label: g("label"),
-      basis: g("basis"),
-      period: g("period"),
-    });
+    S.customRetentionLegal.push({ label: g("label"), basis: g("basis"), period: g("period") });
   });
-  // state updated
+}
+function addCustomRetentionOther() {
+  const id = "cro_" + Date.now(),
+    c = document.getElementById("customRetentionOther");
+  const d = document.createElement("div");
+  d.className = "card-item";
+  d.id = id;
+  d.innerHTML = `
+    <div class="card-header"><span class="card-title">그외 보존항목</span><button class="btn-icon" onclick="removeAndSyncCRO('${id}')">✕</button></div>
+    <div class="field-group"><label class="field-label">보존 항목명</label><input type="text" data-field="label" placeholder="예: 서비스 이용 기록" oninput="syncCRO();updatePreview()"></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">보존 사유</label><input type="text" data-field="basis" placeholder="예: 사내 개인정보보호 규정" oninput="syncCRO();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">보존 기간</label><input type="text" data-field="period" placeholder="예: 1년" oninput="syncCRO();updatePreview()"></div>
+    </div>
+  `;
+  c.appendChild(d);
+}
+function removeAndSyncCRO(id) {
+  document.getElementById(id)?.remove();
+  syncCRO();
+  updatePreview();
+}
+function syncCRO() {
+  S.customRetentionOther = [];
+  document.querySelectorAll("#customRetentionOther .card-item").forEach((d) => {
+    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
+    S.customRetentionOther.push({ label: g("label"), basis: g("basis"), period: g("period") });
+  });
 }
 
 // ════════════════════════════════════════
@@ -445,6 +471,34 @@ function syncDL() {
     S.dlItems.push({ company: g("company"), task: g("task") });
   });
   // state updated
+}
+
+function addSubDelegate() {
+  const id = "sdl_" + Date.now(),
+    c = document.getElementById("dlSubItems");
+  const d = document.createElement("div");
+  d.className = "card-item";
+  d.id = id;
+  d.innerHTML = `
+    <div class="card-header"><span class="card-title">재수탁업체</span><button class="btn-icon" onclick="removeAndSyncSDL('${id}')">✕</button></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">재수탁자</label><input type="text" data-field="company" placeholder="업체명" oninput="syncSDL();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">위탁 업무</label><input type="text" data-field="task" placeholder="업무 내용" oninput="syncSDL();updatePreview()"></div>
+    </div>
+  `;
+  c.appendChild(d);
+}
+function removeAndSyncSDL(id) {
+  document.getElementById(id)?.remove();
+  syncSDL();
+  updatePreview();
+}
+function syncSDL() {
+  S.dlSubItems = [];
+  document.querySelectorAll("#dlSubItems .card-item").forEach((d) => {
+    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
+    S.dlSubItems.push({ company: g("company"), task: g("task") });
+  });
 }
 
 // ════════════════════════════════════════
@@ -752,10 +806,11 @@ function buildPreview() {
   const activeRet = Object.keys(S.retention)
     .filter((k) => S.retention[k])
     .map((k) => retMap[k]);
-  const allRet = [
+  const legalRet = [
     ...activeRet,
-    ...(S.customRetention || []).filter((r) => r.label),
+    ...(S.customRetentionLegal || []).filter((r) => r.label),
   ];
+  const otherRet = (S.customRetentionOther || []).filter((r) => r.label);
 
   // Security
   const secMap = {
@@ -1064,17 +1119,27 @@ ${sec("destroy", "개인정보의 파기 절차 및 방법")}
   <li>② 정보주체로부터 동의받은 개인정보 보유기간이 경과하거나 처리목적이 달성되었음에도 다른 법령에 따라 개인정보를 계속 보존하여야 하는 경우에는, 해당 개인정보를 별도의 데이터베이스(DB)로 옮기거나 보관장소를 달리하여 보존합니다.</li>
 </ul>
 ${
-  allRet.length > 0
+  legalRet.length > 0
     ? `
-<table class="pp-table" style="margin-top:8px;">
-  <thead><tr><th>보존 항목</th><th>보존 근거</th><th style="width:70px">보존 기간</th></tr></thead>
-  <tbody>${allRet.map((r) => `<tr><td>${r.label || "-"}</td><td>${r.basis || "-"}</td><td class="c">${r.period || "-"}</td></tr>`).join("")}</tbody>
+<p style="font-size:12px;font-weight:700;margin:8px 0 4px;">▶ 법령에 따른 보존</p>
+<table class="pp-table">
+  <thead><tr><th>보존 항목</th><th>근거 법령</th><th style="width:70px">보존 기간</th></tr></thead>
+  <tbody>${legalRet.map((r) => `<tr><td>${r.label || "-"}</td><td>${r.basis || "-"}</td><td class="c">${r.period || "-"}</td></tr>`).join("")}</tbody>
+</table>`
+    : ""
+}${
+  otherRet.length > 0
+    ? `
+<p style="font-size:12px;font-weight:700;margin:8px 0 4px;">▶ 그외 보존 (사내규정·기타사유)</p>
+<table class="pp-table">
+  <thead><tr><th>보존 항목</th><th>보존 사유</th><th style="width:70px">보존 기간</th></tr></thead>
+  <tbody>${otherRet.map((r) => `<tr><td>${r.label || "-"}</td><td>${r.basis || "-"}</td><td class="c">${r.period || "-"}</td></tr>`).join("")}</tbody>
 </table>`
     : ""
 }
 <ul class="pp-list" style="margin-top:8px;">
   <li>③ 파기절차: ${alias}는 파기 사유가 발생한 개인정보를 선정하고, 개인정보 보호책임자의 승인을 받아 파기합니다.</li>
-  <li>④ 파기방법:${S.destroy.electronic ? " 전자적 파일 형태로 기록·저장된 개인정보는 기록을 재생할 수 없도록 파기합니다." : ""}${S.destroy.paper ? " 종이 문서에 기록·저장된 개인정보는 분쇄기로 분쇄하거나 소각하여 파기합니다." : ""}</li>
+  <li>④ 파기방법${S.destroy.electronic || S.destroy.paper ? `<ul style="margin:4px 0 0 0;padding-left:16px;list-style:none;">${S.destroy.electronic ? '<li style="padding:2px 0;">• 전자적 파일: 기록을 재생할 수 없도록 파기합니다.</li>' : ""}${S.destroy.paper ? '<li style="padding:2px 0;">• 종이 문서: 분쇄기로 분쇄하거나 소각하여 파기합니다.</li>' : ""}</ul>` : ""}</li>
 </ul>
 
 <!-- 04 제3자 제공 -->
@@ -1107,15 +1172,26 @@ ${
   S.delegate === "yes"
     ? `
 ${sec("delegate", "개인정보 처리업무의 위탁", true)}
-<p>${alias}는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다.</p>
+<p>① ${alias}는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다.</p>
+<p style="font-weight:700;margin:10px 0 4px;">가. 위탁받는 자 (수탁자)</p>
 ${
   S.dlItems.length > 0 && S.dlItems.some((r) => r.company)
-    ? `
-<table class="pp-table"><thead><tr><th>수탁자</th><th>위탁 업무</th></tr></thead>
+    ? `<table class="pp-table"><thead><tr><th>위탁받는 자 (수탁자)</th><th>위탁 업무</th></tr></thead>
 <tbody>${S.dlItems.map((r) => `<tr><td class="c">${r.company || "-"}</td><td>${r.task || "-"}</td></tr>`).join("")}</tbody></table>`
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">수탁업체를 추가해 주세요.</p>'
+}${
+  S.dlSubItems && S.dlSubItems.length > 0 && S.dlSubItems.some((r) => r.company)
+    ? `<p style="font-weight:700;margin:10px 0 4px;">나. 재위탁받는 자 (재수탁자)</p>
+<table class="pp-table"><thead><tr><th>재위탁받는 자 (재수탁자)</th><th>위탁 업무</th></tr></thead>
+<tbody>${S.dlSubItems.map((r) => `<tr><td class="c">${r.company || "-"}</td><td>${r.task || "-"}</td></tr>`).join("")}</tbody></table>`
+    : ""
 }
-<p style="margin-top:8px;">${alias}는 위탁계약 체결 시 「개인정보 보호법」 제26조에 따라 위탁업무 수행목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁 제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을 계약서 등 문서에 명시하고, 수탁자가 개인정보를 안전하게 처리하는지를 감독하고 있습니다.</p>
+<p style="margin-top:10px;">② ${alias}는 위탁계약 체결 시 「개인정보 보호법」 제26조에 따라 위탁업무 수행목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁 제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을 계약서 등 문서에 명시하고, 수탁자가 개인정보를 안전하게 처리하는지를 감독하고 있습니다.</p>${
+  S.dlSubItems && S.dlSubItems.length > 0 && S.dlSubItems.some((r) => r.company)
+    ? `<p style="margin-top:6px;">③ 「개인정보 보호법」 제26조제6항에 따라 수탁자가 ${alias}의 개인정보 처리 업무를 재위탁하는 경우 ${alias}의 동의를 받고 있으며, 본 개인정보 처리방침을 통하여 재수탁자와 재수탁하는 업무의 내용을 공개하고 있습니다.</p>
+<p style="margin-top:6px;">${S.dlSubItems && S.dlSubItems.some((r) => r.company) ? "④" : "③"} 위탁업무의 내용이나 수탁자가 변경될 경우에는 지체없이 본 개인정보 처리방침을 통하여 공개하도록 하겠습니다.</p>`
+    : `<p style="margin-top:6px;">③ 위탁업무의 내용이나 수탁자가 변경될 경우에는 지체없이 본 개인정보 처리방침을 통하여 공개하도록 하겠습니다.</p>`
+}
 `
     : ""
 }

@@ -361,11 +361,21 @@
           </div>
           <div class="field-group" style="margin-top: 10px">
             <label class="field-label"
-              >직접 추가 보존 항목
-              <span class="opt">(사내규정·기타법령)</span></label
+              >법적 보존항목
+              <span class="opt">(위 목록에 없는 법령 근거 항목)</span></label
             >
-            <div id="customRetention"></div>
-            <button class="btn-add" onclick="addCustomRetention()">
+            <div id="customRetentionLegal"></div>
+            <button class="btn-add" onclick="addCustomRetentionLegal()">
+              ＋ 항목 추가
+            </button>
+          </div>
+          <div class="field-group" style="margin-top: 10px">
+            <label class="field-label"
+              >그외 보존항목
+              <span class="opt">(사내규정·기타사유)</span></label
+            >
+            <div id="customRetentionOther"></div>
+            <button class="btn-add" onclick="addCustomRetentionOther()">
               ＋ 항목 추가
             </button>
           </div>
@@ -480,10 +490,17 @@
           </div>
           <div id="dlDetail" style="display: none">
             <div class="field-group" style="margin-top: 10px">
-              <label class="field-label">수탁자</label>
+              <label class="field-label">가. 위탁받는 자 <span class="opt">(수탁자)</span></label>
               <div id="dlItems"></div>
               <button class="btn-add" onclick="addDelegate()">
                 ＋ 수탁업체 추가
+              </button>
+            </div>
+            <div class="field-group" style="margin-top: 10px">
+              <label class="field-label">나. 재위탁받는 자 <span class="opt">(재수탁자, 해당시)</span></label>
+              <div id="dlSubItems"></div>
+              <button class="btn-add" onclick="addSubDelegate()">
+                ＋ 재수탁업체 추가
               </button>
             </div>
           </div>

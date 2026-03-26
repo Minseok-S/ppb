@@ -787,7 +787,8 @@ textarea {
   padding: 7px 9px;
   border: 1px solid #ddd;
   color: #000;
-  vertical-align: top;
+  vertical-align: middle;
+  text-align: center;
 }
 .pp-table td.c {
   text-align: center;
