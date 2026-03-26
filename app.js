@@ -772,11 +772,43 @@ function buildCollectOtherTable(arr) {
 }
 
 // ════════════════════════════════════════
+//  HELPER — table with rowspan merge on all columns independently
+// ════════════════════════════════════════
+function buildMergedTable(rows, cols) {
+  if (!rows.length) return "";
+  const n = rows.length, m = cols.length;
+  const rsVal = Array.from({length: n}, () => Array(m).fill(1));
+  const skip  = Array.from({length: n}, () => Array(m).fill(false));
+  for (let c = 0; c < m; c++) {
+    let r = 0;
+    while (r < n) {
+      const val = rows[r][cols[c].key] || "-";
+      let span = 1;
+      while (r + span < n && (rows[r + span][cols[c].key] || "-") === val) span++;
+      rsVal[r][c] = span;
+      for (let k = 1; k < span; k++) skip[r + k][c] = true;
+      r += span;
+    }
+  }
+  const thead = `<tr>${cols.map(col => `<th>${col.label}</th>`).join("")}</tr>`;
+  const tbody = rows.map((row, r) =>
+    `<tr>${cols.map((col, c) => {
+      if (skip[r][c]) return "";
+      const rs = rsVal[r][c] > 1 ? ` rowspan="${rsVal[r][c]}"` : "";
+      const cls = col.cls ? ` class="${col.cls}"` : "";
+      return `<td${rs}${cls}>${row[col.key] || "-"}</td>`;
+    }).join("")}</tr>`
+  ).join("");
+  return `<table class="pp-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+}
+
+
+// ════════════════════════════════════════
 //  BUILD PREVIEW HTML
 // ════════════════════════════════════════
 function buildPreview() {
   const co = S.companyName || "개인정보처리자명";
-  const svc = S.serviceName || "서비스명";
+  const svc = S.serviceName || "";
   const eff = S.effectiveDate || "YYYY. MM. DD";
   const alias = "회사";
 
@@ -1019,10 +1051,10 @@ function buildPreview() {
   };
 
   return `
-<h2 class="pp-h2">${svc} 개인정보 처리방침</h2>
+<h2 class="pp-h2">${svc ? svc + " " : co + " "}개인정보 처리방침</h2>
 <div class="pp-date-row"><div class="pp-date-badge">${eff} 시행</div></div>
 
-<p class="pp-intro">${co} ${svc}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다.</p>
+<p class="pp-intro">${svc ? co + " " + svc : co}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다.</p>
 <p class="pp-intro">이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
 
 <div class="pp-icon-nav">
@@ -1122,19 +1154,13 @@ ${
   legalRet.length > 0
     ? `
 <p style="font-size:12px;font-weight:700;margin:8px 0 4px;">▶ 법령에 따른 보존</p>
-<table class="pp-table">
-  <thead><tr><th>보존 항목</th><th>근거 법령</th><th style="width:70px">보존 기간</th></tr></thead>
-  <tbody>${legalRet.map((r) => `<tr><td>${r.label || "-"}</td><td>${r.basis || "-"}</td><td class="c">${r.period || "-"}</td></tr>`).join("")}</tbody>
-</table>`
+${buildMergedTable(legalRet, [{key:"label",label:"보존 항목"},{key:"basis",label:"근거 법령"},{key:"period",label:"보존 기간",cls:"c"}])}`
     : ""
 }${
   otherRet.length > 0
     ? `
 <p style="font-size:12px;font-weight:700;margin:8px 0 4px;">▶ 그외 보존 (사내규정·기타사유)</p>
-<table class="pp-table">
-  <thead><tr><th>보존 항목</th><th>보존 사유</th><th style="width:70px">보존 기간</th></tr></thead>
-  <tbody>${otherRet.map((r) => `<tr><td>${r.label || "-"}</td><td>${r.basis || "-"}</td><td class="c">${r.period || "-"}</td></tr>`).join("")}</tbody>
-</table>`
+${buildMergedTable(otherRet, [{key:"label",label:"보존 항목"},{key:"basis",label:"보존 사유"},{key:"period",label:"보존 기간",cls:"c"}])}`
     : ""
 }
 <ul class="pp-list" style="margin-top:8px;">
@@ -1151,16 +1177,24 @@ ${
   S.tpConsent.length > 0 && S.tpConsent.some((r) => r.receiver)
     ? `
 <p>① ${alias}는 원활한 서비스 제공을 위해 다음의 경우 「개인정보 보호법」 제17조제1항제1호에 따라 정보주체의 동의를 얻어 필요 최소한의 범위로만 제공합니다.</p>
-<table class="pp-table"><thead><tr><th>제공받는 자</th><th>제공 목적</th><th>제공 항목</th><th>보유·이용기간</th></tr></thead>
-<tbody>${S.tpConsent.map((r) => `<tr><td>${r.receiver || "-"}</td><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td><td class="c">${r.retention || "-"}</td></tr>`).join("")}</tbody></table>`
+${buildMergedTable(S.tpConsent, [
+  {key:"receiver", label:"제공받는 자"},
+  {key:"purpose",  label:"제공 목적"},
+  {key:"items",    label:"제공 항목"},
+  {key:"retention",label:"보유·이용기간", cls:"c"},
+])}`
     : ""
 }
 ${
   S.tpLegal.length > 0 && S.tpLegal.some((r) => r.receiver)
     ? `
 <p style="margin-top:10px;">② ${alias}는 다음과 같이 정보주체의 동의 없이 관계 기관에 개인정보를 제공할 수 있습니다.</p>
-<table class="pp-table"><thead><tr><th>관련 근거</th><th>제공받는 자</th><th>제공 목적</th><th>제공 항목</th></tr></thead>
-<tbody>${S.tpLegal.map((r) => `<tr><td>${r.basis || "-"}</td><td>${r.receiver || "-"}</td><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td></tr>`).join("")}</tbody></table>`
+${buildMergedTable(S.tpLegal, [
+  {key:"basis",    label:"관련 근거"},
+  {key:"receiver", label:"제공받는 자"},
+  {key:"purpose",  label:"제공 목적"},
+  {key:"items",    label:"제공 항목"},
+])}`
     : ""
 }
 `
@@ -1176,14 +1210,12 @@ ${sec("delegate", "개인정보 처리업무의 위탁", true)}
 <p style="font-weight:700;margin:10px 0 4px;">가. 위탁받는 자 (수탁자)</p>
 ${
   S.dlItems.length > 0 && S.dlItems.some((r) => r.company)
-    ? `<table class="pp-table"><thead><tr><th>위탁받는 자 (수탁자)</th><th>위탁 업무</th></tr></thead>
-<tbody>${S.dlItems.map((r) => `<tr><td class="c">${r.company || "-"}</td><td>${r.task || "-"}</td></tr>`).join("")}</tbody></table>`
+    ? buildMergedTable(S.dlItems, [{key:"company",label:"위탁받는 자 (수탁자)",cls:"c"},{key:"task",label:"위탁 업무"}])
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">수탁업체를 추가해 주세요.</p>'
 }${
   S.dlSubItems && S.dlSubItems.length > 0 && S.dlSubItems.some((r) => r.company)
     ? `<p style="font-weight:700;margin:10px 0 4px;">나. 재위탁받는 자 (재수탁자)</p>
-<table class="pp-table"><thead><tr><th>재위탁받는 자 (재수탁자)</th><th>위탁 업무</th></tr></thead>
-<tbody>${S.dlSubItems.map((r) => `<tr><td class="c">${r.company || "-"}</td><td>${r.task || "-"}</td></tr>`).join("")}</tbody></table>`
+${buildMergedTable(S.dlSubItems, [{key:"company",label:"재위탁받는 자 (재수탁자)",cls:"c"},{key:"task",label:"위탁 업무"}])}`
     : ""
 }
 <p style="margin-top:10px;">② ${alias}는 위탁계약 체결 시 「개인정보 보호법」 제26조에 따라 위탁업무 수행목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁 제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을 계약서 등 문서에 명시하고, 수탁자가 개인정보를 안전하게 처리하는지를 감독하고 있습니다.</p>${
@@ -1205,8 +1237,14 @@ ${sec("overseas", "개인정보의 국외 이전", true)}
 ${
   S.otItems.length > 0 && S.otItems.some((r) => r.receiver)
     ? `
-<table class="pp-table"><thead><tr><th>이전받는 자</th><th>이전 국가</th><th>이전 항목</th><th>이용 목적</th><th>이전 방법</th><th>보유기간</th></tr></thead>
-<tbody>${S.otItems.map((r) => `<tr><td>${r.receiver || "-"}</td><td class="c">${r.country || "-"}</td><td>${r.items || "-"}</td><td>${r.purpose || "-"}</td><td>${r.method || "-"}</td><td class="c">${r.retention || "-"}</td></tr>`).join("")}</tbody></table>`
+${buildMergedTable(S.otItems, [
+  {key:"receiver", label:"이전받는 자"},
+  {key:"country",  label:"이전 국가", cls:"c"},
+  {key:"items",    label:"이전 항목"},
+  {key:"purpose",  label:"이용 목적"},
+  {key:"method",   label:"이전 방법"},
+  {key:"retention",label:"보유기간", cls:"c"},
+])}`
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">이전 대상을 추가해 주세요.</p>'
 }
 `
@@ -1286,8 +1324,12 @@ ${sec("behavior", "행태정보의 수집·이용·제공 및 거부", true)}
 ${
   S.bhItems.length > 0 && S.bhItems.some((r) => r.items)
     ? `
-<table class="pp-table"><thead><tr><th>수집 항목</th><th>수집 목적</th><th>수집 방법</th><th>보유·이용기간</th></tr></thead>
-<tbody>${S.bhItems.map((r) => `<tr><td>${r.items || "-"}</td><td>${r.purpose || "-"}</td><td>${r.method || "-"}</td><td class="c">${r.retention || "-"}</td></tr>`).join("")}</tbody></table>`
+${buildMergedTable(S.bhItems, [
+  {key:"items",    label:"수집 항목"},
+  {key:"purpose",  label:"수집 목적"},
+  {key:"method",   label:"수집 방법"},
+  {key:"retention",label:"보유·이용기간", cls:"c"},
+])}`
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">행태정보 항목을 추가해 주세요.</p>'
 }
 `
@@ -1431,7 +1473,7 @@ a{color:#4f6ef7;}`;
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${co} 개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
+<title>${svc ? svc + " " : co + " "}개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>${css}</style>
 ${scriptTag}
