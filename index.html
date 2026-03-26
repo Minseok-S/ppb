@@ -44,7 +44,7 @@
               style="width: 8%"
             ></div>
           </div>
-          <div class="progress-text" id="progressText">STEP 1/12</div>
+          <div class="progress-text" id="progressText">STEP 1/13</div>
         </div>
 
         <div class="steps-nav" id="stepsNav">
@@ -54,29 +54,30 @@
           <div class="step-chip" data-step="2" onclick="goStep(2)">
             2.수집항목
           </div>
-          <div class="step-chip" data-step="3" onclick="goStep(3)">3.파기</div>
-          <div class="step-chip" data-step="4" onclick="goStep(4)">
-            4.제3자제공
+          <div class="step-chip" data-step="3" onclick="goStep(3)">3.아동</div>
+          <div class="step-chip" data-step="4" onclick="goStep(4)">4.파기</div>
+          <div class="step-chip" data-step="5" onclick="goStep(5)">
+            5.제3자제공
           </div>
-          <div class="step-chip" data-step="5" onclick="goStep(5)">5.위탁</div>
-          <div class="step-chip" data-step="6" onclick="goStep(6)">
-            6.국외이전
-          </div>
+          <div class="step-chip" data-step="6" onclick="goStep(6)">6.위탁</div>
           <div class="step-chip" data-step="7" onclick="goStep(7)">
-            7.안전조치
+            7.국외이전
           </div>
-          <div class="step-chip" data-step="8" onclick="goStep(8)">8.쿠키</div>
-          <div class="step-chip" data-step="9" onclick="goStep(9)">
-            9.행태정보
+          <div class="step-chip" data-step="8" onclick="goStep(8)">
+            8.안전조치
           </div>
+          <div class="step-chip" data-step="9" onclick="goStep(9)">9.쿠키</div>
           <div class="step-chip" data-step="10" onclick="goStep(10)">
-            10.권리행사
+            10.행태정보
           </div>
           <div class="step-chip" data-step="11" onclick="goStep(11)">
-            11.책임자
+            11.권리행사
           </div>
           <div class="step-chip" data-step="12" onclick="goStep(12)">
-            12.추가항목
+            12.책임자
+          </div>
+          <div class="step-chip" data-step="13" onclick="goStep(13)">
+            13.추가항목
           </div>
         </div>
 
@@ -208,46 +209,100 @@
             </button>
           </div>
 
-          <div class="field-group" style="margin-top: 14px">
-            <label class="field-label">만 14세 미만 아동 개인정보 처리</label>
-            <div class="radio-group">
-              <div
-                class="radio-item selected"
-                id="childNo"
-                onclick="selectR('childNo', 'childYes', 'child', 'no')"
-              >
-                <div class="radio-dot"></div>
-                <div><div class="radio-text">수집하지 않습니다</div></div>
-              </div>
-              <div
-                class="radio-item"
-                id="childYes"
-                onclick="selectR('childYes', 'childNo', 'child', 'yes')"
-              >
-                <div class="radio-dot"></div>
-                <div>
-                  <div class="radio-text">법정대리인 동의 후 수집합니다</div>
-                  <div class="radio-desc">
-                    법정대리인 동의 확인 방법을 기재하세요
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div id="childDetail" style="display: none" class="field-group">
-            <label class="field-label">법정대리인 동의 확인 방법</label>
-            <textarea
-              id="childMethod"
-              placeholder="예: 인터넷 사이트에 법정대리인이 동의 여부를 표시하도록 하고, 법정대리인의 휴대전화 문자메시지로 확인합니다."
-              oninput="updatePreview()"
-            ></textarea>
-          </div>
         </div>
 
-        <!-- ── STEP 3: 파기 ── -->
+        <!-- ── STEP 3: 아동 ── -->
         <div class="section-panel" id="step3">
           <div class="section-title">
             <div class="section-num">3</div>
+            만 14세 미만 아동 개인정보 처리
+            <span style="font-size:11px;color:#aaa;font-weight:400;">(해당 시)</span>
+          </div>
+          <div class="section-desc">14세 미만 아동의 개인정보를 수집하는 경우 기재합니다.</div>
+
+          <div class="radio-group">
+            <div
+              class="radio-item selected"
+              id="childNo"
+              onclick="selectR('childNo', 'childYes', 'child', 'no')"
+            >
+              <div class="radio-dot"></div>
+              <div><div class="radio-text">수집하지 않습니다</div></div>
+            </div>
+            <div
+              class="radio-item"
+              id="childYes"
+              onclick="selectR('childYes', 'childNo', 'child', 'yes')"
+            >
+              <div class="radio-dot"></div>
+              <div>
+                <div class="radio-text">법정대리인 동의 후 수집합니다</div>
+                <div class="radio-desc">법정대리인 동의 확인 방법을 기재하세요</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="childDetail" style="display: none">
+            <!-- 수집항목 -->
+            <div class="field-group" style="margin-top:14px;">
+              <label class="field-label">수집항목
+                <span style="font-size:11px;color:#aaa;font-weight:400;">(수집하는 항목 선택, 다중 선택 가능)</span>
+              </label>
+              <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="checkbox" id="childItemName" checked onchange="syncChildItems()" style="accent-color:var(--accent);width:13px;height:13px;">
+                  법정대리인의 성명
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="checkbox" id="childItemPhone" checked onchange="syncChildItems()" style="accent-color:var(--accent);width:13px;height:13px;">
+                  전화번호
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="checkbox" id="childItemEmail" checked onchange="syncChildItems()" style="accent-color:var(--accent);width:13px;height:13px;">
+                  이메일주소
+                </label>
+              </div>
+              <div style="margin-top:6px;">
+                <div id="childCustomTags" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;"></div>
+                <div style="display:flex;gap:6px;">
+                  <input type="text" id="childItemsCustomInput" placeholder="항목 입력 후 추가 버튼 또는 Enter" style="flex:1;" onkeydown="if(event.key==='Enter'){addChildCustomItem();event.preventDefault();}"/>
+                  <button type="button" onclick="addChildCustomItem()" style="padding:4px 12px;font-size:11px;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap;">추가</button>
+                </div>
+              </div>
+              <input type="text" id="childItems" style="display:none;" readonly />
+            </div>
+            <!-- 동의 확인 방법 -->
+            <div class="field-group" style="margin-top:10px;">
+              <label class="field-label">동의 확인 방법
+                <span style="font-size:11px;color:#aaa;font-weight:400;">(알리는 방법)</span>
+              </label>
+              <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px;">
+                <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="radio" name="childMethodOpt" value="동의 내용을 게재한 인터넷 사이트에 법정대리인이 동의 여부를 표시하도록 하고, 그 동의 표시를 확인했음을 법정대리인의 휴대전화 문자메시지로 알리는 방법으로 그 사실을 확인합니다." onchange="selectChildPreset(this)" style="accent-color:var(--accent);margin-top:2px;flex-shrink:0;">
+                  <span>인터넷 사이트 동의 + 문자메시지 알림<br><span style="color:#aaa;font-size:10px;">동의 내용을 게재한 인터넷 사이트에서 동의 표시 후 문자메시지로 확인</span></span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="radio" name="childMethodOpt" value="법정대리인에게 동의 내용이 적힌 서면을 직접 발급하거나 우편으로 전달하고, 법정대리인이 서명 후 제출하는 방법으로 그 사실을 확인합니다." onchange="selectChildPreset(this)" style="accent-color:var(--accent);margin-top:2px;flex-shrink:0;">
+                  <span>서면 발급 후 서명 제출<br><span style="color:#aaa;font-size:10px;">동의 서면을 직접 발급하거나 우편 전달 후 서명 제출로 확인</span></span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="radio" name="childMethodOpt" value="법정대리인에게 전화를 통해 동의 내용을 직접 알리고 구두로 동의를 확인합니다." onchange="selectChildPreset(this)" style="accent-color:var(--accent);margin-top:2px;flex-shrink:0;">
+                  <span>전화 통화 확인<br><span style="color:#aaa;font-size:10px;">전화를 통해 동의 내용을 알리고 구두로 동의 확인</span></span>
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;">
+                  <input type="radio" name="childMethodOpt" value="custom" onchange="selectChildPreset(this)" style="accent-color:var(--accent);">
+                  직접 입력
+                </label>
+              </div>
+              <textarea id="childMethod" placeholder="직접 입력해 주세요" oninput="updatePreview()" style="display:none;margin-top:6px;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 4: 파기 ── -->
+        <div class="section-panel" id="step4">
+          <div class="section-title">
+            <div class="section-num">4</div>
             개인정보 파기 <span class="badge-req">필수</span>
           </div>
           <div class="section-desc">
@@ -343,10 +398,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 4: 제3자 제공 ── -->
-        <div class="section-panel" id="step4">
+        <!-- ── STEP 5: 제3자 제공 ── -->
+        <div class="section-panel" id="step5">
           <div class="section-title">
-            <div class="section-num">4</div>
+            <div class="section-num">5</div>
             제3자 제공 <span class="badge-opt">해당시</span>
           </div>
           <div class="section-desc">
@@ -395,10 +450,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 5: 위탁 ── -->
-        <div class="section-panel" id="step5">
+        <!-- ── STEP 6: 위탁 ── -->
+        <div class="section-panel" id="step6">
           <div class="section-title">
-            <div class="section-num">5</div>
+            <div class="section-num">6</div>
             처리 위탁 <span class="badge-opt">해당시</span>
           </div>
           <div class="section-desc">수탁자와 위탁 업무 내용을 기재합니다.</div>
@@ -434,10 +489,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 6: 국외이전 ── -->
-        <div class="section-panel" id="step6">
+        <!-- ── STEP 7: 국외이전 ── -->
+        <div class="section-panel" id="step7">
           <div class="section-title">
-            <div class="section-num">6</div>
+            <div class="section-num">7</div>
             국외 이전 <span class="badge-opt">해당시</span>
           </div>
           <div class="section-desc">
@@ -478,10 +533,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 7: 안전조치 ── -->
-        <div class="section-panel" id="step7">
+        <!-- ── STEP 8: 안전조치 ── -->
+        <div class="section-panel" id="step8">
           <div class="section-title">
-            <div class="section-num">7</div>
+            <div class="section-num">8</div>
             안전성 확보 조치 <span class="badge-req">필수</span>
           </div>
           <div class="section-desc">
@@ -612,10 +667,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 8: 쿠키 ── -->
-        <div class="section-panel" id="step8">
+        <!-- ── STEP 9: 쿠키 ── -->
+        <div class="section-panel" id="step9">
           <div class="section-title">
-            <div class="section-num">8</div>
+            <div class="section-num">9</div>
             쿠키(자동수집장치) <span class="badge-opt">해당시</span>
           </div>
           <div class="section-desc">
@@ -685,10 +740,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 9: 행태정보 ── -->
-        <div class="section-panel" id="step9">
+        <!-- ── STEP 10: 행태정보 ── -->
+        <div class="section-panel" id="step10">
           <div class="section-title">
-            <div class="section-num">9</div>
+            <div class="section-num">10</div>
             행태정보 <span class="badge-opt">해당시</span>
           </div>
           <div class="section-desc">
@@ -734,10 +789,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 10: 권리행사 ── -->
-        <div class="section-panel" id="step10">
+        <!-- ── STEP 11: 권리행사 ── -->
+        <div class="section-panel" id="step11">
           <div class="section-title">
-            <div class="section-num">10</div>
+            <div class="section-num">11</div>
             정보주체 권리 행사 <span class="badge-req">필수</span>
           </div>
           <div class="section-desc">권리 행사 방법과 수단을 설정합니다.</div>
@@ -824,10 +879,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 11: 책임자 ── -->
-        <div class="section-panel" id="step11">
+        <!-- ── STEP 12: 책임자 ── -->
+        <div class="section-panel" id="step12">
           <div class="section-title">
-            <div class="section-num">11</div>
+            <div class="section-num">12</div>
             개인정보 보호책임자 <span class="badge-req">필수</span>
           </div>
           <div class="section-desc">CPO 정보와 담당 부서를 입력합니다.</div>
@@ -947,10 +1002,10 @@
           </div>
         </div>
 
-        <!-- ── STEP 12: 추가항목 ── -->
-        <div class="section-panel" id="step12">
+        <!-- ── STEP 13: 추가항목 ── -->
+        <div class="section-panel" id="step13">
           <div class="section-title">
-            <div class="section-num">12</div>
+            <div class="section-num">13</div>
             선택·추가 항목
           </div>
           <div class="section-desc">해당하는 경우에만 포함합니다.</div>

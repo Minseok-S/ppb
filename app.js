@@ -10,6 +10,7 @@ const S = {
   collectOther: [],
   collectAuto: [],
   child: "no",
+  childItems: "",
   childMethod: "",
   retention: { contract: true, dispute: true, ad: true, log: true },
   customRetention: [],
@@ -72,10 +73,11 @@ const S = {
 //  STEP NAV
 // ════════════════════════════════════════
 let curStep = 1;
-const TOTAL = 12;
+const TOTAL = 13;
 const stepLabels = [
   "기본 정보",
   "수집 항목",
+  "아동 개인정보",
   "파기",
   "제3자 제공",
   "위탁",
@@ -144,6 +146,7 @@ function selectR(onId, offId, key, val) {
     const [panelId, showVal] = map[key];
     const el = document.getElementById(panelId);
     if (el) el.style.display = val === showVal ? "block" : "none";
+    if (key === "child" && val === showVal) syncChildItems();
   }
   updatePreview();
 }
@@ -270,6 +273,60 @@ function syncCollectOther() {
 function removeAndSyncCollectOther(id) {
   document.getElementById(id)?.remove();
   syncCollectOther();
+  updatePreview();
+}
+
+let childCustomItems = [];
+
+function addChildCustomItem() {
+  const input = document.getElementById("childItemsCustomInput");
+  const val = input.value.trim();
+  if (!val) return;
+  childCustomItems.push(val);
+  input.value = "";
+  renderChildCustomTags();
+  syncChildItems();
+}
+
+function removeChildCustomItem(idx) {
+  childCustomItems.splice(idx, 1);
+  renderChildCustomTags();
+  syncChildItems();
+}
+
+function renderChildCustomTags() {
+  const container = document.getElementById("childCustomTags");
+  if (!container) return;
+  container.innerHTML = childCustomItems
+    .map(
+      (item, i) =>
+        `<span style="display:inline-flex;align-items:center;gap:3px;background:#eef1fe;border:1px solid #c5cdf7;border-radius:12px;padding:2px 8px;font-size:11px;">
+          ${item}
+          <button onclick="removeChildCustomItem(${i})" style="background:none;border:none;cursor:pointer;color:#999;font-size:13px;padding:0;line-height:1;">×</button>
+        </span>`
+    )
+    .join("");
+}
+
+function syncChildItems() {
+  const items = [];
+  if (document.getElementById("childItemName")?.checked) items.push("법정대리인의 성명");
+  if (document.getElementById("childItemPhone")?.checked) items.push("전화번호");
+  if (document.getElementById("childItemEmail")?.checked) items.push("이메일주소");
+  items.push(...childCustomItems);
+  const val = items.join(", ");
+  const hidden = document.getElementById("childItems");
+  if (hidden) hidden.value = val;
+  S.childItems = val;
+  updatePreview();
+}
+
+function selectChildPreset(el) {
+  const isCustom = el.value === "custom";
+  const ta = document.getElementById("childMethod");
+  ta.style.display = isCustom ? "" : "none";
+  if (!isCustom) ta.value = el.value;
+  else ta.value = "";
   updatePreview();
 }
 
@@ -524,6 +581,7 @@ function readFields() {
     "companyName",
     "serviceName",
     "effectiveDate",
+    "childItems",
     "childMethod",
     "cpoName",
     "cpoTitle",
@@ -990,10 +1048,12 @@ ${
   S.child === "yes"
     ? `
 ${sec("child", "만 14세 미만 아동의 개인정보 처리", true)}
-<ul class="pp-list">
-  <li>${alias}는 14세 미만 아동의 개인정보를 처리하기 위하여 동의가 필요한 경우에는 해당 아동의 법정대리인으로부터 동의를 받습니다.</li>
-  ${S.childMethod ? `<li>법정대리인 동의 확인 방법: ${S.childMethod}</li>` : ""}
-</ul>
+<p style="font-size:13px;color:#000;line-height:1.8;margin:0 0 8px;">① ${alias}는 14세 미만 아동의 개인정보를 수집할 때 법정대리인의 동의를 얻어 해당 서비스 수행에 필요한 최소한의 개인정보를 수집합니다.</p>
+${S.childItems ? `<table class="pp-table" style="margin:0 0 14px;">
+  <thead><tr><th style="text-align:center;">수집항목</th></tr></thead>
+  <tbody><tr><td style="text-align:center;">${S.childItems}</td></tr></tbody>
+</table>` : `<p style="margin:0 0 14px;"></p>`}
+<p style="font-size:13px;color:#000;line-height:1.8;margin:0;">② ${alias}는 만 14세 미만 아동의 개인정보를 수집할 때에는 아동에게 법정대리인의 성명, 연락처와 같이 최소한의 정보를 요구할 수 있으며, ${S.childMethod || '<span style="color:#bbb;">동의 확인 방법을 선택해 주세요.</span>'}</p>
 `
     : ""
 }
