@@ -45,7 +45,7 @@ const S = {
     s_cert_extra: [],
   },
   cookie: "yes",
-  browser: { b_chrome: true, b_edge: true, b_safari: false, b_samsung: false },
+  browser: { b_chrome: true, b_edge: true, b_chrome_m: false, b_safari: false, b_samsung: false },
   behavioral: "no",
   bhItems: [],
   rights: {
@@ -930,11 +930,15 @@ function buildPreview() {
   const bMap = {
     b_chrome: {
       n: "크롬(Chrome)",
-      p: "웹브라우저 오른쪽 상단 ⋮ > 새 시크릿 창 (Ctrl+Shift+N)",
+      p: "웹브라우저 오른쪽 상단 '⋮' > 새 시크릿 창 (Ctrl+Shift+N)",
     },
     b_edge: {
       n: "엣지(Edge)",
-      p: "웹브라우저 오른쪽 상단 … > 새 InPrivate 창 (Ctrl+Shift+N)",
+      p: "웹브라우저 오른쪽 상단 '…' > 새 InPrivate 창 (Ctrl+Shift+N)",
+    },
+    b_chrome_m: {
+      n: "크롬(Chrome)",
+      p: "모바일 브라우저 오른쪽 상단 '⋮' > 새 시크릿 탭",
     },
     b_safari: {
       n: "사파리(Safari)",
@@ -942,10 +946,11 @@ function buildPreview() {
     },
     b_samsung: {
       n: "삼성 인터넷",
-      p: "모바일 브라우저 하단 '탭' 아이콘 > 비밀 모드 켜기 > 시작",
+      p: "모바일 브라우저 아래쪽 '탭' 아이콘 > 비밀 모드 켜기 > 시작",
     },
   };
-  const activeBrowsers = Object.keys(S.browser).filter((k) => S.browser[k]);
+  const webBrowsers = ["b_chrome", "b_edge"].filter((k) => S.browser[k]);
+  const mobileBrowsers = ["b_chrome_m", "b_safari", "b_samsung"].filter((k) => S.browser[k]);
 
   // Agencies
   const agMap = {
@@ -1343,18 +1348,23 @@ ${
 ${sec("cookie", "개인정보 자동수집 장치의 설치·운영 및 거부", true)}
 <ul class="pp-list">
   <li>① ${alias}는 정보주체에게 개별적인 서비스와 편의를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 '쿠키(cookie)'를 사용합니다.</li>
-  <li>② 쿠키는 웹사이트 운영에 이용되는 서버(http)가 정보주체의 브라우저에 보내는 소량의 정보로서 정보주체의 컴퓨터 또는 모바일에 저장됩니다.</li>
-  <li>③ 정보주체는 브라우저 옵션 설정을 통해 쿠키 허용, 차단 등의 설정을 할 수 있습니다.</li>
+  <li>② 쿠키는 웹사이트 운영에 이용되는 서버(http)가 정보주체의 브라우저에 보내는 소량의 정보로서 정보주체의 컴퓨터 또는 모바일에 저장되며, 웹사이트 접속 시 정보주체의 브라우저에서 서버로 자동 전송됩니다.</li>
+  <li>③ 정보주체는 브라우저 옵션 설정을 통해 쿠키 허용, 차단 등의 설정을 할 수 있습니다.${
+    webBrowsers.length > 0 || mobileBrowsers.length > 0 ? `
+<ul style="margin-top:8px; padding-left:16px;">
+  ${webBrowsers.length > 0 ? `<li style="margin-bottom:6px;">웹 브라우저에서 쿠키 허용/차단
+<table class="pp-table" style="margin-top:6px;">
+  <thead><tr><th style="width:35%">브라우저</th><th>설정 방법</th></tr></thead>
+  <tbody>${webBrowsers.map((k) => `<tr><td class="c">${bMap[k].n}</td><td>${bMap[k].p}</td></tr>`).join("")}</tbody>
+</table></li>` : ""}
+  ${mobileBrowsers.length > 0 ? `<li style="margin-top:6px;">모바일 브라우저에서 쿠키 허용/차단
+<table class="pp-table" style="margin-top:6px;">
+  <thead><tr><th style="width:35%">브라우저</th><th>설정 방법</th></tr></thead>
+  <tbody>${mobileBrowsers.map((k) => `<tr><td class="c">${bMap[k].n}</td><td>${bMap[k].p}</td></tr>`).join("")}</tbody>
+</table></li>` : ""}
+</ul>` : ""
+  }</li>
 </ul>
-${
-  activeBrowsers.length > 0
-    ? `
-<table class="pp-table" style="margin-top:8px;">
-  <thead><tr><th style="width:30%">구분</th><th>쿠키 거부 방법</th></tr></thead>
-  <tbody>${activeBrowsers.map((k) => `<tr><td class="c">${bMap[k].n}</td><td>${bMap[k].p}</td></tr>`).join("")}</tbody>
-</table>`
-    : ""
-}
 `
     : ""
 }

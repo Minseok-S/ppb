@@ -777,7 +777,7 @@
           </div>
           <div id="cookieDetail">
             <div class="field-group" style="margin-top: 10px">
-              <label class="field-label">지원 브라우저</label>
+              <label class="field-label">웹 브라우저</label>
               <div class="toggle-group">
                 <div
                   class="toggle-item checked"
@@ -795,14 +795,25 @@
                   <div><div class="toggle-label">엣지 (Edge)</div></div>
                   <div class="toggle-switch"></div>
                 </div>
+              </div>
+            </div>
+            <div class="field-group" style="margin-top: 10px">
+              <label class="field-label">모바일 브라우저</label>
+              <div class="toggle-group">
+                <div
+                  class="toggle-item"
+                  data-key="b_chrome_m"
+                  onclick="toggleItem(this, 'browser')"
+                >
+                  <div><div class="toggle-label">크롬 (Chrome)</div></div>
+                  <div class="toggle-switch"></div>
+                </div>
                 <div
                   class="toggle-item"
                   data-key="b_safari"
                   onclick="toggleItem(this, 'browser')"
                 >
-                  <div>
-                    <div class="toggle-label">사파리 (Safari) - 모바일</div>
-                  </div>
+                  <div><div class="toggle-label">사파리 (Safari)</div></div>
                   <div class="toggle-switch"></div>
                 </div>
                 <div
