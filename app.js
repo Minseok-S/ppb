@@ -971,25 +971,17 @@ function buildPreview() {
 
   // Icons
   const icons = [
-    { e: "📋", l: "개인정보 수집" },
-    { e: "🎯", l: "처리 목적" },
-    { e: "🗓️", l: "보유 기간" },
-    { e: "🤝", l: "처리 위탁" },
-    { e: "🔗", l: "제3자 제공" },
-    { e: "📨", l: "고충 처리" },
-    { e: "🌏", l: "국외 이전" },
-    { e: "🔒", l: "안전 조치" },
-  ];
-  const iconColors = [
-    "#4f6ef7",
-    "#7c5ce7",
-    "#00b894",
-    "#e17055",
-    "#fdcb6e",
-    "#0984e3",
-    "#6c5ce7",
-    "#00cec9",
-  ];
+    { e: "📋", l: "개인정보 수집",  c: "#4f6ef7", show: true },
+    { e: "🎯", l: "처리 목적",      c: "#7c5ce7", show: true },
+    { e: "🗓️", l: "보유 기간",      c: "#00b894", show: true },
+    { e: "🤝", l: "처리 위탁",      c: "#e17055", show: S.delegate === "yes" },
+    { e: "🔗", l: "제3자 제공",     c: "#fdcb6e", show: S.thirdParty === "yes" },
+    { e: "📨", l: "고충 처리",      c: "#0984e3", show: true },
+    { e: "🌏", l: "국외 이전",      c: "#6c5ce7", show: S.overseas === "yes" },
+    { e: "🔒", l: "안전 조치",      c: "#00cec9", show: true },
+    { e: "🍪", l: "쿠키",           c: "#e67e22", show: S.cookie === "yes" },
+    { e: "👁️", l: "행태정보",       c: "#e84393", show: S.behavioral === "yes" },
+  ].filter((ic) => ic.show);
 
   // Build TOC items — stable key, dynamic sequential numbering
   const tocItems = [
@@ -1105,7 +1097,7 @@ function buildPreview() {
 <p class="pp-intro">이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
 
 <div class="pp-icon-nav">
-  ${icons.map((ic, i) => `<div class="pp-icon-item"><div class="pp-icon-circle" style="background:${iconColors[i]}22">${ic.e}</div><div class="pp-icon-label">${ic.l}</div></div>`).join("")}
+  ${icons.map((ic) => `<div class="pp-icon-item"><div class="pp-icon-circle" style="background:${ic.c}22">${ic.e}</div><div class="pp-icon-label">${ic.l}</div></div>`).join("")}
 </div>
 
 
