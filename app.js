@@ -24,6 +24,8 @@ const S = {
   dlSubItems: [],
   overseas: "no",
   otItems: [],
+  otRefuseDisadvantage: "",
+  otRefuseMethod: "",
   security: {
     s_plan: true,
     s_edu: true,
@@ -544,7 +546,8 @@ function syncOT() {
       retention: g("retention"),
     });
   });
-  // state updated
+  S.otRefuseDisadvantage = document.getElementById("otRefuseDisadvantage")?.value || "";
+  S.otRefuseMethod = document.getElementById("otRefuseMethod")?.value || "";
 }
 
 // ════════════════════════════════════════
@@ -1233,7 +1236,8 @@ ${
   S.overseas === "yes"
     ? `
 ${sec("overseas", "개인정보의 국외 이전", true)}
-<p>${alias}는 서비스 이용자로부터 수집한 개인정보를 아래와 같이 국외에 이전하고 있습니다.</p>
+<p>${alias}는 서비스 이용자로부터 수집한 개인정보를 아래와 같이 국외에 이전하고 있으며, 「개인정보 보호법」 제28조의8제2항에 따라 국외이전에 대해 다음과 같이 안내합니다.</p>
+${S.otRefuseDisadvantage ? `<p style="margin-top:6px;">국외 이전을 거부할 경우 ${S.otRefuseDisadvantage}합니다.</p>` : ""}
 ${
   S.otItems.length > 0 && S.otItems.some((r) => r.receiver)
     ? `
@@ -1247,6 +1251,7 @@ ${buildMergedTable(S.otItems, [
 ])}`
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">이전 대상을 추가해 주세요.</p>'
 }
+${S.otRefuseMethod ? `<p style="margin-top:8px;">국외 이전을 원치 않을 경우 ${S.otRefuseMethod}를 통하여 회원 탈퇴를 요청할 수 있습니다.</p>` : ""}
 `
     : ""
 }

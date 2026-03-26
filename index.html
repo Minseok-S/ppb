@@ -547,6 +547,36 @@
             >
               ＋ 이전 대상 추가
             </button>
+            <div class="field-group" style="margin-top: 14px">
+              <label class="field-label">국외 이전 거부 시 불이익</label>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span style="white-space:nowrap; font-size:13px; color:#333;">국외 이전을 거부할 경우</span>
+                <input
+                  type="text"
+                  class="field-input"
+                  id="otRefuseDisadvantage"
+                  placeholder="서비스 이용이 불가능"
+                  style="flex:1; min-width:120px;"
+                  oninput="syncOT(); updatePreview()"
+                />
+                <span style="white-space:nowrap; font-size:13px; color:#333;">합니다.</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">국외 이전 거부 방법</label>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span style="white-space:nowrap; font-size:13px; color:#333;">국외 이전을 원치 않을 경우</span>
+                <input
+                  type="text"
+                  class="field-input"
+                  id="otRefuseMethod"
+                  placeholder="홈페이지(메뉴 – 내 정보 – 회원 탈퇴)"
+                  style="flex:1; min-width:160px;"
+                  oninput="syncOT(); updatePreview()"
+                />
+                <span style="white-space:nowrap; font-size:13px; color:#333;">를 통하여 회원 탈퇴를 요청할 수 있습니다.</span>
+              </div>
+            </div>
           </div>
         </div>
 
