@@ -38,6 +38,11 @@ const S = {
     s_phys: true,
     s_media: false,
     s_isms: false,
+    s_isms_cert: false,
+    s_mgmt_extra: [],
+    s_tech_extra: [],
+    s_phys_extra: [],
+    s_cert_extra: [],
   },
   cookie: "yes",
   browser: { b_chrome: true, b_edge: true, b_safari: false, b_samsung: false },
@@ -551,6 +556,35 @@ function syncOT() {
 }
 
 // ════════════════════════════════════════
+//  SECURITY — CUSTOM ITEMS
+// ════════════════════════════════════════
+function addSecItem(cat) {
+  const inp = document.getElementById("sec_" + cat + "_input");
+  const val = inp.value.trim();
+  if (!val) return;
+  S.security["s_" + cat + "_extra"].push(val);
+  inp.value = "";
+  renderSecChips(cat);
+  updatePreview();
+}
+function removeSecItem(cat, idx) {
+  S.security["s_" + cat + "_extra"].splice(idx, 1);
+  renderSecChips(cat);
+  updatePreview();
+}
+function renderSecChips(cat) {
+  const container = document.getElementById("sec_" + cat + "_chips");
+  if (!container) return;
+  const items = S.security["s_" + cat + "_extra"] || [];
+  container.innerHTML = items
+    .map(
+      (v, i) =>
+        `<span class="sec-chip">${v}<button onclick="removeSecItem('${cat}',${i})">×</button></span>`
+    )
+    .join("");
+}
+
+// ════════════════════════════════════════
 //  DYNAMIC — BEHAVIORAL
 // ════════════════════════════════════════
 function addBehavioral() {
@@ -860,19 +894,24 @@ function buildPreview() {
     s_phys: "전산실, 자료보관실 등의 접근통제",
     s_media: "보조저장매체 반출·입 통제",
     s_isms: "국내 정보보호 관리체계(ISMS-P) 인증 취득",
+    s_isms_cert: "국내 정보보호 관리체계(ISMS) 인증 취득",
   };
   const secMgmt = ["s_plan", "s_edu", "s_org"]
     .filter((k) => S.security[k])
-    .map((k) => secMap[k]);
+    .map((k) => secMap[k])
+    .concat(S.security.s_mgmt_extra || []);
   const secTech = ["s_access", "s_encrypt", "s_sec", "s_log", "s_vuln"]
     .filter((k) => S.security[k])
-    .map((k) => secMap[k]);
+    .map((k) => secMap[k])
+    .concat(S.security.s_tech_extra || []);
   const secPhys = ["s_phys", "s_media"]
     .filter((k) => S.security[k])
-    .map((k) => secMap[k]);
-  const secExtra = ["s_isms"]
+    .map((k) => secMap[k])
+    .concat(S.security.s_phys_extra || []);
+  const secExtra = ["s_isms", "s_isms_cert"]
     .filter((k) => S.security[k])
-    .map((k) => secMap[k]);
+    .map((k) => secMap[k])
+    .concat(S.security.s_cert_extra || []);
 
   // Rights methods
   const rMap = {

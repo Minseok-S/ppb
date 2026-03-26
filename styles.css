@@ -516,6 +516,62 @@ textarea {
   color: var(--accent);
   background: #f5f7ff;
 }
+.sec-extra-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  align-items: center;
+}
+.sec-extra-row .field-input {
+  flex: 1;
+  margin: 0;
+}
+.btn-add-sm {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: #fff;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: "Noto Sans KR", sans-serif;
+}
+.btn-add-sm:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.sec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.sec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #eef1fe;
+  border: 1px solid #c5ccf8;
+  color: #3d5af1;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sec-chip button {
+  background: none;
+  border: none;
+  color: #9da8e8;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+.sec-chip button:hover {
+  color: #ff6b6b;
+}
 
 /* INFO BOX */
 .info-box {

@@ -619,6 +619,11 @@
                 <div class="toggle-switch"></div>
               </div>
             </div>
+            <div class="sec-extra-row">
+              <input type="text" id="sec_mgmt_input" class="field-input" placeholder="관리적 조치 직접 추가" onkeydown="if(event.key==='Enter')addSecItem('mgmt')" />
+              <button class="btn-add-sm" onclick="addSecItem('mgmt')">추가</button>
+            </div>
+            <div id="sec_mgmt_chips" class="sec-chips"></div>
           </div>
           <div class="field-group" style="margin-top: 10px">
             <label class="field-label">기술적 조치</label>
@@ -670,6 +675,11 @@
                 <div class="toggle-switch"></div>
               </div>
             </div>
+            <div class="sec-extra-row">
+              <input type="text" id="sec_tech_input" class="field-input" placeholder="기술적 조치 직접 추가" onkeydown="if(event.key==='Enter')addSecItem('tech')" />
+              <button class="btn-add-sm" onclick="addSecItem('tech')">추가</button>
+            </div>
+            <div id="sec_tech_chips" class="sec-chips"></div>
           </div>
           <div class="field-group" style="margin-top: 10px">
             <label class="field-label">물리적 조치</label>
@@ -695,6 +705,11 @@
                 <div class="toggle-switch"></div>
               </div>
             </div>
+            <div class="sec-extra-row">
+              <input type="text" id="sec_phys_input" class="field-input" placeholder="물리적 조치 직접 추가" onkeydown="if(event.key==='Enter')addSecItem('phys')" />
+              <button class="btn-add-sm" onclick="addSecItem('phys')">추가</button>
+            </div>
+            <div id="sec_phys_chips" class="sec-chips"></div>
           </div>
           <div class="field-group" style="margin-top: 10px">
             <label class="field-label">추가 인증</label>
@@ -710,7 +725,23 @@
                 </div>
                 <div class="toggle-switch"></div>
               </div>
+              <div
+                class="toggle-item"
+                data-key="s_isms_cert"
+                onclick="toggleItem(this, 'security')"
+              >
+                <div>
+                  <div class="toggle-label">ISMS 인증</div>
+                  <div class="toggle-sub">정보보호 관리체계 인증</div>
+                </div>
+                <div class="toggle-switch"></div>
+              </div>
             </div>
+            <div class="sec-extra-row">
+              <input type="text" id="sec_cert_input" class="field-input" placeholder="인증 항목 직접 추가" onkeydown="if(event.key==='Enter')addSecItem('cert')" />
+              <button class="btn-add-sm" onclick="addSecItem('cert')">추가</button>
+            </div>
+            <div id="sec_cert_chips" class="sec-chips"></div>
           </div>
         </div>
 
