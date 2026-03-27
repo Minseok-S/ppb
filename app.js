@@ -969,11 +969,35 @@ function buildPreview() {
   };
   const activeAgencies = Object.keys(S.agency).filter((k) => S.agency[k]);
 
-  // Icons — PIPC 공식 라벨링 스타일 (개인정보 처리=육각형, 법적의무=사각형)
+  // Icons — PIPC 공식 라벨링 스타일 (개인정보 유형=원형, 개인정보 처리=육각형, 법적의무=사각형)
+  const CIRC = `circle cx="22" cy="22" r="20" fill="none" stroke="#1a56db" stroke-width="1.6"`;
   const HEX = `polygon points="22,2 38,11 38,33 22,42 6,33 6,11" fill="none" stroke="#1a56db" stroke-width="1.6" stroke-linejoin="round"`;
   const FOLDER = `path d="M12 20h5.5l2-2.5H32v12H12z" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2" stroke-linejoin="round"`;
   const SQ = `rect x="2" y="2" width="40" height="40" rx="3" fill="none" stroke="#1a56db" stroke-width="1.6"`;
-  const icons = [
+  const allCollected = [...(S.collectNoConsent||[]), ...(S.collectConsent||[]), ...(S.collectOther||[]), ...(S.collectAuto||[])].join(" ");
+  const _유형 = [
+    // 개인정보
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">👤</text></svg>`, l: "개인정보", show: true },
+    // 개인영상정보
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">📷</text></svg>`, l: "개인영상정보", show: allCollected.includes("영상") },
+    // 민감정보
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🔴</text></svg>`, l: "민감정보", show: S.sensitive === "yes" },
+    // 생체인식정보
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🫁</text></svg>`, l: "생체인식정보", show: allCollected.includes("생체") || allCollected.includes("지문") || allCollected.includes("홍채") },
+    // 개인위치정보
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">📍</text></svg>`, l: "개인위치정보", show: allCollected.includes("위치") },
+    // 고유식별정보
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🪪</text></svg>`, l: "고유식별정보", show: allCollected.includes("주민") || allCollected.includes("여권") || allCollected.includes("운전면허") || allCollected.includes("외국인등록") },
+    // 주민등록번호
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🪪</text></svg>`, l: "주민등록번호", show: allCollected.includes("주민") },
+    // 여권번호
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">📘</text></svg>`, l: "여권번호", show: allCollected.includes("여권") },
+    // 운전면허번호
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🚗</text></svg>`, l: "운전면허번호", show: allCollected.includes("운전면허") },
+    // 외국인등록번호
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🌏</text></svg>`, l: "외국인등록번호", show: allCollected.includes("외국인등록") },
+  ].filter(ic => ic.show);
+  const _처리 = [
     // ── 개인정보 처리 항목 (육각형 컨테이너) ──
     // 처리항목
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="26" cy="23" r="2.8" fill="#f97316"/><path d="M21 31c0-2.8 2.2-5 5-5s5 2.2 5 5" fill="#f97316"/></svg>`, l: "처리항목", show: true },
@@ -981,6 +1005,12 @@ function buildPreview() {
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><path d="M22 23a5 5 0 0 1 4.5 3" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><polyline points="26,21.5 27,24.5 24,24" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 29a5 5 0 0 1-4.5-3" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><polyline points="22,30.5 21,27.5 24,28" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "처리목적", show: true },
     // 보유기간(설정)
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="24" cy="25.5" r="4.5" fill="white" stroke="#f97316" stroke-width="1.3"/><polyline points="24,23 24,25.5 26.5,25.5" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "보유기간(설정)", show: true },
+    // 파기
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><text x="22" y="29" text-anchor="middle" font-size="18">🗑️</text></svg>`, l: "파기", show: true },
+    // 추가적 이용
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><text x="22" y="29" text-anchor="middle" font-size="18">➕</text></svg>`, l: "추가적 이용", show: S.addUsage === "yes" },
+    // 가명정보처리
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><text x="22" y="29" text-anchor="middle" font-size="18">🔐</text></svg>`, l: "가명정보처리", show: S.pseudonym === "yes" },
     // 처리위탁
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><circle cx="14" cy="18" r="3.5" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><path d="M8 29c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#1a56db" stroke-width="1.2" stroke-linecap="round"/><circle cx="30" cy="18" r="3.5" fill="#fff3e0" stroke="#f97316" stroke-width="1.2"/><path d="M24 29c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#f97316" stroke-width="1.2" stroke-linecap="round"/><line x1="19" y1="21.5" x2="25" y2="21.5" stroke="#f97316" stroke-width="1.3" stroke-linecap="round"/><polyline points="21,19.5 19,21.5 21,23.5" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><polyline points="23,19.5 25,21.5 23,23.5" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "처리위탁", show: S.delegate === "yes" },
     // 제3자 제공
@@ -991,12 +1021,79 @@ function buildPreview() {
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><rect x="17" y="21.5" width="13" height="8" rx="1.5" fill="white" stroke="#f97316" stroke-width="1.3"/><text x="23.5" y="27.5" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#f97316" font-family="Arial,sans-serif">AI</text></svg>`, l: "자동화 수집", show: S.cookie === "yes" },
     // 행태정보 수집 (육각형 — PDF 기준)
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="22" cy="26" r="5.5" fill="#f97316"/><circle cx="19.5" cy="25" r="2" fill="white"/><circle cx="24.5" cy="25" r="2" fill="white"/><path d="M19 28.5c0.5 1 1.5 1.5 3 1.5s2.5-0.5 3-1.5" fill="none" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>`, l: "행태정보 수집", show: S.behavioral === "yes" },
+  ].filter(ic => ic.show);
+  const _의무 = [
     // ── 법적의무사항 (사각형 컨테이너) ──
+    // 정보주체의 권리의무
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">⚖️</text></svg>`, l: "정보주체의 권리의무", show: true },
     // 안전성확보조치
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><rect x="10" y="9" width="20" height="25" rx="2" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><line x1="14" y1="15" x2="26" y2="15" stroke="#1a56db" stroke-width="1"/><line x1="14" y1="18" x2="26" y2="18" stroke="#1a56db" stroke-width="1"/><line x1="14" y1="21" x2="21" y2="21" stroke="#1a56db" stroke-width="1"/><circle cx="30" cy="29" r="7" fill="#f97316"/><rect x="26.5" y="29" width="7" height="5" rx="1" fill="white"/><path d="M27.5 29v-2.5a2.5 2.5 0 0 1 5 0V29" fill="none" stroke="white" stroke-width="1.3" stroke-linecap="round"/><circle cx="30" cy="31.5" r="1" fill="#f97316"/></svg>`, l: "안전성확보조치", show: true },
+    // 처리방침변경
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📋</text></svg>`, l: "처리방침변경", show: true },
+    // 개인정보보호인증
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">🏅</text></svg>`, l: "개인정보보호인증", show: !!(S.security?.s_isms_cert) },
+    // 관리수준진단
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📊</text></svg>`, l: "관리수준진단", show: true },
+    // 법정대리인
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">👪</text></svg>`, l: "법정대리인", show: S.child === "yes" },
+    // 개인정보보호책임자
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">👨‍💼</text></svg>`, l: "개인정보보호책임자", show: true },
+    // 국내대리인
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">🤝</text></svg>`, l: "국내대리인", show: S.domAgent === "yes" },
     // 고충처리부서
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><circle cx="22" cy="15" r="5" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><path d="M12 35c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="none" stroke="#1a56db" stroke-width="1.2" stroke-linecap="round"/><path d="M16 17.5c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><rect x="14" y="17.5" width="3" height="5" rx="1.5" fill="#f97316"/><rect x="27" y="17.5" width="3" height="5" rx="1.5" fill="#f97316"/><path d="M30 22.5v1c0 1.7-1.3 3-3 3h-3" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round"/></svg>`, l: "고충처리부서", show: true },
-  ].filter((ic) => ic.show);
+    // 권익침해 구제
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">🛡️</text></svg>`, l: "권익침해 구제", show: activeAgencies.length > 0 },
+    // 열람청구
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📄</text></svg>`, l: "열람청구", show: true },
+    // 영상정보처리기기
+    { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📹</text></svg>`, l: "영상정보처리기기", show: allCollected.includes("영상") },
+  ].filter(ic => ic.show);
+  // 상단 카테고리 nav에 표시할 라벨 목록
+  const NAV_LABELS = new Set([
+    "개인정보","개인영상정보","민감정보","생체인식정보","개인위치정보",
+    "고유식별정보","주민등록번호","여권번호","운전면허번호","외국인등록번호",
+    "처리목적","보유기간(설정)","처리위탁","제3자 제공","국외이전","가명정보처리",
+    "열람청구","영상정보처리기기",
+  ]);
+  // 섹션 헤딩 + 목차 공용 아이콘 매핑 (모든 라벨 → 섹션 key)
+  const SEC_ICON_KEY = {
+    "처리항목":       "collect",
+    "처리목적":       "collect",
+    "보유기간(설정)": "collect",
+    "파기":           "destroy",
+    "제3자 제공":     "tp",
+    "처리위탁":       "delegate",
+    "국외이전":       "overseas",
+    "추가적 이용":    "adduse",
+    "민감정보":       "sensitive",
+    "가명정보처리":   "pseudo",
+    "자동화 수집":    "cookie",
+    "행태정보 수집":  "behavior",
+    "정보주체의 권리의무": "rights",
+    "열람청구":       "rights",
+    "안전성확보조치": "security",
+    "개인정보보호인증":"security",
+    "관리수준진단":   "security",
+    "처리방침변경":   "change",
+    "법정대리인":     "child",
+    "개인정보보호책임자": "cpo",
+    "고충처리부서":   "cpo",
+    "국내대리인":     "agent",
+    "권익침해 구제":  "remedy",
+  };
+  const iconGroups = [
+    { label: "개인정보 유형", items: _유형.filter(ic => NAV_LABELS.has(ic.l)) },
+    { label: "개인정보 처리", items: _처리.filter(ic => NAV_LABELS.has(ic.l)) },
+    { label: "법적의무사항 등", items: _의무.filter(ic => NAV_LABELS.has(ic.l)) },
+  ].filter(g => g.items.length > 0);
+  // 섹션 헤딩 + 목차 공용 아이콘 맵 { sectionKey: [icon, ...] }
+  const secIconMap = {};
+  [..._유형, ..._처리, ..._의무].forEach(ic => {
+    const k = SEC_ICON_KEY[ic.l];
+    if (k) { if (!secIconMap[k]) secIconMap[k] = []; secIconMap[k].push(ic); }
+  });
+  const tocIconMap = secIconMap;
 
   // Build TOC items — stable key, dynamic sequential numbering
   const tocItems = [
@@ -1090,16 +1187,12 @@ function buildPreview() {
   // Helper: render section heading (skips if key not in numMap)
   const sec = (k, label, opt = false) => {
     if (!numMap[k]) return "";
+    const icHtml = (secIconMap[k] || []).map(ic => `<span class="pp-sec-icon">${ic.svg}</span>`).join("");
     return (
-      '<div id="pp-' +
-      k +
-      '" class="pp-sec"><div class="pp-sec-num">' +
-      numMap[k] +
-      "</div>" +
-      label +
-      (opt
-        ? ' <span style="font-size:11px;color:#aaa;font-weight:400;"></span>'
-        : "") +
+      '<div id="pp-' + k + '" class="pp-sec">' +
+      '<div class="pp-sec-num">' + numMap[k] + "</div>" +
+      '<span class="pp-sec-label">' + label + (opt ? ' <span style="font-size:11px;color:#aaa;font-weight:400;"></span>' : "") + '</span>' +
+      (icHtml ? `<div class="pp-sec-icons">${icHtml}</div>` : "") +
       "</div>"
     );
   };
@@ -1112,7 +1205,7 @@ function buildPreview() {
 <p class="pp-intro">이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
 
 <div class="pp-icon-nav">
-  ${icons.map((ic) => `<div class="pp-icon-item"><div class="pp-icon-circle">${ic.svg}</div><div class="pp-icon-label">${ic.l}</div></div>`).join("")}
+  ${iconGroups.flatMap(g => g.items).map(ic => `<div class="pp-icon-item"><div class="pp-icon-circle">${ic.svg}</div><div class="pp-icon-label">${ic.l}</div></div>`).join("")}
 </div>
 
 
@@ -1121,7 +1214,8 @@ function buildPreview() {
   <ul>${visibleToc
     .map((t, i) => {
       const n = numMap[t.k];
-      return `<li><a href="#pp-${t.k}" class="pp-toc-link"><span class="pp-toc-num">${n}</span>${t.l}${t.opt ? '<span class="pp-toc-opt"></span>' : ""}</a></li>`;
+      const tocIcHtml = (tocIconMap[t.k] || []).map(ic => `<span class="pp-toc-icon">${ic.svg}</span>`).join("");
+      return `<li><a href="#pp-${t.k}" class="pp-toc-link"><span class="pp-toc-num">${n}</span>${t.l}${tocIcHtml}${t.opt ? '<span class="pp-toc-opt"></span>' : ""}</a></li>`;
     })
     .join("")}</ul>
 </div>
