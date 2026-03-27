@@ -1582,45 +1582,53 @@ ${sec("change", "개인정보 처리방침의 변경")}
 function generateFinalHTML() {
   const content = document.getElementById("previewContent").innerHTML;
   const co = S.companyName || "회사";
+  const svc = S.serviceName || "";
   const eff = S.effectiveDate || "";
   const scriptTag = "<scr" + "ipt>";
   const scriptCloseTag = "</" + "script>";
   const css = `*{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f7;color:#333;}
 .wrapper{max-width:780px;margin:0 auto;padding:36px 20px 80px;}
-.pp-doc{background:#fff;border-radius:10px;padding:48px 56px;box-shadow:0 2px 20px rgba(0,0,0,.07);}
-@media(max-width:600px){.pp-doc{padding:28px 20px;}}
+.preview-doc{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.15);overflow:hidden;font-family:'Noto Sans KR',sans-serif;}
+@media(max-width:600px){.pp{padding:28px 20px;}}
+.pp{padding:48px 56px;color:#000;font-size:14px;line-height:1.7;}
 .pp-h2{font-size:26px;font-weight:700;color:#111;text-align:center;margin-bottom:6px;letter-spacing:-.5px;}
 .pp-date-row{display:flex;justify-content:flex-end;margin:36px 0 20px;}
-.pp-date-badge{background:#f4f5f7;border-radius:7px;padding:5px 14px;font-size:12px;font-weight:600;color:#555;border:1px solid #e0e0e0;}
-.pp-intro{color:#555;font-size:13px;line-height:1.85;margin-bottom:8px;}
-.pp-icon-nav{border:1px solid #e2e2e5;border-radius:10px;padding:16px 24px;display:flex;flex-wrap:wrap;margin:12px 0;}
-.pp-icon-item{width:33.33%;display:flex;flex-direction:column;align-items:center;padding:12px 6px;text-align:center;}
-.pp-icon-circle{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:6px;}
-.pp-icon-label{font-size:11px;font-weight:700;color:#333;word-break:keep-all;}
+.pp-date-badge{background:#f4f5f7;border-radius:7px;padding:5px 14px;font-size:12px;font-weight:600;color:#000;border:1px solid #e0e0e0;}
+.pp-intro{color:#000;font-size:13px;line-height:1.85;margin-bottom:8px;}
+.pp-icon-nav{border:1px solid #e2e2e5;border-radius:10px;padding:12px 16px;margin:12px 0;display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:1fr;}
+.pp-icon-item{display:flex;flex-direction:column;align-items:center;padding:8px 4px;text-align:center;}
+.pp-icon-circle{width:52px;height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.pp-icon-circle svg{width:52px;height:52px;}
+.pp-icon-label{font-size:11px;font-weight:700;color:#000;word-break:keep-all;}
 .pp-toc-box{background:#f4f5f7;border-radius:7px;padding:10px 16px;margin:12px 0;}
 .pp-toc-box ul{list-style:none;}
 .pp-toc-box ul li{padding:2px 0;}
-.pp-toc-link{display:flex;align-items:baseline;gap:7px;color:#444;text-decoration:none;padding:4px 7px;border-radius:5px;transition:background .15s,color .15s;font-size:12px;}
+.pp-toc-link{display:flex;align-items:center;gap:4px;color:#444;text-decoration:none;padding:4px 7px;border-radius:5px;transition:background .15s,color .15s;font-size:12px;}
 .pp-toc-link:hover{background:#e4e8ff;color:#4f6ef7;}
-.pp-toc-num{font-family:'Courier New',monospace;font-size:10px;font-weight:700;color:#4f6ef7;min-width:20px;flex-shrink:0;}
+.pp-toc-icon{display:inline-flex;align-items:center;flex-shrink:0;}
+.pp-toc-icon svg{width:22px;height:22px;}
+.pp-toc-num{font-size:10px;font-weight:700;min-width:20px;flex-shrink:0;}
 .pp-toc-opt{font-size:9px;color:#aaa;margin-left:2px;}
 .pp-sec{font-size:14px;font-weight:700;color:#343434;margin-top:28px;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid #f0f0f0;display:flex;align-items:center;gap:7px;scroll-margin-top:20px;}
-.pp-sec-num{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#4f6ef7,#7c5ce7);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
-p{font-size:13px;color:#666;margin-bottom:7px;line-height:1.8;}
+.pp-sec-icons{display:flex;align-items:center;gap:3px;flex-shrink:0;}
+.pp-sec-icon{display:inline-flex;align-items:center;}
+.pp-sec-icon svg{width:28px;height:28px;}
+.pp p{font-size:13px;color:#000;margin-bottom:7px;line-height:1.8;}
 .pp-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;}
-.pp-table th{background:#f2f2f2;padding:7px 9px;text-align:center;border:1px solid #ddd;font-weight:700;color:#333;}
-.pp-table td{padding:7px 9px;border:1px solid #ddd;color:#555;vertical-align:top;}
+.pp-table th{background:#f2f2f2;padding:7px 9px;text-align:center;border:1px solid #ddd;font-weight:700;color:#000;}
+.pp-table td{padding:7px 9px;border:1px solid #ddd;color:#000;vertical-align:middle;text-align:center;}
 .pp-table td.c{text-align:center;vertical-align:middle;}
-ul.pp-list{padding-left:0;margin:6px 0;list-style:none;}
-ul.pp-list li{font-size:13px;color:#666;padding:2px 0 2px 16px;position:relative;line-height:1.7;}
-ul.pp-list li::before{content:'·';position:absolute;left:5px;color:#aaa;}
+.pp ul.pp-list{padding-left:0;margin:6px 0;list-style:none;}
+.pp ul.pp-list li{font-size:13px;color:#000;padding:2px 0;line-height:1.7;}
+.pp ul.pp-list li::before{content:none;}
 .pp-contact-box{background:#f8f9fa;border-radius:7px;padding:14px 18px;margin:10px 0;}
-.pp-contact-title{font-weight:700;font-size:13px;color:#333;margin-bottom:5px;}
-.pp-contact-info{font-size:12px;color:#555;line-height:1.8;}
-.pp-eff-date{font-size:13px;color:#555;margin-top:20px;padding-top:14px;border-top:1px solid #eee;}
-.pp-sub-title{font-size:13px;font-weight:700;color:#444;margin:14px 0 6px;}
+.pp-contact-title{font-weight:700;font-size:13px;color:#000;margin-bottom:5px;}
+.pp-contact-info{font-size:12px;color:#000;line-height:1.8;}
+.pp-eff-date{font-size:13px;color:#000;}
+.pp-sub-title{font-size:13px;font-weight:700;color:#000;margin:14px 0 6px;}
 .pp-placeholder{color:#bbb;font-style:italic;}
+.pp-hidden{display:none;}
 a{color:#4f6ef7;}`;
 
   return `<!DOCTYPE html>
@@ -1643,7 +1651,7 @@ document.addEventListener('DOMContentLoaded',function(){
 ${scriptCloseTag}
 </head>
 <body>
-<div class="wrapper"><div class="pp-doc">${content}</div></div>
+<div class="wrapper"><div class="preview-doc"><div class="pp">${content}</div></div></div>
 </body>
 </html>`;
 }
