@@ -978,11 +978,35 @@ ${sec("security", "개인정보의 안전성 확보 조치")}
 <!-- 08 추가이용 판단기준 -->
 ${
   S.addUsage === "yes"
-    ? `
+    ? (() => {
+        const au = S.addUsageCriteria || {};
+        const auRows = S.addUsageRows || [];
+        const tableHtml =
+          auRows.length > 0
+            ? `<table class="pp-table" style="margin:8px 0 12px;table-layout:fixed;width:100%;">
+  <colgroup><col style="width:20%"><col style="width:25%"><col style="width:30%"><col style="width:25%"></colgroup>
+  <thead><tr><th>제공받는 자</th><th>항목</th><th>이용·제공 목적</th><th>보유 및 이용기간</th></tr></thead>
+  <tbody>
+    ${buildAUTableRows(auRows)}
+  </tbody>
+</table>`
+            : "";
+        const c1 = `제공하는 개인정보의 당초 수집 목적인 '${au.c1Var || "서비스 제공"}' 목적을 위한 것으로 수집 목적과 관련성이 있습니다.`;
+        const c2 = `정보주체는 서비스 계약 과정에서 서비스 특성상 개인정보의 추가적인 이용·제공이 있을 수 있음을 예측할 수 있습니다.`;
+        const c3 = `정보주체의 요청에 따라 서비스를 제공하기 위해 제공되는 정보로, 정보주체의 이익을 부당하게 침해하지 않습니다.`;
+        const c4 = `${au.c4Var || "안심번호 사용"} 등 개인정보 노출을 최소화하기 위한 안전성 확보에 필요한 조치를 하고 있습니다.`;
+        const criteriaHtml = `<p>② 이에 따라 ${alias}는 정보주체의 동의 없이 추가적인 이용·제공을 하기 위해서 다음과 같은 사항을 고려하였습니다.</p>
+<ul class="pp-list" style="padding-left:1em">
+  <li>▶ ${c1}</li>
+  <li>▶ ${c2}</li>
+  <li>▶ ${c3}</li>
+  <li>▶ ${c4}</li>
+</ul>`;
+        return `
 ${sec("adduse", "추가적인 이용·제공 판단 기준", true)}
-<p>${alias}는 「개인정보 보호법」 제15조제3항 또는 제17조제4항에 따라 정보주체의 동의 없이 개인정보를 추가적으로 이용·제공할 수 있습니다.</p>
-<p>${S.addUsageText || "판단 기준을 입력해 주세요."}</p>
-`
+<p>① ${alias}는 「개인정보 보호법」 제15조제3항 또는 제17조제4항에 따라 「개인정보 보호법 시행령」 제14조의2에 따른 사항을 고려하여 정보주체의 동의 없이 개인정보를 추가적으로 이용·제공할 수 있습니다.</p>
+${tableHtml}${criteriaHtml}`;
+      })()
     : ""
 }
 

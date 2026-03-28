@@ -772,15 +772,14 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 13: 추가항목 ── -->
+    <!-- ── STEP 13: 추가적 이용·제공 ── -->
     <div class="section-panel" id="step13">
       <div class="section-title">
         <div class="section-num">13</div>
-        선택·추가 항목
+        추가적 이용·제공 판단기준 <span class="badge-opt">해당시</span>
       </div>
-      <div class="section-desc">해당하는 경우에만 포함합니다.</div>
+      <div class="section-desc">정보주체 동의 없이 추가적으로 이용·제공하는 경우에만 포함합니다.</div>
       <div class="field-group">
-        <label class="field-label">추가적 이용·제공 판단기준 (제15조③)</label>
         <div class="radio-group">
           <div class="radio-item selected" id="add_no" onclick="selectR('add_no','add_yes','addUsage','no')">
             <div class="radio-dot"></div>
@@ -792,13 +791,49 @@ function renderSteps() {
           </div>
         </div>
         <div id="addUsageDetail" style="display:none;margin-top:8px">
-          <textarea id="addUsageText" rows="3"
-            placeholder="예: 수집 목적과의 관련성, 예측 가능성, 정보주체 이익 침해 여부, 안전성 확보 조치 여부 등을 고려합니다."
-            oninput="updatePreview()"></textarea>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+            <div class="section-num">①</div>
+            <span style="font-size:12.5px;font-weight:600;color:#374151">이용·제공 대상</span>
+          </div>
+          <div id="addUsageRows"></div>
+          <button class="btn-add" style="margin-top:4px" onclick="addAU()">＋ 항목 추가</button>
+          <div style="border-top:1px solid #e5e7eb;margin:14px 0"></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            <div class="section-num">②</div>
+            <span style="font-size:12.5px;font-weight:600;color:#374151">고려사항 <span style="font-size:11px;font-weight:400;color:#6b7280">(시행령 §14조의2)</span></span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" style="font-size:12px">① 당초 수집 목적과의 관련성</label>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:3px;font-size:12.5px;line-height:1.8;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;">
+              <span>제공하는 개인정보의 당초 수집 목적인 '</span><input id="auC1Var" type="text" placeholder="서비스 제공" style="width:120px;padding:1px 6px;font-size:12.5px;border:1px solid #6366f1;border-radius:4px;background:#fff;" oninput="syncAU();updatePreview()"><span>' 목적을 위한 것으로 수집 목적과 관련성이 있습니다.</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label" style="font-size:12px">② 예측 가능성</label>
+            <div style="font-size:12.5px;line-height:1.8;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;">정보주체는 서비스 계약 과정에서 서비스 특성상 개인정보의 추가적인 이용·제공이 있을 수 있음을 예측할 수 있습니다.</div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label" style="font-size:12px">③ 정보주체 이익 침해 여부</label>
+            <div style="font-size:12.5px;line-height:1.8;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;">정보주체의 요청에 따라 서비스를 제공하기 위해 제공되는 정보로, 정보주체의 이익을 부당하게 침해하지 않습니다.</div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label" style="font-size:12px">④ 안전성 확보 조치</label>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:3px;font-size:12.5px;line-height:1.8;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;">
+              <input id="auC4Var" type="text" placeholder="안심번호 사용" style="width:120px;padding:1px 6px;font-size:12.5px;border:1px solid #6366f1;border-radius:4px;background:#fff;" oninput="syncAU();updatePreview()"><span> 등 개인정보 노출을 최소화하기 위한 안전성 확보에 필요한 조치를 하고 있습니다.</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">민감정보 공개 가능성</label>
+    </div>
+
+    <!-- ── STEP 14: 민감정보 ── -->
+    <div class="section-panel" id="step14">
+      <div class="section-title">
+        <div class="section-num">14</div>
+        민감정보 공개 가능성 <span class="badge-opt">해당시</span>
+      </div>
+      <div class="section-desc">공개 설정된 게시물 등에 민감정보가 포함될 수 있는 경우에만 포함합니다.</div>
+      <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="sen_no" onclick="selectR('sen_no','sen_yes','sensitive','no')">
             <div class="radio-dot"></div>
@@ -815,8 +850,16 @@ function renderSteps() {
             oninput="updatePreview()"></textarea>
         </div>
       </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">가명정보 처리</label>
+    </div>
+
+    <!-- ── STEP 15: 가명정보 ── -->
+    <div class="section-panel" id="step15">
+      <div class="section-title">
+        <div class="section-num">15</div>
+        가명정보 처리 <span class="badge-opt">해당시</span>
+      </div>
+      <div class="section-desc">개인정보를 가명처리하여 활용하는 경우에만 포함합니다.</div>
+      <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="ps_no" onclick="selectR('ps_no','ps_yes','pseudonym','no')">
             <div class="radio-dot"></div>
@@ -833,8 +876,16 @@ function renderSteps() {
             oninput="updatePreview()"></textarea>
         </div>
       </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">자동화된 결정</label>
+    </div>
+
+    <!-- ── STEP 16: 자동화된 결정 ── -->
+    <div class="section-panel" id="step16">
+      <div class="section-title">
+        <div class="section-num">16</div>
+        자동화된 결정 <span class="badge-opt">해당시</span>
+      </div>
+      <div class="section-desc">AI 등 자동화된 시스템으로 개인에 관한 결정을 내리는 경우에만 포함합니다.</div>
+      <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="auto_no" onclick="selectR('auto_no','auto_yes','autoDecision','no')">
             <div class="radio-dot"></div>
@@ -851,8 +902,16 @@ function renderSteps() {
             oninput="updatePreview()"></textarea>
         </div>
       </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">국내대리인 지정 (해외사업자)</label>
+    </div>
+
+    <!-- ── STEP 17: 국내대리인 ── -->
+    <div class="section-panel" id="step17">
+      <div class="section-title">
+        <div class="section-num">17</div>
+        국내대리인 지정 <span class="badge-opt">해당시</span>
+      </div>
+      <div class="section-desc">국내에 주소·영업소가 없는 해외사업자의 경우에만 포함합니다.</div>
+      <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="da_no" onclick="selectR('da_no','da_yes','domAgent','no')">
             <div class="radio-dot"></div>

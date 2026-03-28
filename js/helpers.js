@@ -27,6 +27,7 @@ function selectR(onId, offId, key, val) {
     const el = document.getElementById(panelId);
     if (el) el.style.display = val === showVal ? "block" : "none";
     if (key === "child" && val === showVal) syncChildItems();
+    if (key === "addUsage" && val === showVal) initAU();
   }
   updatePreview();
 }

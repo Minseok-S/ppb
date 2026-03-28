@@ -90,7 +90,6 @@ function readFields() {
     "rightsDeptPhone",
     "rightsDeptEmail",
     "rightsDeptFax",
-    "addUsageText",
     "sensitiveText",
     "pseudonymText",
     "autoDecisionText",
@@ -114,4 +113,5 @@ function readFields() {
     if (el) S[id] = el.value;
   });
   syncDepts();
+  syncAU();
 }

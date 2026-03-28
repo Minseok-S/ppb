@@ -2,7 +2,7 @@
 //  STEP NAV
 // ════════════════════════════════════════
 let curStep = 1;
-const TOTAL = 13;
+const TOTAL = 17;
 const stepLabels = [
   "기본 정보",
   "수집 항목",
@@ -16,7 +16,11 @@ const stepLabels = [
   "행태정보",
   "권리행사",
   "책임자",
-  "추가항목",
+  "추가적 이용·제공",
+  "민감정보",
+  "가명정보",
+  "자동화 결정",
+  "국내대리인",
 ];
 
 function goStep(n) {
