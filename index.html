@@ -15,13 +15,15 @@
       <div class="logo">
         <div class="logo-icon">🛡️</div>
         <div>
-          <div class="logo-text">개인정보처리방침 빌더</div>
-          <div class="logo-sub">2025 개인정보보호위원회 가이드 기준</div>
+          <div class="logo-text">CELA-PPB</div>
+          <div class="logo-sub">CELA-Policy Private Builder</div>
         </div>
       </div>
       <div class="header-actions">
         <button class="btn btn-ghost" onclick="copyHTML()">📋 HTML 복사</button>
-        <button class="btn btn-success" onclick="downloadHTML()">⬇️ HTML 다운로드</button>
+        <button class="btn btn-success" onclick="downloadHTML()">
+          ⬇️ HTML 다운로드
+        </button>
       </div>
     </header>
 
@@ -29,44 +31,94 @@
       <!-- ══════════════ SIDEBAR ══════════════ -->
       <div class="sidebar">
         <div class="sidebar-header">
-          <div style="font-size:12px;font-weight:700;color:var(--text)">
+          <div style="font-size: 12px; font-weight: 700; color: var(--text)">
             설정 패널
-            <span style="font-size:10px;color:var(--text3);font-weight:400">— 입력 즉시 미리보기 반영</span>
+            <span style="font-size: 10px; color: var(--text3); font-weight: 400"
+              >— 입력 즉시 미리보기 반영</span
+            >
           </div>
           <div class="progress-bar">
-            <div class="progress-fill" id="progressFill" style="width:8%"></div>
+            <div
+              class="progress-fill"
+              id="progressFill"
+              style="width: 8%"
+            ></div>
           </div>
           <div class="progress-text" id="progressText">STEP 1/13</div>
         </div>
 
         <div class="steps-nav" id="stepsNav">
-          <div class="step-chip active" data-step="1" onclick="goStep(1)">1.기본정보</div>
-          <div class="step-chip" data-step="2" onclick="goStep(2)">2.수집항목</div>
+          <div class="step-chip active" data-step="1" onclick="goStep(1)">
+            1.기본정보
+          </div>
+          <div class="step-chip" data-step="2" onclick="goStep(2)">
+            2.수집항목
+          </div>
           <div class="step-chip" data-step="3" onclick="goStep(3)">3.아동</div>
           <div class="step-chip" data-step="4" onclick="goStep(4)">4.파기</div>
-          <div class="step-chip" data-step="5" onclick="goStep(5)">5.제3자제공</div>
+          <div class="step-chip" data-step="5" onclick="goStep(5)">
+            5.제3자제공
+          </div>
           <div class="step-chip" data-step="6" onclick="goStep(6)">6.위탁</div>
-          <div class="step-chip" data-step="7" onclick="goStep(7)">7.국외이전</div>
-          <div class="step-chip" data-step="8" onclick="goStep(8)">8.안전조치</div>
-          <div class="step-chip" data-step="9" onclick="goStep(9)">9.자동수집장치</div>
-          <div class="step-chip" data-step="10" onclick="goStep(10)">10.행태정보</div>
-          <div class="step-chip" data-step="11" onclick="goStep(11)">11.권리행사</div>
-          <div class="step-chip" data-step="12" onclick="goStep(12)">12.책임자</div>
-          <div class="step-chip" data-step="13" onclick="goStep(13)">13.추가이용</div>
-          <div class="step-chip" data-step="14" onclick="goStep(14)">14.민감정보</div>
-          <div class="step-chip" data-step="15" onclick="goStep(15)">15.가명정보</div>
-          <div class="step-chip" data-step="16" onclick="goStep(16)">16.자동화결정</div>
-          <div class="step-chip" data-step="17" onclick="goStep(17)">17.국내대리인</div>
+          <div class="step-chip" data-step="7" onclick="goStep(7)">
+            7.국외이전
+          </div>
+          <div class="step-chip" data-step="8" onclick="goStep(8)">
+            8.안전조치
+          </div>
+          <div class="step-chip" data-step="9" onclick="goStep(9)">
+            9.자동수집장치
+          </div>
+          <div class="step-chip" data-step="10" onclick="goStep(10)">
+            10.행태정보
+          </div>
+          <div class="step-chip" data-step="11" onclick="goStep(11)">
+            11.권리행사
+          </div>
+          <div class="step-chip" data-step="12" onclick="goStep(12)">
+            12.책임자
+          </div>
+          <div class="step-chip" data-step="13" onclick="goStep(13)">
+            13.추가이용
+          </div>
+          <div class="step-chip" data-step="14" onclick="goStep(14)">
+            14.민감정보
+          </div>
+          <div class="step-chip" data-step="15" onclick="goStep(15)">
+            15.가명정보
+          </div>
+          <div class="step-chip" data-step="16" onclick="goStep(16)">
+            16.자동화결정
+          </div>
+          <div class="step-chip" data-step="17" onclick="goStep(17)">
+            17.국내대리인
+          </div>
         </div>
 
         <!-- step panels injected here by renderSteps() in js/steps.js -->
         <div id="stepsContent"></div>
 
-        <div style="flex:1"></div>
+        <div style="flex: 1"></div>
         <div class="sidebar-footer">
-          <button class="btn btn-ghost" id="prevBtn" onclick="prevStep()" style="display:none">← 이전</button>
-          <button class="btn" id="nextBtn" onclick="nextStep()"
-            style="background:var(--accent);color:#fff;flex:1;justify-content:center">
+          <button
+            class="btn btn-ghost"
+            id="prevBtn"
+            onclick="prevStep()"
+            style="display: none"
+          >
+            ← 이전
+          </button>
+          <button
+            class="btn"
+            id="nextBtn"
+            onclick="nextStep()"
+            style="
+              background: var(--accent);
+              color: #fff;
+              flex: 1;
+              justify-content: center;
+            "
+          >
             다음 →
           </button>
         </div>
@@ -82,8 +134,12 @@
             <div class="live-dot"></div>
             실시간 미리보기
           </div>
-          <div style="flex:1"></div>
-          <button class="btn btn-ghost" style="font-size:10px;padding:5px 10px" onclick="downloadHTML()">
+          <div style="flex: 1"></div>
+          <button
+            class="btn btn-ghost"
+            style="font-size: 10px; padding: 5px 10px"
+            onclick="downloadHTML()"
+          >
             ⬇️ 다운로드
           </button>
         </div>
