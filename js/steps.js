@@ -1018,7 +1018,16 @@ function renderSteps() {
         <div class="section-num">17</div>
         국내대리인 지정 <span class="badge-opt">해당시</span>
       </div>
-      <div class="section-desc">국내에 주소·영업소가 없는 해외사업자의 경우에만 포함합니다.</div>
+      <div class="section-desc">국내에 주소·영업소가 없는 해외사업자로서 아래 조건에 해당하는 경우에만 포함합니다.</div>
+      <div class="info-box" style="margin-bottom:14px">
+        <div class="info-title">국내대리인을 지정하여야 하는 경우 (보호법 제31조의2)</div>
+        <ul style="margin:6px 0 0 0;padding-left:16px;font-size:12px;line-height:1.8">
+          <li>① 전년도 전체 매출액이 <strong>1조 원 이상</strong>인 자</li>
+          <li>② 직전 3개월간 국내 정보주체 수가 일일평균 <strong>100만 명 이상</strong>인 자</li>
+          <li>③ 보호위원회가 심의·의결하여 지정이 필요하다고 인정한 자</li>
+        </ul>
+        <p style="margin:8px 0 0 0;font-size:11px;color:#e53935;">※ 성명·주소·전화번호·이메일을 처리방침에 포함하지 않으면 <strong>1천만 원 이하 과태료</strong> 부과 ('25.10월 시행)</p>
+      </div>
       <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="da_no" onclick="selectR('da_no','da_yes','domAgent','no')">
@@ -1030,13 +1039,25 @@ function renderSteps() {
             <div><div class="radio-text">국내대리인을 지정하였습니다</div></div>
           </div>
         </div>
-        <div id="domAgentDetail" style="display:none;margin-top:8px">
+        <div id="domAgentDetail" style="display:none;margin-top:12px">
           <div class="field-row">
-            <input type="text" id="daName" placeholder="성명(법인명)" oninput="updatePreview()" />
-            <input type="tel" id="daPhone" placeholder="전화번호" oninput="updatePreview()" />
+            <div class="field-group">
+              <label class="field-label">성명 <span class="req">*</span><span style="font-size:10px;color:#aaa;font-weight:400"> (법인의 경우 법인명, 대표자의 성명)</span></label>
+              <input type="text" id="daName" placeholder="예: 홍길동 / (주)○○" oninput="updatePreview()" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">전화번호 <span class="req">*</span><span style="font-size:10px;color:#aaa;font-weight:400"> (국내 연락 가능 번호)</span></label>
+              <input type="tel" id="daPhone" placeholder="예: 02-0000-0000" oninput="updatePreview()" />
+            </div>
           </div>
-          <input type="text" id="daAddr" placeholder="주소(영업소 소재지)" style="margin-top:6px" oninput="updatePreview()" />
-          <input type="email" id="daEmail" placeholder="이메일" style="margin-top:6px" oninput="updatePreview()" />
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">주소 <span class="req">*</span><span style="font-size:10px;color:#aaa;font-weight:400"> (법인의 경우 영업소 소재지)</span></label>
+            <input type="text" id="daAddr" placeholder="예: 서울특별시 ○○구 ○○로 00" oninput="updatePreview()" />
+          </div>
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">이메일 <span class="req">*</span></label>
+            <input type="email" id="daEmail" placeholder="예: privacy@example.com" oninput="updatePreview()" />
+          </div>
         </div>
       </div>
       <div class="info-box" style="margin-top:14px">

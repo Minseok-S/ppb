@@ -32,10 +32,16 @@ function applyRowMerge() {
     for (let c = 0; c < numCols; c++) {
       for (let r = 0; r < rows.length; ) {
         const cell = grid[r][c];
-        if (!cell || (r > 0 && grid[r - 1][c] === cell)) { r++; continue; }
+        if (!cell || (r > 0 && grid[r - 1][c] === cell)) {
+          r++;
+          continue;
+        }
         const span = cell.rowSpan || 1;
         const nr = r + span;
-        if (nr >= rows.length) { r += span; continue; }
+        if (nr >= rows.length) {
+          r += span;
+          continue;
+        }
         const next = grid[nr][c];
         if (
           next &&
@@ -259,14 +265,15 @@ function buildContactRows(rows, keys) {
     }
   });
   return rows
-    .map((row, i) =>
-      `<tr>${keys
-        .map((key, j) => {
-          if (spans[i][j] === 0) return "";
-          const rs = spans[i][j] > 1 ? ` rowspan="${spans[i][j]}"` : "";
-          return `<td class="pp-ct-value"${rs}>${row[key] || ""}</td>`;
-        })
-        .join("")}</tr>`
+    .map(
+      (row, i) =>
+        `<tr>${keys
+          .map((key, j) => {
+            if (spans[i][j] === 0) return "";
+            const rs = spans[i][j] > 1 ? ` rowspan="${spans[i][j]}"` : "";
+            return `<td class="pp-ct-value"${rs}>${row[key] || ""}</td>`;
+          })
+          .join("")}</tr>`,
     )
     .join("");
 }
@@ -1069,12 +1076,14 @@ ${
   S.sensitive === "yes"
     ? (() => {
         const rows = S.sensitiveRows || [];
-        const hasRows = rows.length > 0 && rows.some((r) => r.service || r.types || r.exposure || r.optout);
+        const hasRows =
+          rows.length > 0 &&
+          rows.some((r) => r.service || r.types || r.exposure || r.optout);
         const tableBody = hasRows
           ? rows
               .map(
                 (r) =>
-                  `<tr><td>${r.service || "-"}</td><td>${r.types || "-"}</td><td>${r.exposure || "-"}</td><td>${r.optout || "-"}</td></tr>`
+                  `<tr><td>${r.service || "-"}</td><td>${r.types || "-"}</td><td>${r.exposure || "-"}</td><td>${r.optout || "-"}</td></tr>`,
               )
               .join("\n    ")
           : `<tr><td colspan="4" style="color:#aaa;font-style:italic;text-align:center;">← 항목을 추가해 주세요</td></tr>`;
@@ -1096,12 +1105,14 @@ ${
   S.pseudonym === "yes"
     ? (() => {
         const rows = S.pseudonymRows || [];
-        const hasRows = rows.length > 0 && rows.some((r) => r.purpose || r.items || r.retention);
+        const hasRows =
+          rows.length > 0 &&
+          rows.some((r) => r.purpose || r.items || r.retention);
         const tableRows = hasRows
           ? rows
               .map(
                 (r) =>
-                  `<tr><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td><td>${r.retention || "-"}</td></tr>`
+                  `<tr><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td><td>${r.retention || "-"}</td></tr>`,
               )
               .join("\n    ")
           : `<tr><td colspan="3" style="color:#aaa;font-style:italic;text-align:center;">← 가명처리 항목을 추가해 주세요</td></tr>`;
@@ -1110,7 +1121,9 @@ ${
         const hasProvide =
           S.pseudonymProvide === "yes" &&
           provideRows.length > 0 &&
-          provideRows.some((r) => r.recipient || r.items || r.purpose || r.retention);
+          provideRows.some(
+            (r) => r.recipient || r.items || r.purpose || r.retention,
+          );
         const provideTable = hasProvide
           ? `
 <p>또한 ${alias}는 가명처리된 개인정보를 다음과 같이 제3자에게 제공하고 있습니다.</p>
@@ -1120,7 +1133,7 @@ ${
     ${provideRows
       .map(
         (r) =>
-          `<tr><td>${r.recipient || "-"}</td><td>${r.items || "-"}</td><td>${r.purpose || "-"}</td><td>${r.retention || "-"}</td></tr>`
+          `<tr><td>${r.recipient || "-"}</td><td>${r.items || "-"}</td><td>${r.purpose || "-"}</td><td>${r.retention || "-"}</td></tr>`,
       )
       .join("\n    ")}
   </tbody>
@@ -1431,17 +1444,28 @@ ${sec("autodec", "자동화된 결정에 관한 사항", true)}
 
 <p><strong>〈자동화된 결정에 사용되는 주요 개인정보의 유형과 자동화된 결정의 관계〉</strong></p>
 ${(() => {
-  if (!S.adInfoRows.length) return `<p>- [자동화된 결정에 사용되는 주요 개인정보 유형을 입력해 주세요]</p>`;
-  const hasWeight = S.adInfoRows.some(r => r.weight);
+  if (!S.adInfoRows.length)
+    return `<p>- [자동화된 결정에 사용되는 주요 개인정보 유형을 입력해 주세요]</p>`;
+  const hasWeight = S.adInfoRows.some((r) => r.weight);
   const cols = hasWeight
     ? [
-        { key: "stage",    label: "처리 단계 / 결정명", style: "width:30%", cls: "c" },
-        { key: "infoType", label: "개인정보 유형",       style: "width:50%" },
-        { key: "weight",   label: "반영 비중",            style: "width:20%", cls: "c" },
+        {
+          key: "stage",
+          label: "처리 단계 / 결정명",
+          style: "width:30%",
+          cls: "c",
+        },
+        { key: "infoType", label: "개인정보 유형", style: "width:50%" },
+        { key: "weight", label: "반영 비중", style: "width:20%", cls: "c" },
       ]
     : [
-        { key: "stage",    label: "처리 단계 / 결정명", style: "width:35%", cls: "c" },
-        { key: "infoType", label: "개인정보 유형",       style: "width:65%" },
+        {
+          key: "stage",
+          label: "처리 단계 / 결정명",
+          style: "width:35%",
+          cls: "c",
+        },
+        { key: "infoType", label: "개인정보 유형", style: "width:65%" },
       ];
   return buildMergedTable(S.adInfoRows, cols);
 })()}
@@ -1503,26 +1527,53 @@ ${sec("rights", "정보주체와 법정대리인의 권리·의무 및 행사방
     const isOnline = S.rightsOnline === "yes";
     const hasMydata = S.mydata === "yes";
     if (!isOnline && !hasMydata) return "";
-    const actMap = { ra_view:"조회", ra_edit:"수정", ra_delete:"삭제", ra_suspend:"처리정지", ra_withdraw:"동의 철회" };
-    const actions = ["ra_view","ra_edit","ra_delete","ra_suspend","ra_withdraw"].filter(k => S.rightsActions[k]).map(k => actMap[k]);
+    const actMap = {
+      ra_view: "조회",
+      ra_edit: "수정",
+      ra_delete: "삭제",
+      ra_suspend: "처리정지",
+      ra_withdraw: "동의 철회",
+    };
+    const actions = [
+      "ra_view",
+      "ra_edit",
+      "ra_delete",
+      "ra_suspend",
+      "ra_withdraw",
+    ]
+      .filter((k) => S.rightsActions[k])
+      .map((k) => actMap[k]);
     const actionStr = actions.join("·") || "조회·수정·삭제·처리정지·동의 철회";
     const inquiryPath = S.rightsInquiryPath || "문의하기";
     const onlineRows = [
-      isOnline && S.rightsWebPath ? `<tr><th style="width:70px;text-align:left">홈페이지</th><td style="text-align:left">${S.rightsWebPath}</td></tr>` : "",
-      isOnline && S.rightsAppPath ? `<tr><th style="width:70px;text-align:left">앱</th><td style="text-align:left">${S.rightsAppPath}</td></tr>` : "",
-    ].filter(Boolean).join("");
+      isOnline && S.rightsWebPath
+        ? `<tr><th style="width:70px;text-align:left">홈페이지</th><td style="text-align:left">${S.rightsWebPath}</td></tr>`
+        : "",
+      isOnline && S.rightsAppPath
+        ? `<tr><th style="width:70px;text-align:left">앱</th><td style="text-align:left">${S.rightsAppPath}</td></tr>`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("");
     return `
     <ul class="pp-list" style="margin-top:6px;padding-left:1.2em">
-      ${isOnline && onlineRows ? `<li><strong>온라인 내 권리행사 방법</strong> (직접 ${actionStr} 또는 '${inquiryPath}'를 통한 열람 요청 가능)
+      ${
+        isOnline && onlineRows
+          ? `<li><strong>온라인 내 권리행사 방법</strong> (직접 ${actionStr} 또는 '${inquiryPath}'를 통한 열람 요청 가능)
         <table class="pp-table" style="margin-top:6px">
           <tbody>${onlineRows}</tbody>
         </table>
-      </li>` : ""}
-      ${hasMydata ? `<li>– 정보주체는 언제든지 홈페이지 '내정보 &gt; 본인전송요구'를 통해 개인정보를 본인에게 전송 요구할 수 있으며, 전송현황 및 내역을 확인할 수 있습니다.</li>
-      <li>– 제3자 대상 전송요구의 경우 정보를 전송받고자 하는 정보수신자가 운영하는 서비스를 통하여 요구가 가능하며, 정보수신자 현황 및 제3자 전송요구 현황 등은 개인정보전송지원플랫폼(OnMydata.go.kr)에서 확인할 수 있습니다.</li>` : ""}
+      </li>`
+          : ""
+      }
+      ${
+        hasMydata
+          ? `<li>– 정보주체는 언제든지 홈페이지 '내정보 &gt; 본인전송요구'를 통해 개인정보를 본인에게 전송 요구할 수 있으며, 전송현황 및 내역을 확인할 수 있습니다.</li>
+      <li>– 제3자 대상 전송요구의 경우 정보를 전송받고자 하는 정보수신자가 운영하는 서비스를 통하여 요구가 가능하며, 정보수신자 현황 및 제3자 전송요구 현황 등은 개인정보전송지원플랫폼(OnMydata.go.kr)에서 확인할 수 있습니다.</li>`
+          : ""
+      }
     </ul>`;
-  })()
-  }
+  })()}
   </li>
   <li>③ 권리 행사는 정보주체의 법정대리인이나 위임을 받은 자 등 대리인을 통하여 하실 수 있습니다. 이 경우 '「개인정보 처리 방법에 관한 고시」 [별지 11]' 서식에 따른 위임장을 제출하셔야 합니다.</li>
   <li>④ 정보주체가 개인정보 열람 및 처리 정지를 요구할 권리는 「개인정보 보호법」 제35조제4항 및 제37조제2항에 의하여 제한될 수 있습니다.</li>
@@ -1571,11 +1622,11 @@ ${sec("cpo", "개인정보 보호책임자 및 고충처리 부서")}
 <p style="margin-top:8px;">② 정보주체는 ${alias}의 서비스를 이용하시면서 발생한 모든 개인정보보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자 및 담당부서로 문의하실 수 있습니다.</p>
 <div class="pp-contact-box">
   <div class="pp-contact-title">▶ 개인정보 업무 담당부서</div>
-  ${
-    (() => {
-      const rows = S.depts.filter((d) => d.name || d.email || d.phone);
-      if (!rows.length) return '<span class="pp-placeholder">부서 정보를 입력해 주세요</span>';
-      return `<table class="pp-contact-table">
+  ${(() => {
+    const rows = S.depts.filter((d) => d.name || d.email || d.phone);
+    if (!rows.length)
+      return '<span class="pp-placeholder">부서 정보를 입력해 주세요</span>';
+    return `<table class="pp-contact-table">
     <thead><tr>
       <th class="pp-ct-head">부서</th>
       <th class="pp-ct-head">연락처</th>
@@ -1583,8 +1634,7 @@ ${sec("cpo", "개인정보 보호책임자 및 고충처리 부서")}
     </tr></thead>
     <tbody>${buildContactRows(rows, ["name", "phone", "email"])}</tbody>
   </table>`;
-    })()
-  }
+  })()}
 </div>
 
 <!-- 16 구제방법 -->
@@ -1604,15 +1654,22 @@ ${
   S.domAgent === "yes"
     ? `
 ${sec("agent", "국내대리인 지정", true)}
-<p>${alias}는 「개인정보 보호법」 제31조의2에 따라 국내대리인을 지정하였습니다.</p>
-<div class="pp-contact-box">
-  <div class="pp-contact-info">
-    성명(법인명): ${S.daName || "-"}<br>
-    주소: ${S.daAddr || "-"}<br>
-    전화번호: ${S.daPhone || "-"}<br>
-    이메일: ${S.daEmail || "-"}
-  </div>
-</div>
+<p>정보주체는 「개인정보 보호법」 제31조의2에 따라 지정된 ${co}의 국내대리인에게 개인정보 관련 고충처리 등의 업무를 위하여 연락을 취할 수 있습니다. ${co}은(는) 정보주체의 개인정보 관련 고충처리 등 개인정보 보호책임자의 업무 등을 신속하게 처리할 수 있도록 노력하겠습니다.</p>
+<p style="margin-top:10px;">▶ ${co}은(는) 「개인정보 보호법」 제31조의2에 따라 국내대리인을 지정하였습니다.</p>
+<table class="pp-table">
+  <thead><tr>
+    <th style="width:25%">성명(법인명)</th>
+    <th style="width:25%">전화번호</th>
+    <th style="width:25%">전자우편 주소</th>
+    <th style="width:25%">주소</th>
+  </tr></thead>
+  <tbody><tr>
+    <td class="c">${S.daName || "-"}</td>
+    <td class="c">${S.daPhone || "-"}</td>
+    <td class="c">${S.daEmail || "-"}</td>
+    <td class="c">${S.daAddr || "-"}</td>
+  </tr></tbody>
+</table>
 `
     : ""
 }
@@ -1624,12 +1681,14 @@ ${(() => {
   if (!valid.length) {
     return `<p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다. (시행일자별 링크 제공)</p>`;
   }
-  const items = valid.map((p) => {
-    const label = p.date || p.url;
-    return p.url
-      ? `<a href="${p.url}" target="_blank" class="pp-prev-list-item">${label}<span class="pp-prev-list-arrow">→</span></a>`
-      : `<div class="pp-prev-list-nolink">${label}</div>`;
-  }).join("");
+  const items = valid
+    .map((p) => {
+      const label = p.date || p.url;
+      return p.url
+        ? `<a href="${p.url}" target="_blank" class="pp-prev-list-item">${label}<span class="pp-prev-list-arrow">→</span></a>`
+        : `<div class="pp-prev-list-nolink">${label}</div>`;
+    })
+    .join("");
   return `<p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다.</p>
 <div class="pp-prev-wrap"><details class="pp-prev-details"><summary class="pp-prev-header">이전 처리방침 <span class="pp-prev-toggle-arrow">▾</span></summary><div class="pp-prev-list">${items}</div></details></div>`;
 })()}
