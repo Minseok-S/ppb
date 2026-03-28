@@ -109,6 +109,82 @@ function copyHTML() {
     .then(() => showToast("📋 HTML 코드가 복사되었습니다!", "success"));
 }
 
+function downloadWord() {
+  const content = document.getElementById("previewContent").innerHTML;
+  const co = S.companyName || "회사";
+  const svc = S.serviceName || "";
+  const eff = S.effectiveDate || "";
+
+  // SVG 요소 제거 (Word 호환성)
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = content;
+  tempDiv.querySelectorAll("svg").forEach((el) => el.remove());
+  // 아이콘 네비게이션·TOC 숨김 (인쇄용 불필요)
+  tempDiv
+    .querySelectorAll(".pp-icon-nav, .pp-toc-box")
+    .forEach((el) => el.remove());
+  const wordContent = tempDiv.innerHTML;
+
+  const wordHtml = `<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>${svc ? svc : co} 개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
+<!--[if gte mso 9]><xml>
+<w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml><![endif]-->
+<style>
+  body{font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:10pt;color:#000;margin:40pt 50pt;}
+  table{border-collapse:collapse;width:100%;font-size:9pt;margin:8pt 0;}
+  th{background:#f2f2f2;padding:5pt 7pt;border:1pt solid #ccc;font-weight:bold;text-align:center;}
+  td{padding:5pt 7pt;border:1pt solid #ccc;vertical-align:middle;}
+  .pp-h2{font-size:16pt;font-weight:bold;text-align:center;margin-bottom:4pt;}
+  .pp-date-row{text-align:right;margin:16pt 0 10pt;}
+  .pp-date-badge{font-size:9pt;border:1pt solid #ccc;padding:2pt 8pt;}
+  .pp-intro{font-size:10pt;line-height:1.8;margin-bottom:6pt;}
+  .pp-sec{font-size:11pt;font-weight:bold;border-bottom:1pt solid #ccc;padding-bottom:4pt;margin-top:18pt;margin-bottom:8pt;}
+  .pp-sub-title{font-size:10pt;font-weight:bold;margin:10pt 0 4pt;}
+  p{font-size:10pt;line-height:1.7;margin-bottom:5pt;}
+  ul.pp-list{margin:4pt 0 4pt 16pt;padding:0;}
+  ul.pp-list li{font-size:10pt;line-height:1.7;list-style:disc;}
+  .pp-contact-box{border:1pt solid #e0e0e0;padding:8pt 12pt;margin:8pt 0;}
+  .pp-contact-title{font-size:10pt;font-weight:bold;margin-bottom:4pt;}
+  .pp-contact-info{font-size:9pt;line-height:1.8;}
+  .pp-contact-table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:4pt;}
+  .pp-ct-head,.pp-ct-label{background:#e9ecef;font-weight:600;padding:4pt 8pt;border:1pt solid #ccc;text-align:center;}
+  .pp-ct-value{padding:4pt 8pt;border:1pt solid #ccc;word-break:break-all;text-align:center;}
+  .pp-eff-date{font-size:10pt;}
+  .pp-placeholder{color:#bbb;font-style:italic;}
+  .pp-hidden{display:none;}
+  .policy_table table{width:100%;border-collapse:collapse;font-size:9pt;}
+  .policy_table table th{background:#f2f2f2;padding:5pt 7pt;border:1pt solid #ccc;font-weight:bold;text-align:center;}
+  .policy_table table td{padding:5pt 7pt;border:1pt solid #ccc;}
+  p.sub_txt{font-size:9pt;color:#888;margin:2pt 0 0;}
+  a{color:#4f6ef7;}
+</style>
+</head>
+<body>
+${wordContent}
+</body>
+</html>`;
+
+  const blob = new Blob(["\ufeff", wordHtml], {
+    type: "application/msword;charset=utf-8",
+  });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const name = (S.companyName || "company").replace(/[^a-zA-Z0-9가-힣]/g, "");
+  a.download = "개인정보처리방침_" + name + ".doc";
+  a.click();
+  showToast("✅ Word 파일이 다운로드되었습니다!", "success");
+}
+
 function showToast(msg, type = "") {
   const t = document.getElementById("toast");
   t.textContent = msg;
