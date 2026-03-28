@@ -19,6 +19,7 @@ function selectR(onId, offId, key, val) {
     addUsage: ["addUsageDetail", "yes"],
     sensitive: ["sensitiveDetail", "yes"],
     pseudonym: ["pseudonymDetail", "yes"],
+    pseudonymProvide: ["pseudonymProvideDetail", "yes"],
     autoDecision: ["autoDecisionDetail", "yes"],
     domAgent: ["domAgentDetail", "yes"],
   };
@@ -42,6 +43,7 @@ function toggleItem(el, group) {
     browser: S.browser,
     bhBrowsers: S.bhBrowsers,
     bhFlags: S.bhFlags,
+    sensitiveTypes: S.sensitiveTypes,
     rights: S.rights,
     rightsActions: S.rightsActions,
     agency: S.agency,

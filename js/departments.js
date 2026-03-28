@@ -90,8 +90,6 @@ function readFields() {
     "rightsDeptPhone",
     "rightsDeptEmail",
     "rightsDeptFax",
-    "sensitiveText",
-    "pseudonymText",
     "autoDecisionText",
     "daName",
     "daPhone",
@@ -114,4 +112,7 @@ function readFields() {
   });
   syncDepts();
   syncAU();
+  syncSensitive();
+  syncPseudo();
+  syncPseudoProvide();
 }

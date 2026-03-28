@@ -1013,21 +1013,76 @@ ${tableHtml}${criteriaHtml}`;
 <!-- 09 민감정보 -->
 ${
   S.sensitive === "yes"
-    ? `
+    ? (() => {
+        const rows = S.sensitiveRows || [];
+        const hasRows = rows.length > 0 && rows.some((r) => r.service || r.types || r.exposure || r.optout);
+        const tableBody = hasRows
+          ? rows
+              .map(
+                (r) =>
+                  `<tr><td>${r.service || "-"}</td><td>${r.types || "-"}</td><td>${r.exposure || "-"}</td><td>${r.optout || "-"}</td></tr>`
+              )
+              .join("\n    ")
+          : `<tr><td colspan="4" style="color:#aaa;font-style:italic;text-align:center;">← 항목을 추가해 주세요</td></tr>`;
+        return `
 ${sec("sensitive", "민감정보의 공개 가능성 및 비공개 선택 방법", true)}
-<p>${S.sensitiveText || "내용을 입력해 주세요."}</p>
-`
+<p>${alias}는 다음과 같은 재화 또는 서비스를 제공하는 과정에서 공개되는 정보에 정보주체의 민감정보가 포함될 수 있으며 이에 대해 정보주체는 비공개를 선택할 수 있습니다. </p>
+<table class="pp-table">
+  <thead><tr><th>재화 또는 서비스 명</th><th>민감정보</th><th>공개 가능성</th><th>비공개 선택 방법</th></tr></thead>
+  <tbody>
+    ${tableBody}
+  </tbody>
+</table>`;
+      })()
     : ""
 }
 
 <!-- 10 가명정보 -->
 ${
   S.pseudonym === "yes"
-    ? `
+    ? (() => {
+        const rows = S.pseudonymRows || [];
+        const hasRows = rows.length > 0 && rows.some((r) => r.purpose || r.items || r.retention);
+        const tableRows = hasRows
+          ? rows
+              .map(
+                (r) =>
+                  `<tr><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td><td>${r.retention || "-"}</td></tr>`
+              )
+              .join("\n    ")
+          : `<tr><td colspan="3" style="color:#aaa;font-style:italic;text-align:center;">← 가명처리 항목을 추가해 주세요</td></tr>`;
+
+        const provideRows = S.pseudonymProvideRows || [];
+        const hasProvide =
+          S.pseudonymProvide === "yes" &&
+          provideRows.length > 0 &&
+          provideRows.some((r) => r.recipient || r.items || r.purpose || r.retention);
+        const provideTable = hasProvide
+          ? `
+<p>또한 ${alias}는 가명처리된 개인정보를 다음과 같이 제3자에게 제공하고 있습니다.</p>
+<table class="pp-table">
+  <thead><tr><th>제공받는 자</th><th>제공 항목</th><th>제공 목적</th><th>보유 기간</th></tr></thead>
+  <tbody>
+    ${provideRows
+      .map(
+        (r) =>
+          `<tr><td>${r.recipient || "-"}</td><td>${r.items || "-"}</td><td>${r.purpose || "-"}</td><td>${r.retention || "-"}</td></tr>`
+      )
+      .join("\n    ")}
+  </tbody>
+</table>`
+          : "";
+
+        return `
 ${sec("pseudo", "가명정보 처리에 관한 사항", true)}
 <p>${alias}는 수집한 개인정보를 「개인정보 보호법」 제28조의2에 따라 다음과 같이 가명처리하여 활용하고 있습니다.</p>
-<p>${S.pseudonymText || "내용을 입력해 주세요."}</p>
-`
+<table class="pp-table">
+  <thead><tr><th>처리 목적</th><th>가명처리 항목</th><th>보유 기간</th></tr></thead>
+  <tbody>
+    ${tableRows}
+  </tbody>
+</table>${provideTable}`;
+      })()
     : ""
 }
 

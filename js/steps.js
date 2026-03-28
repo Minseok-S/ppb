@@ -832,7 +832,7 @@ function renderSteps() {
         <div class="section-num">14</div>
         민감정보 공개 가능성 <span class="badge-opt">해당시</span>
       </div>
-      <div class="section-desc">공개 설정된 게시물 등에 민감정보가 포함될 수 있는 경우에만 포함합니다.</div>
+      <div class="section-desc">공개 설정된 게시물 등에 민감정보가 포함·노출될 수 있는 경우에만 포함합니다.</div>
       <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="sen_no" onclick="selectR('sen_no','sen_yes','sensitive','no')">
@@ -844,10 +844,9 @@ function renderSteps() {
             <div><div class="radio-text">공개 가능성 있음</div></div>
           </div>
         </div>
-        <div id="sensitiveDetail" style="display:none;margin-top:8px">
-          <textarea id="sensitiveText" rows="3"
-            placeholder="예: 지도앱 서비스 이용 중 정보주체가 직접 입력한 건강정보가 포함된 폴더가 공개 설정된 경우 노출될 수 있습니다."
-            oninput="updatePreview()"></textarea>
+        <div id="sensitiveDetail" style="display:none;margin-top:12px">
+          <div id="sensitiveRows"></div>
+          <button class="btn-add" onclick="addSensitive()">+ 항목 추가</button>
         </div>
       </div>
     </div>
@@ -870,10 +869,27 @@ function renderSteps() {
             <div><div class="radio-text">가명정보를 처리합니다</div></div>
           </div>
         </div>
-        <div id="pseudonymDetail" style="display:none;margin-top:8px">
-          <textarea id="pseudonymText" rows="3"
-            placeholder="예: 통계작성, 과학적 연구 목적으로 특정 개인을 알아볼 수 없도록 가명처리하여 활용합니다."
-            oninput="updatePreview()"></textarea>
+        <div id="pseudonymDetail" style="display:none;margin-top:12px">
+          <div id="pseudonymRows"></div>
+          <button class="btn-add" onclick="addPseudo()">+ 가명처리 항목 추가</button>
+
+          <div class="field-group" style="margin-top:16px">
+            <label class="field-label">제3자 제공 여부</label>
+            <div class="radio-group">
+              <div class="radio-item selected" id="pstp_no" onclick="selectR('pstp_no','pstp_yes','pseudonymProvide','no')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">제공 없음</div></div>
+              </div>
+              <div class="radio-item" id="pstp_yes" onclick="selectR('pstp_yes','pstp_no','pseudonymProvide','yes')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">제3자에게 제공합니다</div></div>
+              </div>
+            </div>
+          </div>
+          <div id="pseudonymProvideDetail" style="display:none;margin-top:8px">
+            <div id="pseudonymProvideRows"></div>
+            <button class="btn-add" onclick="addPseudoProvide()">+ 제공 항목 추가</button>
+          </div>
         </div>
       </div>
     </div>
