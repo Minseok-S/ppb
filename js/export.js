@@ -48,6 +48,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f7;color:#333;}
 .pp-contact-box{background:#f8f9fa;border-radius:7px;padding:14px 18px;margin:10px 0;}
 .pp-contact-title{font-weight:700;font-size:13px;color:#000;margin-bottom:5px;}
 .pp-contact-info{font-size:12px;color:#000;line-height:1.8;}
+.pp-contact-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;table-layout:fixed;}
+.pp-ct-head{background:#e9ecef;color:#495057;font-weight:600;padding:5px 10px;border:1px solid #dee2e6;text-align:center;}
+.pp-ct-label{width:25%;background:#e9ecef;color:#495057;font-weight:600;padding:5px 10px;border:1px solid #dee2e6;text-align:center;}
+.pp-ct-value{width:25%;padding:5px 10px;border:1px solid #dee2e6;color:#000;word-break:break-all;text-align:center;vertical-align:middle;}
 .pp-eff-date{font-size:13px;color:#000;}
 .pp-sub-title{font-size:13px;font-weight:700;color:#000;margin:14px 0 6px;}
 .pp-placeholder{color:#bbb;font-style:italic;}

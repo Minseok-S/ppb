@@ -192,6 +192,32 @@ function buildPolicyTable(rows, cols, caption, wrapCnt) {
 }
 
 // ════════════════════════════════════════
+//  CONTACT TABLE HELPER
+// ════════════════════════════════════════
+function buildContactRows(rows, keys) {
+  const spans = rows.map(() => keys.map(() => 1));
+  keys.forEach((key, j) => {
+    for (let i = rows.length - 1; i > 0; i--) {
+      if (rows[i][key] && rows[i][key] === rows[i - 1][key]) {
+        spans[i - 1][j] += spans[i][j];
+        spans[i][j] = 0;
+      }
+    }
+  });
+  return rows
+    .map((row, i) =>
+      `<tr>${keys
+        .map((key, j) => {
+          if (spans[i][j] === 0) return "";
+          const rs = spans[i][j] > 1 ? ` rowspan="${spans[i][j]}"` : "";
+          return `<td class="pp-ct-value"${rs}>${row[key] || ""}</td>`;
+        })
+        .join("")}</tr>`
+    )
+    .join("");
+}
+
+// ════════════════════════════════════════
 //  BUILD PREVIEW HTML
 // ════════════════════════════════════════
 function buildPreview() {
@@ -1331,27 +1357,38 @@ ${sec("cpo", "개인정보 보호책임자 및 고충처리 부서")}
 <p>① ${alias}는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
 <div class="pp-contact-box">
   <div class="pp-contact-title">▶ 개인정보 보호책임자(CPO)</div>
-  <div class="pp-contact-info">
-    성명: ${S.cpoName || '<span class="pp-placeholder">미입력</span>'}${S.cpoTitle ? " / 직책: " + S.cpoTitle : ""}<br>
-    ${S.cpoPhone ? "전화: " + S.cpoPhone : ""}${S.cpoPhone && S.cpoEmail ? " &nbsp;|&nbsp; " : ""}${S.cpoEmail ? "이메일: " + S.cpoEmail : ""}
-  </div>
+  <table class="pp-contact-table">
+    <thead><tr>
+      <th class="pp-ct-head">이름</th>
+      <th class="pp-ct-head">부서/직책</th>
+      <th class="pp-ct-head">연락처</th>
+      <th class="pp-ct-head">전자우편</th>
+    </tr></thead>
+    <tbody><tr>
+      <td class="pp-ct-value">${S.cpoName || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td class="pp-ct-value">${S.cpoTitle || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td class="pp-ct-value">${S.cpoPhone || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td class="pp-ct-value">${S.cpoEmail || '<span class="pp-placeholder">미입력</span>'}</td>
+    </tr></tbody>
+  </table>
 </div>
 <p style="margin-top:8px;">② 정보주체는 ${alias}의 서비스를 이용하시면서 발생한 모든 개인정보보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자 및 담당부서로 문의하실 수 있습니다.</p>
 <div class="pp-contact-box">
   <div class="pp-contact-title">▶ 개인정보 업무 담당부서</div>
-  <div class="pp-contact-info">
-    ${
-      S.depts
-        .filter((d) => d.name || d.email || d.phone)
-        .map(
-          (d) => `
-      ${d.name ? "부서: " + d.name : ""} ${d.phone ? "&nbsp;|&nbsp; 전화: " + d.phone : ""} ${d.email ? "&nbsp;|&nbsp; 이메일: " + d.email : ""}
-    `,
-        )
-        .join("<br>") ||
-      '<span class="pp-placeholder">부서 정보를 입력해 주세요</span>'
-    }
-  </div>
+  ${
+    (() => {
+      const rows = S.depts.filter((d) => d.name || d.email || d.phone);
+      if (!rows.length) return '<span class="pp-placeholder">부서 정보를 입력해 주세요</span>';
+      return `<table class="pp-contact-table">
+    <thead><tr>
+      <th class="pp-ct-head">부서</th>
+      <th class="pp-ct-head">연락처</th>
+      <th class="pp-ct-head">전자우편</th>
+    </tr></thead>
+    <tbody>${buildContactRows(rows, ["name", "phone", "email"])}</tbody>
+  </table>`;
+    })()
+  }
 </div>
 
 <!-- 16 구제방법 -->
