@@ -187,7 +187,7 @@ function buildMergedTable(rows, cols) {
       r += span;
     }
   }
-  const thead = `<tr>${cols.map((col) => `<th>${col.label}</th>`).join("")}</tr>`;
+  const thead = `<tr>${cols.map((col) => `<th${col.style ? ` style="${col.style}"` : ""}>${col.label}</th>`).join("")}</tr>`;
   const tbody = rows
     .map(
       (row, r) =>
@@ -1424,7 +1424,70 @@ ${
   S.autoDecision === "yes"
     ? `
 ${sec("autodec", "자동화된 결정에 관한 사항", true)}
-<p>${S.autoDecisionText || "내용을 입력해 주세요."}</p>
+<p>${alias}은(는) 인공지능 기술을 적용한 완전히 자동화된 시스템으로 개인정보를 처리하여 이루어지는 결정(이하 '자동화된 결정'이라 함)을 하고 있습니다. 이에 「개인정보 보호법」 제37조의2에 따라 다음과 같이 자동화된 결정에 관한 사항을 안내드립니다.</p>
+
+<p><strong>〈자동화된 결정이 이루어진다는 사실과 그 목적 및 대상이 되는 정보주체의 범위〉</strong></p>
+<p>- ${alias}은(는) ${S.adPurpose || "[결정의 목적을 입력해 주세요]"}을 위해 자동화된 결정 시스템을 활용하고 있습니다. 대상이 되는 정보주체의 범위는 ${S.adSubjectScope || "[대상 범위를 입력해 주세요]"}입니다.</p>
+
+<p><strong>〈자동화된 결정에 사용되는 주요 개인정보의 유형과 자동화된 결정의 관계〉</strong></p>
+${(() => {
+  if (!S.adInfoRows.length) return `<p>- [자동화된 결정에 사용되는 주요 개인정보 유형을 입력해 주세요]</p>`;
+  const hasWeight = S.adInfoRows.some(r => r.weight);
+  const cols = hasWeight
+    ? [
+        { key: "stage",    label: "처리 단계 / 결정명", style: "width:30%", cls: "c" },
+        { key: "infoType", label: "개인정보 유형",       style: "width:50%" },
+        { key: "weight",   label: "반영 비중",            style: "width:20%", cls: "c" },
+      ]
+    : [
+        { key: "stage",    label: "처리 단계 / 결정명", style: "width:35%", cls: "c" },
+        { key: "infoType", label: "개인정보 유형",       style: "width:65%" },
+      ];
+  return buildMergedTable(S.adInfoRows, cols);
+})()}
+
+<p><strong>〈자동화된 결정 과정에서의 고려사항 및 주요 개인정보가 처리되는 절차〉</strong></p>
+<p>- ${S.adProcedure || "[자동화된 결정 절차 및 고려사항을 입력해 주세요]"}</p>
+
+<p><strong>〈민감정보 및 14세 미만 아동의 개인정보 처리에 관한 사항〉</strong></p>
+${
+  S.adSensitive === "yes"
+    ? `<p>- ${S.adSensitiveDetail || "[민감정보 또는 아동 개인정보의 처리 목적 및 항목을 입력해 주세요]"}</p>`
+    : `<p>- ${alias}은(는) 자동화된 결정 과정에서 민감정보 및 14세 미만 아동의 개인정보를 처리하지 않습니다.</p>`
+}
+
+<p><strong>〈자동화된 결정에 대하여 정보주체가 거부·설명등요구를 할 수 있다는 사실과 그 방법 및 절차〉</strong></p>
+<p>- ${alias}은(는) 자동화된 결정에 대하여 정보주체가 아래의 요구를 할 수 있음을 알려드립니다.</p>
+<ul class="pp-list" style="padding-left:1.5em;">
+  <li>1. 자동화된 결정에 대한 거부</li>
+  <li>2. 자동화된 결정에 대한 설명을 요구</li>
+  <li>3. 의견 제출을 통해 검토 요구</li>
+</ul>
+<p>- 자동화된 결정에 대해 거부 및 설명·검토를 요구하려는 때에는 아래의 방법과 절차에 따라 요구할 수 있습니다.</p>
+<p>∙ (방법) 자동화된 결정에 대한 거부, 설명 요구, 의견제출을 통한 검토 요구서 제출</p>
+<table class="pp-table" style="margin:6px 0 10px;">
+  <thead><tr>
+    <th style="width:25%">부서명</th>
+    <th style="width:20%">전화번호</th>
+    <th style="width:25%">이메일</th>
+    <th style="width:30%">주소</th>
+  </tr></thead>
+  <tbody><tr>
+    <td>${S.adContactDept || "-"}</td>
+    <td>${S.adContactPhone || "-"}</td>
+    <td>${S.adContactEmail || "-"}</td>
+    <td>${S.adContactAddr || "-"}</td>
+  </tr></tbody>
+</table>
+<ul class="pp-list">
+  <li>∙ (절차) 요구서 접수 → 요구사항 검토 → 조치 결과 회신
+    <ul class="pp-list" style="margin-top:4px">
+      <li>- 거절사유에 해당한다고 판단되는 경우 요구서 접수일로부터 10일 이내 회신</li>
+      <li>- 요구에 대하여 필요한 조치를 하는 경우에는 30일 이내에 회신(연장시 별도 고지)</li>
+    </ul>
+  </li>
+</ul>
+<p>※ 자동화된 결정이 이루어진다는 사실에 대해 정보주체의 동의를 받았거나, 계약 등을 통해 미리 알린 경우, 법률에 명확히 규정이 있는 경우에는 자동화된 결정에 대한 거부는 인정되지 않으며 설명 및 검토 요구만 가능합니다. 또한 자동화된 결정에 대한 거부·설명 요구는 다른 사람의 생명·신체·재산과 그 밖의 이익을 부당하게 침해할 우려가 있는 등 정당한 사유가 있는 경우에는 그 요구가 거절될 수 있습니다.</p>
 `
     : ""
 }

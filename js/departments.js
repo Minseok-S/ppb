@@ -90,7 +90,14 @@ function readFields() {
     "rightsDeptPhone",
     "rightsDeptEmail",
     "rightsDeptFax",
-    "autoDecisionText",
+    "adPurpose",
+    "adSubjectScope",
+    "adProcedure",
+    "adSensitiveDetail",
+    "adContactDept",
+    "adContactPhone",
+    "adContactEmail",
+    "adContactAddr",
     "daName",
     "daPhone",
     "daAddr",
@@ -115,4 +122,5 @@ function readFields() {
   syncSensitive();
   syncPseudo();
   syncPseudoProvide();
+  syncAdInfo();
 }

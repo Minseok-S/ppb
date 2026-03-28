@@ -912,10 +912,102 @@ function renderSteps() {
             <div><div class="radio-text">자동화된 결정이 있습니다</div></div>
           </div>
         </div>
-        <div id="autoDecisionDetail" style="display:none;margin-top:8px">
-          <textarea id="autoDecisionText" rows="3"
-            placeholder="예: AI 기반 신용평가 자동 결정 시스템을 운영하고 있으며, 정보주체는 거부·설명 요구를 할 수 있습니다."
-            oninput="updatePreview()"></textarea>
+        <div id="autoDecisionDetail" style="display:none;margin-top:12px">
+
+          <!-- ① 사실·목적·대상 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:8px">
+              ① 자동화된 결정이 이루어진다는 사실과 그 목적 및 대상이 되는 정보주체의 범위
+            </label>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">결정의 목적</label>
+                <input type="text" id="adPurpose" placeholder="예: 채용 전형 평가, 신용점수 산출, 복지 부정수급 탐지"
+                  oninput="updatePreview()">
+              </div>
+              <div class="field-group">
+                <label class="field-label">대상이 되는 정보주체의 범위</label>
+                <input type="text" id="adSubjectScope" placeholder="예: 당사 채용에 지원한 모든 지원자"
+                  oninput="updatePreview()">
+              </div>
+            </div>
+          </div>
+
+          <!-- ② 주요 개인정보 유형과 관계 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:6px">
+              ② 자동화된 결정에 사용되는 주요 개인정보의 유형과 자동화된 결정의 관계
+            </label>
+            <div style="font-size:11px;color:#888;margin-bottom:8px">
+              단계별로 사용되는 개인정보 유형과 결정 반영 비중을 입력하세요. (비중 생략 가능)
+            </div>
+            <div id="adInfoRows"></div>
+            <button class="btn-add" onclick="addAdInfo()">＋ 행 추가</button>
+          </div>
+
+          <!-- ③ 고려사항 및 절차 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:6px">
+              ③ 자동화된 결정 과정에서의 고려사항 및 주요 개인정보가 처리되는 절차
+            </label>
+            <textarea id="adProcedure" rows="3"
+              placeholder="예: 자동화 시스템은 지원자가 제출한 개인정보를 분석하여 단계별 역량을 평가하고 점수로 산출합니다. 최종 대면면접 이전의 불합격 결정은 자동으로 통보됩니다."
+              oninput="updatePreview()"></textarea>
+          </div>
+
+          <!-- ④ 민감정보·아동 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:8px">
+              ④ 민감정보 또는 14세 미만 아동의 개인정보 처리 여부
+            </label>
+            <div class="radio-group" style="margin-bottom:6px">
+              <div class="radio-item selected" id="adSen_no" onclick="selectR('adSen_no','adSen_yes','adSensitive','no')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">처리하지 않습니다</div></div>
+              </div>
+              <div class="radio-item" id="adSen_yes" onclick="selectR('adSen_yes','adSen_no','adSensitive','yes')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">처리합니다</div></div>
+              </div>
+            </div>
+            <div id="adSensitiveDetailPanel" style="display:none">
+              <textarea id="adSensitiveDetail" rows="2"
+                placeholder="예: 자동화된 결정 과정에서 AI 면접 시 지원자의 얼굴영상(생체인식정보)을 처리하며, 목적은 비언어적 역량 평가입니다."
+                oninput="updatePreview()"></textarea>
+            </div>
+          </div>
+
+          <!-- ⑤ 거부·설명 요구 방법 및 절차 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:6px">
+              ⑤ 자동화된 결정에 대한 거부·설명 요구 방법 및 절차 (담당부서 연락처)
+            </label>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">부서명</label>
+                <input type="text" id="adContactDept" placeholder="예: 고객센터 / 개인정보보호팀"
+                  oninput="updatePreview()">
+              </div>
+              <div class="field-group">
+                <label class="field-label">전화번호</label>
+                <input type="tel" id="adContactPhone" placeholder="예: 02-1234-5678"
+                  oninput="updatePreview()">
+              </div>
+            </div>
+            <div class="field-row" style="margin-top:6px">
+              <div class="field-group">
+                <label class="field-label">이메일</label>
+                <input type="email" id="adContactEmail" placeholder="예: privacy@company.com"
+                  oninput="updatePreview()">
+              </div>
+              <div class="field-group">
+                <label class="field-label">주소</label>
+                <input type="text" id="adContactAddr" placeholder="예: 서울특별시 강남구 테헤란로 000"
+                  oninput="updatePreview()">
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

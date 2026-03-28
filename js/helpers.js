@@ -21,6 +21,7 @@ function selectR(onId, offId, key, val) {
     pseudonym: ["pseudonymDetail", "yes"],
     pseudonymProvide: ["pseudonymProvideDetail", "yes"],
     autoDecision: ["autoDecisionDetail", "yes"],
+    adSensitive: ["adSensitiveDetailPanel", "yes"],
     domAgent: ["domAgentDetail", "yes"],
   };
   if (map[key]) {
