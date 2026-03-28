@@ -12,6 +12,7 @@ function selectR(onId, offId, key, val) {
     delegate: ["dlDetail", "yes"],
     overseas: ["otDetail", "yes"],
     cookie: ["cookieDetail", "yes"],
+    cookie3rdParty: ["ck3rdDetail", "yes"],
     behavioral: ["bhDetail", "yes"],
     bhProvide: ["bhTpDetail", "yes"],
     bhExtCollect: ["bhExtDetail", "yes"],

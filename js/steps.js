@@ -449,6 +449,26 @@ function renderSteps() {
           </div>
         </div>
       </div>
+      <div class="field-group" style="margin-top:12px;border-top:1px solid #eee;padding-top:12px">
+        <label class="field-label">제3자 자동수집장치 허용 여부 <span class="badge-opt">해당시</span></label>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">
+          제3자 쿠키·SDK 등을 통해 귀사 웹·앱에서 제3자가 행태정보를 수집해가도록 허용하는 경우 기재합니다.
+        </div>
+        <div class="radio-group">
+          <div class="radio-item selected" id="ck3rd_no" onclick="selectR('ck3rd_no','ck3rd_yes','cookie3rdParty','no')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">해당 없음</div></div>
+          </div>
+          <div class="radio-item" id="ck3rd_yes" onclick="selectR('ck3rd_yes','ck3rd_no','cookie3rdParty','yes')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">제3자 자동수집장치 허용</div></div>
+          </div>
+        </div>
+        <div id="ck3rdDetail" style="display:none;margin-top:8px">
+          <div id="cedItems"></div>
+          <button class="btn-add" style="margin-top:6px" onclick="addCookieExtDevice()">＋ 자동수집장치 추가</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── STEP 10: 행태정보 ── -->
@@ -475,8 +495,24 @@ function renderSteps() {
         <div class="field-group" style="margin-top:10px">
           <label class="field-label">① 처리 목적 / 수집도구 / 식별여부</label>
           <input type="text" id="bhPurpose" placeholder="목적 예: 정보주체에게 최적화된 맞춤형 서비스 및 혜택을 제공" oninput="updatePreview()" style="margin-bottom:4px"/>
-          <input type="text" id="bhTool" placeholder="수집도구 예: 쿠키" value="쿠키" oninput="updatePreview()" style="margin-bottom:4px"/>
-          <input type="text" id="bhIdentify" placeholder="식별여부 예: 개인을 식별할 수 없는 비식별 정보" value="개인을 식별할 수 없는 비식별 정보" oninput="updatePreview()"/>
+          <input type="text" id="bhTool" placeholder="수집도구 예: 쿠키" value="쿠키" oninput="updatePreview()" style="margin-bottom:8px"/>
+          <label class="field-label" style="font-size:11px;color:var(--text3);margin-bottom:4px">개인 식별 여부 (테이블 법적 근거 칼럼 포함 여부에 영향)</label>
+          <div class="radio-group">
+            <div class="radio-item" id="bhIM_identify" onclick="selectR('bhIM_identify','bhIM_nonidentify','bhIdentifyMode','identify')">
+              <div class="radio-dot"></div>
+              <div>
+                <div class="radio-text">식별하여 처리</div>
+                <div class="radio-desc">법적 근거 칼럼 포함 — 정보주체를 식별하는 방식</div>
+              </div>
+            </div>
+            <div class="radio-item selected" id="bhIM_nonidentify" onclick="selectR('bhIM_nonidentify','bhIM_identify','bhIdentifyMode','nonidentify')">
+              <div class="radio-dot"></div>
+              <div>
+                <div class="radio-text">식별하지 않고 처리 (비식별)</div>
+                <div class="radio-desc">법적 근거 칼럼 없음 — 정보주체를 식별하지 않는 방식</div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="field-group" style="margin-top:10px">
           <label class="field-label">② 행태정보 수집 항목 <span class="opt">(표)</span></label>
@@ -501,7 +537,8 @@ function renderSteps() {
           </div>
         </div>
         <div class="field-group" style="margin-top:10px">
-          <label class="field-label">④ 제3자 자동수집장치 수집·이용 여부</label>
+          <label class="field-label">④ 제3자 웹·앱 자동수집장치로부터 수집 여부</label>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.5">귀사가 제3자가 운영하는 웹·앱에 설치된 자동수집장치로부터 행태정보를 수집·이용하는 경우 </div>
           <div class="radio-group">
             <div class="radio-item selected" id="bhExtCollect_no" onclick="selectR('bhExtCollect_no','bhExtCollect_yes','bhExtCollect','no')" style="margin-bottom:0">
               <div class="radio-dot"></div>
