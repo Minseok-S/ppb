@@ -618,7 +618,7 @@ function renderSteps() {
         <div class="section-num">11</div>
         정보주체 권리 행사 <span class="badge-req">필수</span>
       </div>
-      <div class="section-desc">권리 행사 방법과 수단을 설정합니다.</div>
+      <div class="section-desc">권리 행사 방법·수단·청구 접수 부서를 설정합니다.</div>
       <div class="field-group">
         <label class="field-label">권리 행사 수단</label>
         <div class="toggle-group">
@@ -644,9 +644,44 @@ function renderSteps() {
           </div>
         </div>
       </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">앱/웹 내 권리행사 경로 <span class="opt">(선택)</span></label>
-        <input type="text" id="rightsPath" placeholder="예: 앱 > 메뉴 > 설정 > 내 정보 관리" oninput="updatePreview()" />
+      <div id="rightsOnlineDetail" style="display:none;margin-top:6px;padding:12px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8">
+        <div class="field-group">
+          <label class="field-label">홈페이지 경로 <span class="opt">(해당 시)</span></label>
+          <input type="text" id="rightsWebPath" placeholder="예: 내정보 &gt; 회원정보" oninput="updatePreview()" />
+        </div>
+        <div class="field-group" style="margin-top:8px">
+          <label class="field-label">앱 경로 <span class="opt">(해당 시)</span></label>
+          <input type="text" id="rightsAppPath" placeholder="예: 메뉴 &gt; 내 정보 관리" oninput="updatePreview()" />
+        </div>
+        <div class="field-group" style="margin-top:8px">
+          <label class="field-label">직접 행사 가능한 항목</label>
+          <div class="toggle-group" style="margin-top:4px">
+            <div class="toggle-item checked" data-key="ra_view" onclick="toggleItem(this,'rightsActions')">
+              <div><div class="toggle-label">조회</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-item checked" data-key="ra_edit" onclick="toggleItem(this,'rightsActions')">
+              <div><div class="toggle-label">수정</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-item checked" data-key="ra_delete" onclick="toggleItem(this,'rightsActions')">
+              <div><div class="toggle-label">삭제</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-item checked" data-key="ra_suspend" onclick="toggleItem(this,'rightsActions')">
+              <div><div class="toggle-label">처리정지</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-item checked" data-key="ra_withdraw" onclick="toggleItem(this,'rightsActions')">
+              <div><div class="toggle-label">동의 철회</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:8px">
+          <label class="field-label">온라인 열람 요청 경로</label>
+          <input type="text" id="rightsInquiryPath" placeholder="예: 문의하기" oninput="updatePreview()" />
+        </div>
       </div>
       <div class="field-group" style="margin-top:10px">
         <label class="field-label">개인정보 전송요구권(마이데이터) 해당 여부</label>
@@ -660,6 +695,16 @@ function renderSteps() {
             <div><div class="radio-text">정보전송자에 해당 (마이데이터)</div></div>
           </div>
         </div>
+      </div>
+      <div class="field-group" style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:14px">
+        <label class="field-label">권리행사 청구 접수·처리 부서 <span class="opt">(선택)</span></label>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:8px">미입력 시 '아래 개인정보 보호책임자 항목 참고' 문구로 대체됩니다.</div>
+        <input type="text" id="rightsDeptName" placeholder="부서명 (예: 개인정보보호팀)" oninput="updatePreview()" style="margin-bottom:6px" />
+        <div class="field-row" style="margin-bottom:6px">
+          <input type="tel" id="rightsDeptPhone" placeholder="전화번호" oninput="updatePreview()" />
+          <input type="email" id="rightsDeptEmail" placeholder="이메일" oninput="updatePreview()" />
+        </div>
+        <input type="text" id="rightsDeptFax" placeholder="팩스번호 (선택)" oninput="updatePreview()" />
       </div>
     </div>
 

@@ -42,8 +42,15 @@ function toggleItem(el, group) {
     bhBrowsers: S.bhBrowsers,
     bhFlags: S.bhFlags,
     rights: S.rights,
+    rightsActions: S.rightsActions,
     agency: S.agency,
   };
   if (maps[group]) maps[group][key] = el.classList.contains("checked");
+  if (group === "rights" && key === "r_web") {
+    const on = el.classList.contains("checked");
+    S.rightsOnline = on ? "yes" : "no";
+    const panel = document.getElementById("rightsOnlineDetail");
+    if (panel) panel.style.display = on ? "block" : "none";
+  }
   updatePreview();
 }
