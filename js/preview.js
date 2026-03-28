@@ -1,9 +1,63 @@
 // ════════════════════════════════════════
 //  PREVIEW UPDATE
 // ════════════════════════════════════════
+function applyRowMerge() {
+  document.querySelectorAll("#previewContent table").forEach((table) => {
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll(":scope > tr"));
+    if (rows.length < 2) return;
+
+    let numCols = 0;
+    rows.forEach((tr) => {
+      let w = 0;
+      tr.querySelectorAll("td, th").forEach((c) => (w += c.colSpan || 1));
+      numCols = Math.max(numCols, w);
+    });
+
+    const grid = rows.map(() => new Array(numCols).fill(null));
+    rows.forEach((tr, r) => {
+      let col = 0;
+      tr.querySelectorAll("td, th").forEach((cell) => {
+        while (col < numCols && grid[r][col]) col++;
+        const rs = cell.rowSpan || 1;
+        const cs = cell.colSpan || 1;
+        for (let dr = 0; dr < rs && r + dr < rows.length; dr++)
+          for (let dc = 0; dc < cs && col + dc < numCols; dc++)
+            grid[r + dr][col + dc] = cell;
+        col += cs;
+      });
+    });
+
+    for (let c = 0; c < numCols; c++) {
+      for (let r = 0; r < rows.length; ) {
+        const cell = grid[r][c];
+        if (!cell || (r > 0 && grid[r - 1][c] === cell)) { r++; continue; }
+        const span = cell.rowSpan || 1;
+        const nr = r + span;
+        if (nr >= rows.length) { r += span; continue; }
+        const next = grid[nr][c];
+        if (
+          next &&
+          grid[nr - 1][c] !== next &&
+          next.textContent.trim() === cell.textContent.trim()
+        ) {
+          const ns = next.rowSpan || 1;
+          cell.rowSpan = span + ns;
+          for (let dr = 0; dr < ns; dr++) grid[nr + dr][c] = cell;
+          next.remove();
+          continue;
+        }
+        r += span;
+      }
+    }
+  });
+}
+
 function updatePreview() {
   readFields();
   document.getElementById("previewContent").innerHTML = buildPreview();
+  applyRowMerge();
   // bind TOC scroll
   const panel = document.getElementById("previewPanel");
   document.querySelectorAll("#previewContent .pp-toc-link").forEach((a) => {
