@@ -924,6 +924,15 @@ textarea {
 .pp-hidden {
   display: none;
 }
+.policy_cnt { margin: 8px 0; }
+.policy_table { margin: 8px 0; }
+.policy_table.scroll { overflow-x: auto; }
+.policy_table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.policy_table table caption { font-size: 11px; color: #888; text-align: left; margin-bottom: 4px; caption-side: top; }
+.policy_table table th { background: #f2f2f2; padding: 7px 9px; text-align: center; border: 1px solid #ddd; font-weight: 700; color: #000; }
+.policy_table table td { padding: 7px 9px; border: 1px solid #ddd; color: #000; vertical-align: middle; text-align: left; }
+.policy_table table td.c { text-align: center; }
+p.sub_txt { font-size: 11px; color: #888; margin: 4px 0 0; }
 
 /* TOAST */
 .toast {

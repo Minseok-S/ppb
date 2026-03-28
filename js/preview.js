@@ -1,700 +1,4 @@
 // ════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════
-const S = {
-  companyName: "",
-  serviceName: "",
-  effectiveDate: "",
-  collectNoConsent: [],
-  collectConsent: [],
-  collectOther: [],
-  collectAuto: [],
-  child: "no",
-  childItems: "",
-  childMethod: "",
-  retention: { contract: true, dispute: true, ad: true, log: true },
-  customRetentionLegal: [],
-  customRetentionOther: [],
-  destroy: { electronic: true, paper: true },
-  thirdParty: "no",
-  tpConsent: [],
-  tpLegal: [],
-  delegate: "no",
-  dlItems: [],
-  dlSubItems: [],
-  overseas: "no",
-  otItems: [],
-  otRefuseDisadvantage: "",
-  otRefuseMethod: "",
-  security: {
-    s_plan: true,
-    s_edu: true,
-    s_org: false,
-    s_access: true,
-    s_encrypt: true,
-    s_sec: true,
-    s_log: false,
-    s_vuln: false,
-    s_phys: true,
-    s_media: false,
-    s_isms: false,
-    s_isms_cert: false,
-    s_mgmt_extra: [],
-    s_tech_extra: [],
-    s_phys_extra: [],
-    s_cert_extra: [],
-  },
-  cookie: "yes",
-  browser: { b_chrome: true, b_edge: true, b_chrome_m: false, b_safari: false, b_samsung: false },
-  behavioral: "no",
-  bhItems: [],
-  rights: {
-    r_written: true,
-    r_phone: true,
-    r_email: true,
-    r_fax: false,
-    r_web: false,
-  },
-  rightsPath: "",
-  mydata: "no",
-  cpoName: "",
-  cpoTitle: "",
-  cpoPhone: "",
-  cpoEmail: "",
-  depts: [{ name: "", phone: "", email: "" }],
-  agency: { ag_kopico: true, ag_kisa: true, ag_spo: true, ag_police: true },
-  addUsage: "no",
-  addUsageText: "",
-  sensitive: "no",
-  sensitiveText: "",
-  pseudonym: "no",
-  pseudonymText: "",
-  autoDecision: "no",
-  autoDecisionText: "",
-  domAgent: "no",
-  daName: "",
-  daPhone: "",
-  daAddr: "",
-  daEmail: "",
-};
-
-// ════════════════════════════════════════
-//  STEP NAV
-// ════════════════════════════════════════
-let curStep = 1;
-const TOTAL = 13;
-const stepLabels = [
-  "기본 정보",
-  "수집 항목",
-  "아동 개인정보",
-  "파기",
-  "제3자 제공",
-  "위탁",
-  "국외이전",
-  "안전조치",
-  "쿠키",
-  "행태정보",
-  "권리행사",
-  "책임자",
-  "추가항목",
-];
-
-function goStep(n) {
-  document.getElementById("step" + curStep).classList.remove("active");
-  document
-    .querySelector('[data-step="' + curStep + '"]')
-    .classList.remove("active");
-  curStep = n;
-  document.getElementById("step" + curStep).classList.add("active");
-  document
-    .querySelector('[data-step="' + curStep + '"]')
-    .classList.add("active");
-  document.getElementById("progressFill").style.width =
-    Math.round((curStep / TOTAL) * 100) + "%";
-  document.getElementById("progressText").textContent =
-    "STEP " + curStep + "/" + TOTAL + " · " + stepLabels[curStep - 1];
-  document.getElementById("prevBtn").style.display =
-    curStep > 1 ? "flex" : "none";
-  document.getElementById("nextBtn").style.display =
-    curStep < TOTAL ? "flex" : "none";
-}
-function nextStep() {
-  if (curStep < TOTAL) {
-    document
-      .querySelector('[data-step="' + curStep + '"]')
-      .classList.add("done");
-    goStep(curStep + 1);
-  }
-}
-function prevStep() {
-  if (curStep > 1) goStep(curStep - 1);
-}
-
-// ════════════════════════════════════════
-//  RADIO / TOGGLE HELPERS
-// ════════════════════════════════════════
-function selectR(onId, offId, key, val) {
-  document.getElementById(onId).classList.add("selected");
-  document.getElementById(offId).classList.remove("selected");
-  S[key] = val;
-  // show/hide detail panels
-  const map = {
-    child: ["childDetail", "yes"],
-    thirdParty: ["tpDetail", "yes"],
-    delegate: ["dlDetail", "yes"],
-    overseas: ["otDetail", "yes"],
-    cookie: ["cookieDetail", "yes"],
-    behavioral: ["bhDetail", "yes"],
-    addUsage: ["addUsageDetail", "yes"],
-    sensitive: ["sensitiveDetail", "yes"],
-    pseudonym: ["pseudonymDetail", "yes"],
-    autoDecision: ["autoDecisionDetail", "yes"],
-    domAgent: ["domAgentDetail", "yes"],
-  };
-  if (map[key]) {
-    const [panelId, showVal] = map[key];
-    const el = document.getElementById(panelId);
-    if (el) el.style.display = val === showVal ? "block" : "none";
-    if (key === "child" && val === showVal) syncChildItems();
-  }
-  updatePreview();
-}
-
-function toggleItem(el, group) {
-  el.classList.toggle("checked");
-  const key = el.dataset.key;
-  const maps = {
-    retention: S.retention,
-    destroy: S.destroy,
-    security: S.security,
-    browser: S.browser,
-    rights: S.rights,
-    agency: S.agency,
-  };
-  if (maps[group]) maps[group][key] = el.classList.contains("checked");
-  updatePreview();
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC ROWS — COLLECT
-// ════════════════════════════════════════
-const basisOpts = [
-  { v: "contract", l: "제15조①4호 (계약 체결·이행)" },
-  { v: "consent", l: "제15조①1호 (정보주체 동의)" },
-  { v: "legal", l: "제15조①2호 (법률 특별 규정)" },
-  { v: "public", l: "제15조①3호 (공공기관 소관업무)" },
-  { v: "interest", l: "제15조①6호 (정당한 이익)" },
-];
-const basisMap = Object.fromEntries(
-  basisOpts.map((o) => [o.v, "「개인정보 보호법」 " + o.l]),
-);
-
-function addCollect(type) {
-  const cid = "ci_" + type + "_" + Date.now();
-  const container = document.getElementById("collect" + cap(type));
-  const num = container.children.length + 1;
-  const needBasis = type !== "auto";
-  const div = document.createElement("div");
-  div.className = "card-item";
-  div.id = cid;
-  div.innerHTML = `
-    <div class="card-header"><span class="card-title">#${num}</span><button class="btn-icon" onclick="removeAndSync('${cid}','${type}')">✕</button></div>
-    ${needBasis ? `<div class="field-group"><label class="field-label">법적 근거</label><select data-field="basis" onchange="syncCollect('${type}');updatePreview()">${basisOpts.map((o) => `<option value="${o.v}">${o.l}</option>`).join("")}</select></div>` : ""}
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">구분</label><input type="text" data-field="category" placeholder="예: 회원 서비스 운영" oninput="syncCollect('${type}');updatePreview()"></div>
-      <div class="field-group"><label class="field-label">처리 목적</label><input type="text" data-field="purpose" placeholder="예: 본인 식별, 회원 관리" oninput="syncCollect('${type}');updatePreview()"></div>
-    </div>
-    <div class="field-group"><label class="field-label">처리 항목</label><input type="text" data-field="items" placeholder="예: ID, 휴대전화번호, 성명" oninput="syncCollect('${type}');updatePreview()"></div>
-    ${type !== "auto" ? `<div class="field-group"><label class="field-label">처리 및 보유기간</label><input type="text" data-field="retention" placeholder="예: 회원 탈퇴 시까지" oninput="syncCollect('${type}');updatePreview()"></div>` : ""}
-  `;
-  container.appendChild(div);
-  syncCollect(type);
-}
-
-function cap(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function syncCollect(type) {
-  const arr = [];
-  document
-    .querySelectorAll("#collect" + cap(type) + " .card-item")
-    .forEach((d) => {
-      const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-      arr.push({
-        basis: g("basis") || "consent",
-        category: g("category"),
-        purpose: g("purpose"),
-        items: g("items"),
-        retention: g("retention"),
-      });
-    });
-  S["collect" + cap(type)] = arr;
-  // state updated; caller triggers updatePreview
-}
-
-function removeAndSync(id, type) {
-  document.getElementById(id)?.remove();
-  syncCollect(type);
-  updatePreview();
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC ROWS — COLLECT OTHER (3가)
-// ════════════════════════════════════════
-function addCollectOther() {
-  const id = "ci_other_" + Date.now();
-  const container = document.getElementById("collectOther");
-  const num = container.children.length + 1;
-  const div = document.createElement("div");
-  div.className = "card-item";
-  div.id = id;
-  div.innerHTML = `
-    <div class="card-header"><span class="card-title">#${num}</span><button class="btn-icon" onclick="removeAndSyncCollectOther('${id}')">✕</button></div>
-    <div class="field-group"><label class="field-label">법적 근거</label><select data-field="basis" onchange="syncCollectOther();updatePreview()">${basisOpts.map((o) => `<option value="${o.v}">${o.l}</option>`).join("")}</select></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">수집 목적</label><input type="text" data-field="purpose" placeholder="예: 간편로그인" oninput="syncCollectOther();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 이름, 생년월일, CI" oninput="syncCollectOther();updatePreview()"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">제공하는 자 <span style="color:#aaa;font-size:11px;">(선택)</span></label><input type="text" data-field="provider" placeholder="예: OOO" oninput="syncCollectOther();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보유기간</label><input type="text" data-field="retention" placeholder="예: 회원 탈퇴 시까지" oninput="syncCollectOther();updatePreview()"></div>
-    </div>
-  `;
-  container.appendChild(div);
-  syncCollectOther();
-}
-
-function syncCollectOther() {
-  S.collectOther = [];
-  document.querySelectorAll("#collectOther .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.collectOther.push({
-      basis: g("basis") || "consent",
-      purpose: g("purpose"),
-      items: g("items"),
-      provider: g("provider"),
-      retention: g("retention"),
-    });
-  });
-}
-
-function removeAndSyncCollectOther(id) {
-  document.getElementById(id)?.remove();
-  syncCollectOther();
-  updatePreview();
-}
-
-let childCustomItems = [];
-
-function addChildCustomItem() {
-  const input = document.getElementById("childItemsCustomInput");
-  const val = input.value.trim();
-  if (!val) return;
-  childCustomItems.push(val);
-  input.value = "";
-  renderChildCustomTags();
-  syncChildItems();
-}
-
-function removeChildCustomItem(idx) {
-  childCustomItems.splice(idx, 1);
-  renderChildCustomTags();
-  syncChildItems();
-}
-
-function renderChildCustomTags() {
-  const container = document.getElementById("childCustomTags");
-  if (!container) return;
-  container.innerHTML = childCustomItems
-    .map(
-      (item, i) =>
-        `<span style="display:inline-flex;align-items:center;gap:3px;background:#eef1fe;border:1px solid #c5cdf7;border-radius:12px;padding:2px 8px;font-size:11px;">
-          ${item}
-          <button onclick="removeChildCustomItem(${i})" style="background:none;border:none;cursor:pointer;color:#999;font-size:13px;padding:0;line-height:1;">×</button>
-        </span>`
-    )
-    .join("");
-}
-
-function syncChildItems() {
-  const items = [];
-  if (document.getElementById("childItemName")?.checked) items.push("법정대리인의 성명");
-  if (document.getElementById("childItemPhone")?.checked) items.push("전화번호");
-  if (document.getElementById("childItemEmail")?.checked) items.push("이메일주소");
-  items.push(...childCustomItems);
-  const val = items.join(", ");
-  const hidden = document.getElementById("childItems");
-  if (hidden) hidden.value = val;
-  S.childItems = val;
-  updatePreview();
-}
-
-function selectChildPreset(el) {
-  const isCustom = el.value === "custom";
-  const ta = document.getElementById("childMethod");
-  ta.style.display = isCustom ? "" : "none";
-  if (!isCustom) ta.value = el.value;
-  else ta.value = "";
-  updatePreview();
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC — CUSTOM RETENTION
-// ════════════════════════════════════════
-function addCustomRetentionLegal() {
-  const id = "crl_" + Date.now(),
-    c = document.getElementById("customRetentionLegal");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">법적 보존항목</span><button class="btn-icon" onclick="removeAndSyncCRL('${id}')">✕</button></div>
-    <div class="field-group"><label class="field-label">보존 항목명</label><input type="text" data-field="label" placeholder="예: 전자금융거래 기록" oninput="syncCRL();updatePreview()"></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">근거 법령</label><input type="text" data-field="basis" placeholder="예: 전자금융거래법 제22조" oninput="syncCRL();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보존 기간</label><input type="text" data-field="period" placeholder="예: 5년" oninput="syncCRL();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncCRL(id) {
-  document.getElementById(id)?.remove();
-  syncCRL();
-  updatePreview();
-}
-function syncCRL() {
-  S.customRetentionLegal = [];
-  document.querySelectorAll("#customRetentionLegal .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.customRetentionLegal.push({ label: g("label"), basis: g("basis"), period: g("period") });
-  });
-}
-function addCustomRetentionOther() {
-  const id = "cro_" + Date.now(),
-    c = document.getElementById("customRetentionOther");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">그외 보존항목</span><button class="btn-icon" onclick="removeAndSyncCRO('${id}')">✕</button></div>
-    <div class="field-group"><label class="field-label">보존 항목명</label><input type="text" data-field="label" placeholder="예: 서비스 이용 기록" oninput="syncCRO();updatePreview()"></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">보존 사유</label><input type="text" data-field="basis" placeholder="예: 사내 개인정보보호 규정" oninput="syncCRO();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보존 기간</label><input type="text" data-field="period" placeholder="예: 1년" oninput="syncCRO();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncCRO(id) {
-  document.getElementById(id)?.remove();
-  syncCRO();
-  updatePreview();
-}
-function syncCRO() {
-  S.customRetentionOther = [];
-  document.querySelectorAll("#customRetentionOther .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.customRetentionOther.push({ label: g("label"), basis: g("basis"), period: g("period") });
-  });
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC — THIRD PARTY
-// ════════════════════════════════════════
-function addTP(type) {
-  const id = "tp_" + type + "_" + Date.now(),
-    c = document.getElementById("tp" + cap(type));
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  const legalBasisHtml =
-    type === "legal"
-      ? `<div class="field-group"><label class="field-label">제공 법적 근거</label><input type="text" data-field="basis" placeholder="예: 개인정보보호법 제17조①2호, 소득세법 제165조" oninput="syncTP();updatePreview()"></div>`
-      : "";
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">제공 대상</span><button class="btn-icon" onclick="removeAndSyncTP('${id}')">✕</button></div>
-    ${legalBasisHtml}
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">제공받는 자</label><input type="text" data-field="receiver" placeholder="기관·업체명" oninput="syncTP();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">제공 목적</label><input type="text" data-field="purpose" placeholder="목적" oninput="syncTP();updatePreview()"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">제공 항목</label><input type="text" data-field="items" placeholder="항목" oninput="syncTP();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보유·이용기간</label><input type="text" data-field="retention" placeholder="기간" oninput="syncTP();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncTP(id) {
-  document.getElementById(id)?.remove();
-  syncTP();
-  updatePreview();
-}
-function syncTP() {
-  ["Consent", "Legal"].forEach((t) => {
-    S["tp" + t] = [];
-    document.querySelectorAll("#tp" + t + " .card-item").forEach((d) => {
-      const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-      S["tp" + t].push({
-        basis: g("basis"),
-        receiver: g("receiver"),
-        purpose: g("purpose"),
-        items: g("items"),
-        retention: g("retention"),
-      });
-    });
-  });
-  // state updated
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC — DELEGATE
-// ════════════════════════════════════════
-function addDelegate() {
-  const id = "dl_" + Date.now(),
-    c = document.getElementById("dlItems");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">수탁업체</span><button class="btn-icon" onclick="removeAndSyncDL('${id}')">✕</button></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">수탁자</label><input type="text" data-field="company" placeholder="업체명" oninput="syncDL();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">위탁 업무</label><input type="text" data-field="task" placeholder="업무 내용" oninput="syncDL();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncDL(id) {
-  document.getElementById(id)?.remove();
-  syncDL();
-  updatePreview();
-}
-function syncDL() {
-  S.dlItems = [];
-  document.querySelectorAll("#dlItems .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.dlItems.push({ company: g("company"), task: g("task") });
-  });
-  // state updated
-}
-
-function addSubDelegate() {
-  const id = "sdl_" + Date.now(),
-    c = document.getElementById("dlSubItems");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">재수탁업체</span><button class="btn-icon" onclick="removeAndSyncSDL('${id}')">✕</button></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">재수탁자</label><input type="text" data-field="company" placeholder="업체명" oninput="syncSDL();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">위탁 업무</label><input type="text" data-field="task" placeholder="업무 내용" oninput="syncSDL();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncSDL(id) {
-  document.getElementById(id)?.remove();
-  syncSDL();
-  updatePreview();
-}
-function syncSDL() {
-  S.dlSubItems = [];
-  document.querySelectorAll("#dlSubItems .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.dlSubItems.push({ company: g("company"), task: g("task") });
-  });
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC — OVERSEAS
-// ════════════════════════════════════════
-function addOverseas() {
-  const id = "ot_" + Date.now(),
-    c = document.getElementById("otItems");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">이전 대상</span><button class="btn-icon" onclick="removeAndSyncOT('${id}')">✕</button></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">이전받는 자</label><input type="text" data-field="receiver" placeholder="업체명·연락처" oninput="syncOT();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">이전 국가</label><input type="text" data-field="country" placeholder="예: 미국" oninput="syncOT();updatePreview()"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">이전 항목</label><input type="text" data-field="items" placeholder="항목" oninput="syncOT();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">이용 목적</label><input type="text" data-field="purpose" placeholder="목적" oninput="syncOT();updatePreview()"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">이전 시기·방법</label><input type="text" data-field="method" placeholder="예: 서비스 이용 시점, VPN 전송" oninput="syncOT();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보유·이용기간</label><input type="text" data-field="retention" placeholder="기간" oninput="syncOT();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncOT(id) {
-  document.getElementById(id)?.remove();
-  syncOT();
-}
-function syncOT() {
-  S.otItems = [];
-  document.querySelectorAll("#otItems .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.otItems.push({
-      receiver: g("receiver"),
-      country: g("country"),
-      items: g("items"),
-      purpose: g("purpose"),
-      method: g("method"),
-      retention: g("retention"),
-    });
-  });
-  S.otRefuseDisadvantage = document.getElementById("otRefuseDisadvantage")?.value || "";
-  S.otRefuseMethod = document.getElementById("otRefuseMethod")?.value || "";
-}
-
-// ════════════════════════════════════════
-//  SECURITY — CUSTOM ITEMS
-// ════════════════════════════════════════
-function addSecItem(cat) {
-  const inp = document.getElementById("sec_" + cat + "_input");
-  const val = inp.value.trim();
-  if (!val) return;
-  S.security["s_" + cat + "_extra"].push(val);
-  inp.value = "";
-  renderSecChips(cat);
-  updatePreview();
-}
-function removeSecItem(cat, idx) {
-  S.security["s_" + cat + "_extra"].splice(idx, 1);
-  renderSecChips(cat);
-  updatePreview();
-}
-function renderSecChips(cat) {
-  const container = document.getElementById("sec_" + cat + "_chips");
-  if (!container) return;
-  const items = S.security["s_" + cat + "_extra"] || [];
-  container.innerHTML = items
-    .map(
-      (v, i) =>
-        `<span class="sec-chip">${v}<button onclick="removeSecItem('${cat}',${i})">×</button></span>`
-    )
-    .join("");
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC — BEHAVIORAL
-// ════════════════════════════════════════
-function addBehavioral() {
-  const id = "bh_" + Date.now(),
-    c = document.getElementById("bhItems");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">행태정보 항목</span><button class="btn-icon" onclick="removeAndSyncBH('${id}')">✕</button></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 웹사이트 방문·이용 이력" oninput="syncBH();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">수집 목적</label><input type="text" data-field="purpose" placeholder="예: 맞춤형 광고 제공" oninput="syncBH();updatePreview()"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">수집 방법</label><input type="text" data-field="method" placeholder="예: 웹사이트 방문 시 자동수집" oninput="syncBH();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">보유·이용기간</label><input type="text" data-field="retention" placeholder="예: 수집일로부터 90일" oninput="syncBH();updatePreview()"></div>
-    </div>
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncBH(id) {
-  document.getElementById(id)?.remove();
-  syncBH();
-  updatePreview();
-}
-function syncBH() {
-  S.bhItems = [];
-  document.querySelectorAll("#bhItems .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.bhItems.push({
-      items: g("items"),
-      purpose: g("purpose"),
-      method: g("method"),
-      retention: g("retention"),
-    });
-  });
-  // state updated
-}
-
-// ════════════════════════════════════════
-//  DYNAMIC — DEPT
-// ════════════════════════════════════════
-function addDept() {
-  const id = "dept_" + Date.now(),
-    c = document.getElementById("deptItems");
-  const d = document.createElement("div");
-  d.className = "card-item";
-  d.id = id;
-  d.innerHTML = `
-    <div class="card-header"><span class="card-title">담당부서</span><button class="btn-icon" onclick="removeAndSyncDept('${id}')">✕</button></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">부서명</label><input type="text" data-field="name" placeholder="부서명" oninput="syncDepts();updatePreview()"></div>
-      <div class="field-group"><label class="field-label">전화번호</label><input type="text" data-field="phone" placeholder="전화번호" oninput="syncDepts();updatePreview()"></div>
-    </div>
-    <input type="email" data-field="email" placeholder="이메일" style="margin-top:6px;" oninput="syncDepts();updatePreview()">
-  `;
-  c.appendChild(d);
-}
-function removeAndSyncDept(id) {
-  document.getElementById(id)?.remove();
-  syncDepts();
-  updatePreview();
-}
-function syncDepts() {
-  S.depts = [];
-  // default row
-  S.depts.push({
-    name: document.getElementById("dept1Name")?.value || "",
-    phone: document.getElementById("dept1Phone")?.value || "",
-    email: document.getElementById("dept1Email")?.value || "",
-  });
-  document.querySelectorAll("#deptItems .card-item").forEach((d) => {
-    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
-    S.depts.push({ name: g("name"), phone: g("phone"), email: g("email") });
-  });
-  // state updated
-}
-
-// ════════════════════════════════════════
-//  READ SIMPLE FIELDS
-// ════════════════════════════════════════
-function readFields() {
-  [
-    "companyName",
-    "serviceName",
-    "effectiveDate",
-    "childItems",
-    "childMethod",
-    "cpoName",
-    "cpoTitle",
-    "cpoPhone",
-    "cpoEmail",
-    "rightsPath",
-    "addUsageText",
-    "sensitiveText",
-    "pseudonymText",
-    "autoDecisionText",
-    "daName",
-    "daPhone",
-    "daAddr",
-    "daEmail",
-  ].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) S[id] = el.value;
-  });
-  syncDepts(); // sync depts state without triggering updatePreview
-}
-
-// ════════════════════════════════════════
 //  PREVIEW UPDATE
 // ════════════════════════════════════════
 function updatePreview() {
@@ -839,6 +143,38 @@ function buildMergedTable(rows, cols) {
   return `<table class="pp-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
 }
 
+// policy_cnt > policy_table scroll > table 구조 (행태정보용)
+function buildPolicyTable(rows, cols, caption, wrapCnt) {
+  if (!rows.length || !rows.some(r => Object.values(r).some(v => v))) return "";
+  const n = rows.length, m = cols.length;
+  const rsVal = Array.from({length: n}, () => Array(m).fill(1));
+  const skip  = Array.from({length: n}, () => Array(m).fill(false));
+  for (let c = 0; c < m; c++) {
+    let r = 0;
+    while (r < n) {
+      const val = rows[r][cols[c].key] || "-";
+      let span = 1;
+      while (r + span < n && (rows[r + span][cols[c].key] || "-") === val) span++;
+      rsVal[r][c] = span;
+      for (let k = 1; k < span; k++) skip[r + k][c] = true;
+      r += span;
+    }
+  }
+  const colgroup = `<colgroup>${cols.map(() => "<col>").join("")}</colgroup>`;
+  const thead = `<thead><tr>${cols.map(col => `<th>${col.label}</th>`).join("")}</tr></thead>`;
+  const tbody = `<tbody>${rows.map((row, r) =>
+    `<tr>${cols.map((col, c) => {
+      if (skip[r][c]) return "";
+      const rs = rsVal[r][c] > 1 ? ` rowspan="${rsVal[r][c]}"` : "";
+      const cls = col.cls ? ` class="${col.cls}"` : "";
+      return `<td${rs}${cls}>${row[col.key] || "-"}</td>`;
+    }).join("")}</tr>`
+  ).join("")}</tbody>`;
+  const cap = caption ? `<caption>${caption}</caption>` : "";
+  const table = `<table>${cap}${colgroup}${thead}${tbody}</table>`;
+  const scroll = `<div class="policy_table scroll">${table}</div>`;
+  return wrapCnt ? `<div class="policy_cnt">${scroll}</div>` : scroll;
+}
 
 // ════════════════════════════════════════
 //  BUILD PREVIEW HTML
@@ -976,77 +312,42 @@ function buildPreview() {
   const SQ = `rect x="2" y="2" width="40" height="40" rx="3" fill="none" stroke="#1a56db" stroke-width="1.6"`;
   const allCollected = [...(S.collectNoConsent||[]), ...(S.collectConsent||[]), ...(S.collectOther||[]), ...(S.collectAuto||[])].join(" ");
   const _유형 = [
-    // 개인정보
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">👤</text></svg>`, l: "개인정보", show: true },
-    // 개인영상정보
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">📷</text></svg>`, l: "개인영상정보", show: allCollected.includes("영상") },
-    // 민감정보
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🔴</text></svg>`, l: "민감정보", show: S.sensitive === "yes" },
-    // 생체인식정보
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🫁</text></svg>`, l: "생체인식정보", show: allCollected.includes("생체") || allCollected.includes("지문") || allCollected.includes("홍채") },
-    // 개인위치정보
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">📍</text></svg>`, l: "개인위치정보", show: allCollected.includes("위치") },
-    // 고유식별정보
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🪪</text></svg>`, l: "고유식별정보", show: allCollected.includes("주민") || allCollected.includes("여권") || allCollected.includes("운전면허") || allCollected.includes("외국인등록") },
-    // 주민등록번호
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🪪</text></svg>`, l: "주민등록번호", show: allCollected.includes("주민") },
-    // 여권번호
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">📘</text></svg>`, l: "여권번호", show: allCollected.includes("여권") },
-    // 운전면허번호
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🚗</text></svg>`, l: "운전면허번호", show: allCollected.includes("운전면허") },
-    // 외국인등록번호
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${CIRC}/><text x="22" y="27" text-anchor="middle" font-size="18">🌏</text></svg>`, l: "외국인등록번호", show: allCollected.includes("외국인등록") },
   ].filter(ic => ic.show);
   const _처리 = [
-    // ── 개인정보 처리 항목 (육각형 컨테이너) ──
-    // 처리항목
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="26" cy="23" r="2.8" fill="#f97316"/><path d="M21 31c0-2.8 2.2-5 5-5s5 2.2 5 5" fill="#f97316"/></svg>`, l: "처리항목", show: true },
-    // 처리목적
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><path d="M22 23a5 5 0 0 1 4.5 3" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><polyline points="26,21.5 27,24.5 24,24" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 29a5 5 0 0 1-4.5-3" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><polyline points="22,30.5 21,27.5 24,28" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "처리목적", show: true },
-    // 보유기간(설정)
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="24" cy="25.5" r="4.5" fill="white" stroke="#f97316" stroke-width="1.3"/><polyline points="24,23 24,25.5 26.5,25.5" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "보유기간(설정)", show: true },
-    // 파기
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><text x="22" y="29" text-anchor="middle" font-size="18">🗑️</text></svg>`, l: "파기", show: true },
-    // 추가적 이용
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><text x="22" y="29" text-anchor="middle" font-size="18">➕</text></svg>`, l: "추가적 이용", show: S.addUsage === "yes" },
-    // 가명정보처리
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><text x="22" y="29" text-anchor="middle" font-size="18">🔐</text></svg>`, l: "가명정보처리", show: S.pseudonym === "yes" },
-    // 처리위탁
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><circle cx="14" cy="18" r="3.5" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><path d="M8 29c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#1a56db" stroke-width="1.2" stroke-linecap="round"/><circle cx="30" cy="18" r="3.5" fill="#fff3e0" stroke="#f97316" stroke-width="1.2"/><path d="M24 29c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#f97316" stroke-width="1.2" stroke-linecap="round"/><line x1="19" y1="21.5" x2="25" y2="21.5" stroke="#f97316" stroke-width="1.3" stroke-linecap="round"/><polyline points="21,19.5 19,21.5 21,23.5" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><polyline points="23,19.5 25,21.5 23,23.5" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "처리위탁", show: S.delegate === "yes" },
-    // 제3자 제공
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><circle cx="14" cy="19" r="3.5" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><path d="M8 31c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#1a56db" stroke-width="1.2" stroke-linecap="round"/><line x1="21" y1="22" x2="28" y2="22" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><polyline points="25.5,19.5 28,22 25.5,24.5" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="16" r="5" fill="#f97316"/><text x="32" y="19.5" text-anchor="middle" font-size="7.5" font-weight="bold" fill="white" font-family="Arial,sans-serif">3</text></svg>`, l: "제3자 제공", show: S.thirdParty === "yes" },
-    // 국외이전 (육각형 — PDF 기준)
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><circle cx="19" cy="25" r="9" fill="#fff3e0" stroke="#f97316" stroke-width="1.3"/><path d="M19 16c-2 3-3 6-3 9s1 6 3 9" fill="none" stroke="#f97316" stroke-width="1.2" stroke-linecap="round"/><path d="M19 16c2 3 3 6 3 9s-1 6-3 9" fill="none" stroke="#f97316" stroke-width="1.2" stroke-linecap="round"/><line x1="10" y1="25" x2="28" y2="25" stroke="#f97316" stroke-width="1.2"/><line x1="11.5" y1="20" x2="26.5" y2="20" stroke="#f97316" stroke-width="1.2"/><circle cx="21" cy="17.5" r="2.5" fill="#1a56db"/><path d="M17.5 23c0-2 1.6-3.5 3.5-3.5s3.5 1.6 3.5 3.5" fill="#1a56db"/><line x1="29" y1="21" x2="35" y2="21" stroke="#1a56db" stroke-width="1.5" stroke-linecap="round"/><polyline points="32.5,18.5 35,21 32.5,23.5" fill="none" stroke="#1a56db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, l: "국외이전", show: S.overseas === "yes" },
-    // 자동화 수집 (쿠키, 육각형 — PDF 기준)
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><rect x="17" y="21.5" width="13" height="8" rx="1.5" fill="white" stroke="#f97316" stroke-width="1.3"/><text x="23.5" y="27.5" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#f97316" font-family="Arial,sans-serif">AI</text></svg>`, l: "자동화 수집", show: S.cookie === "yes" },
-    // 행태정보 수집 (육각형 — PDF 기준)
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="22" cy="26" r="5.5" fill="#f97316"/><circle cx="19.5" cy="25" r="2" fill="white"/><circle cx="24.5" cy="25" r="2" fill="white"/><path d="M19 28.5c0.5 1 1.5 1.5 3 1.5s2.5-0.5 3-1.5" fill="none" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>`, l: "행태정보 수집", show: S.behavioral === "yes" },
   ].filter(ic => ic.show);
   const _의무 = [
-    // ── 법적의무사항 (사각형 컨테이너) ──
-    // 정보주체의 권리의무
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">⚖️</text></svg>`, l: "정보주체의 권리의무", show: true },
-    // 안전성확보조치
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><rect x="10" y="9" width="20" height="25" rx="2" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><line x1="14" y1="15" x2="26" y2="15" stroke="#1a56db" stroke-width="1"/><line x1="14" y1="18" x2="26" y2="18" stroke="#1a56db" stroke-width="1"/><line x1="14" y1="21" x2="21" y2="21" stroke="#1a56db" stroke-width="1"/><circle cx="30" cy="29" r="7" fill="#f97316"/><rect x="26.5" y="29" width="7" height="5" rx="1" fill="white"/><path d="M27.5 29v-2.5a2.5 2.5 0 0 1 5 0V29" fill="none" stroke="white" stroke-width="1.3" stroke-linecap="round"/><circle cx="30" cy="31.5" r="1" fill="#f97316"/></svg>`, l: "안전성확보조치", show: true },
-    // 처리방침변경
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📋</text></svg>`, l: "처리방침변경", show: true },
-    // 개인정보보호인증
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">🏅</text></svg>`, l: "개인정보보호인증", show: !!(S.security?.s_isms_cert) },
-    // 관리수준진단
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📊</text></svg>`, l: "관리수준진단", show: true },
-    // 법정대리인
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">👪</text></svg>`, l: "법정대리인", show: S.child === "yes" },
-    // 개인정보보호책임자
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">👨‍💼</text></svg>`, l: "개인정보보호책임자", show: true },
-    // 국내대리인
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">🤝</text></svg>`, l: "국내대리인", show: S.domAgent === "yes" },
-    // 고충처리부서
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><circle cx="22" cy="15" r="5" fill="#dbeafe" stroke="#1a56db" stroke-width="1.2"/><path d="M12 35c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="none" stroke="#1a56db" stroke-width="1.2" stroke-linecap="round"/><path d="M16 17.5c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#f97316" stroke-width="1.4" stroke-linecap="round"/><rect x="14" y="17.5" width="3" height="5" rx="1.5" fill="#f97316"/><rect x="27" y="17.5" width="3" height="5" rx="1.5" fill="#f97316"/><path d="M30 22.5v1c0 1.7-1.3 3-3 3h-3" fill="none" stroke="#f97316" stroke-width="1.3" stroke-linecap="round"/></svg>`, l: "고충처리부서", show: true },
-    // 권익침해 구제
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">🛡️</text></svg>`, l: "권익침해 구제", show: activeAgencies.length > 0 },
-    // 열람청구
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📄</text></svg>`, l: "열람청구", show: true },
-    // 영상정보처리기기
     { svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📹</text></svg>`, l: "영상정보처리기기", show: allCollected.includes("영상") },
   ].filter(ic => ic.show);
   // 상단 카테고리 nav에 표시할 라벨 목록
@@ -1097,84 +398,22 @@ function buildPreview() {
 
   // Build TOC items — stable key, dynamic sequential numbering
   const tocItems = [
-    {
-      k: "collect",
-      l: "개인정보의 처리 목적, 처리 항목, 보유 및 이용기간",
-      show: true,
-    },
-    {
-      k: "child",
-      l: "만 14세 미만 아동의 개인정보 처리",
-      show: S.child === "yes",
-      opt: true,
-    },
+    { k: "collect", l: "개인정보의 처리 목적, 처리 항목, 보유 및 이용기간", show: true },
+    { k: "child", l: "만 14세 미만 아동의 개인정보 처리", show: S.child === "yes", opt: true },
     { k: "destroy", l: "개인정보의 파기 절차 및 방법", show: true },
-    {
-      k: "tp",
-      l: "개인정보의 제3자 제공",
-      show: S.thirdParty === "yes",
-      opt: true,
-    },
-    {
-      k: "delegate",
-      l: "개인정보 처리업무의 위탁",
-      show: S.delegate === "yes",
-      opt: true,
-    },
-    {
-      k: "overseas",
-      l: "개인정보의 국외 이전",
-      show: S.overseas === "yes",
-      opt: true,
-    },
+    { k: "tp", l: "개인정보의 제3자 제공", show: S.thirdParty === "yes", opt: true },
+    { k: "delegate", l: "개인정보 처리업무의 위탁", show: S.delegate === "yes", opt: true },
+    { k: "overseas", l: "개인정보의 국외 이전", show: S.overseas === "yes", opt: true },
     { k: "security", l: "개인정보의 안전성 확보 조치", show: true },
-    {
-      k: "adduse",
-      l: "추가적인 이용·제공 판단 기준",
-      show: S.addUsage === "yes",
-      opt: true,
-    },
-    {
-      k: "sensitive",
-      l: "민감정보의 공개 가능성 및 비공개 선택 방법",
-      show: S.sensitive === "yes",
-      opt: true,
-    },
-    {
-      k: "pseudo",
-      l: "가명정보 처리에 관한 사항",
-      show: S.pseudonym === "yes",
-      opt: true,
-    },
-    {
-      k: "cookie",
-      l: "개인정보 자동수집 장치의 설치·운영 및 거부",
-      show: S.cookie === "yes",
-      opt: true,
-    },
-    {
-      k: "behavior",
-      l: "행태정보의 수집·이용·제공 및 거부",
-      show: S.behavioral === "yes",
-      opt: true,
-    },
-    {
-      k: "autodec",
-      l: "자동화된 결정에 관한 사항",
-      show: S.autoDecision === "yes",
-      opt: true,
-    },
-    {
-      k: "rights",
-      l: "정보주체와 법정대리인의 권리·의무 및 행사방법",
-      show: true,
-    },
+    { k: "adduse", l: "추가적인 이용·제공 판단 기준", show: S.addUsage === "yes", opt: true },
+    { k: "sensitive", l: "민감정보의 공개 가능성 및 비공개 선택 방법", show: S.sensitive === "yes", opt: true },
+    { k: "pseudo", l: "가명정보 처리에 관한 사항", show: S.pseudonym === "yes", opt: true },
+    { k: "cookie", l: "개인정보 자동수집 장치의 설치·운영 및 거부", show: S.cookie === "yes", opt: true },
+    { k: "behavior", l: "행태정보의 수집·이용·제공 및 거부", show: S.behavioral === "yes", opt: true },
+    { k: "autodec", l: "자동화된 결정에 관한 사항", show: S.autoDecision === "yes", opt: true },
+    { k: "rights", l: "정보주체와 법정대리인의 권리·의무 및 행사방법", show: true },
     { k: "cpo", l: "개인정보 보호책임자 및 고충처리 부서", show: true },
-    {
-      k: "remedy",
-      l: "정보주체의 권익침해에 대한 구제방법",
-      show: activeAgencies.length > 0,
-    },
+    { k: "remedy", l: "정보주체의 권익침해에 대한 구제방법", show: activeAgencies.length > 0 },
     { k: "agent", l: "국내대리인 지정", show: S.domAgent === "yes", opt: true },
     { k: "change", l: "개인정보 처리방침의 변경", show: true },
   ];
@@ -1342,6 +581,7 @@ ${buildMergedTable(S.tpLegal, [
   {key:"receiver", label:"제공받는 자"},
   {key:"purpose",  label:"제공 목적"},
   {key:"items",    label:"제공 항목"},
+  {key:"retention",label:"보유·이용기간", cls:"c"},
 ])}`
     : ""
 }
@@ -1475,18 +715,74 @@ ${
   S.behavioral === "yes"
     ? `
 ${sec("behavior", "행태정보의 수집·이용·제공 및 거부", true)}
-<p>${alias}는 서비스 이용과정에서 정보주체에게 최적화된 맞춤형 서비스 및 온라인 맞춤형 광고 등을 제공하기 위하여 행태정보를 처리하고 있습니다.</p>
+<ul class="pp-list">
+<li>① ${alias}는 서비스 이용과정에서 ${S.bhPurpose || "(목적을 입력해 주세요)"}하기 위하여 ${S.bhTool || "쿠키"}를 활용하여 ${S.bhIdentify || "개인을 식별할 수 없는 비식별 정보"}으로 행태정보를 처리하고 있습니다.</li>
+<li>② ${alias}는 자사가 운영하는 웹사이트에서 다음과 같이 행태정보를 수집하고 있습니다.
 ${
   S.bhItems.length > 0 && S.bhItems.some((r) => r.items)
-    ? `
-${buildMergedTable(S.bhItems, [
-  {key:"items",    label:"수집 항목"},
-  {key:"purpose",  label:"수집 목적"},
-  {key:"method",   label:"수집 방법"},
-  {key:"retention",label:"보유·이용기간", cls:"c"},
-])}`
+    ? buildPolicyTable(S.bhItems, [
+        {key:"legal",    label:"법적 근거"},
+        {key:"items",    label:"수집 항목"},
+        {key:"method",   label:"수집 방법"},
+        {key:"purpose",  label:"수집 목적"},
+        {key:"retention",label:"보유 및 이용기간", cls:"c"},
+      ], "행태정보 수집 표", true)
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">행태정보 항목을 추가해 주세요.</p>'
 }
+</li>
+${S.bhProvide === "yes" ? `<li>③ ${alias}는 다음과 같이 행태정보를 제3자에게 제공하고 있습니다.
+${
+  S.bhTpItems.length > 0 && S.bhTpItems.some((r) => r.recipient)
+    ? buildPolicyTable(S.bhTpItems, [
+        {key:"legal",     label:"법적 근거"},
+        {key:"recipient", label:"제공받는 자"},
+        {key:"items",     label:"제공 항목"},
+        {key:"purpose",   label:"제공받는 자의 이용 목적"},
+        {key:"retention", label:"제공받는 자의 보유 및 이용기간", cls:"c"},
+      ], "행태정보 제3자 제공 표", true)
+    : '<p style="color:#aaa;font-style:italic;font-size:12px;">제3자 제공 항목을 추가해 주세요.</p>'
+}
+</li>` : ""}
+${S.bhExtCollect === "yes" && S.bhAutoDevices.length > 0 && S.bhAutoDevices.some((d) => d.device) ? `<li>${S.bhProvide === "yes" ? "④" : "③"} ${alias}는 온라인 맞춤형 광고 등을 제공하기 위하여 제3자가 운영하는 웹·앱에 설치된 개인정보 자동 수집 장치로부터 행태정보를 수집·이용하고 있습니다.
+${buildPolicyTable(S.bhAutoDevices, [
+  {key:"device",  label:"수집장치 명칭"},
+  {key:"type",    label:"수집장치 종류"},
+  {key:"company", label:"수집해가는 사업자"},
+  {key:"items",   label:"수집해가는 행태정보 항목"},
+  {key:"purpose", label:"수집해가는 목적"},
+], "자동수집장치 현황 표", true)}
+</li>` : ""}
+${S.bhFlags.bh_nosensitive ? (() => { const n = [S.bhProvide === "yes", S.bhExtCollect === "yes" && S.bhAutoDevices.some(d=>d.device)].filter(Boolean).length; const idx = ["③","④","⑤"][n] || "⑤"; return `<li>${idx} ${alias}는 ${S.bhSensitivePurpose || "온라인 맞춤형 광고 등"}에 필요한 최소한의 행태 정보만을 수집하며, 사상, 신념, 병력 등 개인의 권리·이익이나 사생활을 침해할 우려가 있는 민감한 행태 정보를 수집하지 않습니다.</li>`; })() : ""}
+${S.bhFlags.bh_nochild ? (() => { const n = [S.bhProvide === "yes", S.bhExtCollect === "yes" && S.bhAutoDevices.some(d=>d.device), S.bhFlags.bh_nosensitive].filter(Boolean).length; const idx = ["③","④","⑤","⑥"][n] || "⑥"; return `<li>${idx} ${alias}는 14세 미만임을 알고 있는 ${S.bhChildAction || "아동에게 맞춤형 광고를 제공"}하려는 경우 사전에 법정대리인의 동의를 받고 있으며, 이외에는 맞춤형 광고를 목적으로 아동의 행태정보를 수집하지 않고, 아동에게 맞춤형 광고를 제공하지 않습니다.</li>`; })() : ""}
+${(S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge) ? (() => { const n = [S.bhProvide === "yes", S.bhExtCollect === "yes" && S.bhAutoDevices.some(d=>d.device), S.bhFlags.bh_nosensitive, S.bhFlags.bh_nochild].filter(Boolean).length; const idx = ["③","④","⑤","⑥","⑦"][n] || "⑦"; return `<li>${idx} 정보주체는 웹브라우저의 쿠키 설정 변경 등을 통해 맞춤형 광고를 일괄적으로 차단·허용할 수 있습니다. 다만, 쿠키 설정 변경 시 웹사이트 자동로그인 등 일부 서비스의 이용이 제한될 수 있습니다.
+<div class="policy_table scroll" style="margin-top:8px;"><table><colgroup><col style="width:22%"><col style="width:32%"><col></colgroup>
+<thead><tr><th>브라우저</th><th>구분</th><th>설정 경로</th></tr></thead>
+<tbody>
+${S.bhBrowsers.bh_chrome ? `<tr><td rowspan="3">크롬(Chrome)</td><td>웹브라우저에 저장된 쿠키 삭제 방법</td><td>오른쪽 상단 '⋮' → 설정 → '개인정보 보호 및 보안' → '인터넷 사용기록 삭제'</td></tr>
+<tr><td>웹브라우저에서 제3자 쿠키 차단 방법</td><td>오른쪽 상단 '⋮' → 설정 → '개인정보 보호 및 보안' → '서드파티쿠키' → '서드파티쿠키 차단'</td></tr>
+<tr><td>웹브라우저에서 모든 쿠키 저장 차단 방법</td><td>오른쪽 상단 '⋮' → '새 시크릿 창'<p class="sub_txt">*시크릿 모드로 전환되어 방문 기록, 쿠키 및 사이트 데이터, 양식에 입력된 정보가 기기에 저장되지 않습니다.</p></td></tr>` : ""}
+${S.bhBrowsers.bh_edge ? `<tr><td rowspan="3">엣지(Edge)</td><td>웹브라우저에 저장된 쿠키 삭제 방법</td><td>오른쪽 상단 '…' → 설정 → '쿠키 및 사이트 권한' → '쿠키 및 사이트 데이터 관리 및 삭제' → 제거 여부 선택</td></tr>
+<tr><td>웹브라우저에서 제3자 쿠키 차단 방법</td><td>오른쪽 상단 '…' → 설정 → '개인정보, 검색 및 서비스' → '추적방지' : 추적방지 여부 및 수준(균형조정 또는 엄격) 선택<br>(또는) 오른쪽 상단 '…' → 설정 → '쿠키 및 사이트 권한' → '쿠키 및 사이트 데이터 관리 및 삭제' → '타사 쿠키 차단' 선택</td></tr>
+<tr><td>웹브라우저에서 모든 쿠키 저장 차단 방법</td><td>오른쪽 상단 '…' → '새 InPrivate 창'<p class="sub_txt">*시크릿 모드로 전환되어 방문 기록, 쿠키 및 사이트 데이터, 양식에 입력된 정보가 기기에 저장되지 않습니다.</p></td></tr>` : ""}
+</tbody></table></div>
+</li>`; })() : ""}
+${S.bhFlags.bh_mobile ? (() => { const n = [S.bhProvide === "yes", S.bhExtCollect === "yes" && S.bhAutoDevices.some(d=>d.device), S.bhFlags.bh_nosensitive, S.bhFlags.bh_nochild, S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge].filter(Boolean).length; const idx = ["③","④","⑤","⑥","⑦","⑧"][n] || "⑧"; return `<li>${idx} ${alias}는 앱에서 ${S.bhMobileAction || "맞춤형 광고를 위하여 광고식별자를 수집·이용"}합니다. 정보주체는 모바일 단말기의 설정 변경을 통해 앱의 ${S.bhMobileAdType || "맞춤형 광고"}를 차단·허용할 수 있습니다.
+<div class="policy_table scroll" style="margin-top:8px;"><table><colgroup><col style="width:22%"><col></colgroup>
+<thead><tr><th>구분</th><th>설정 경로</th></tr></thead>
+<tbody>
+<tr><td>안드로이드</td><td>① 설정 → ② 보안 및 개인정보 보호 → ③ 개인정보 보호 → ④ 기타 개인정보 설정 → ⑤ 광고 → ⑥ 광고ID 재설정 / 광고ID 삭제</td></tr>
+<tr><td>아이폰</td><td>① 설정 → ② 개인정보 보호 및 보안 → ③ 추적 → ④ 앱 추적 허용 해제</td></tr>
+</tbody></table></div>
+<p class="sub_txt">※ 모바일 OS 버전에 따라 메뉴 및 방법이 다소 상이할 수 있습니다.</p>
+</li>`; })() : ""}
+${(S.bhContactDept || S.bhContactPerson || S.bhContactPhone || S.bhContactEmail) ? (() => { const n = [S.bhProvide === "yes", S.bhExtCollect === "yes" && S.bhAutoDevices.some(d=>d.device), S.bhFlags.bh_nosensitive, S.bhFlags.bh_nochild, S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge, S.bhFlags.bh_mobile].filter(Boolean).length; const idx = ["③","④","⑤","⑥","⑦","⑧","⑨"][n] || "⑨"; return `<li>${idx} 정보주체는 아래의 연락처로 행태정보와 관련하여 궁금한 사항과 거부권 행사, 피해 신고 접수 등을 문의할 수 있습니다.
+<div class="policy_table scroll" style="margin-top:8px;"><table><colgroup><col style="width:22%"><col style="width:28%"><col></colgroup>
+<thead><tr><th>구분</th><th>담당부서 / 담당자</th><th>연락처</th></tr></thead>
+<tbody>
+<tr><td>개인정보 보호 담당부서</td><td>${[S.bhContactDept, S.bhContactPerson].filter(Boolean).join(" / ") || "-"}</td><td>${[S.bhContactPhone, S.bhContactEmail].filter(Boolean).join("<br>") || "-"}</td></tr>
+</tbody></table></div>
+</li>`; })() : ""}
+</ul>
 `
     : ""
 }
@@ -1575,146 +871,3 @@ ${sec("change", "개인정보 처리방침의 변경")}
 <p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다. (시행일자별 링크 제공)</p>
 `;
 }
-
-// ════════════════════════════════════════
-//  EXPORT
-// ════════════════════════════════════════
-function generateFinalHTML() {
-  const content = document.getElementById("previewContent").innerHTML;
-  const co = S.companyName || "회사";
-  const svc = S.serviceName || "";
-  const eff = S.effectiveDate || "";
-  const scriptTag = "<scr" + "ipt>";
-  const scriptCloseTag = "</" + "script>";
-  const css = `*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f7;color:#333;}
-.wrapper{max-width:780px;margin:0 auto;padding:36px 20px 80px;}
-.preview-doc{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.15);overflow:hidden;font-family:'Noto Sans KR',sans-serif;}
-@media(max-width:600px){.pp{padding:28px 20px;}}
-.pp{padding:48px 56px;color:#000;font-size:14px;line-height:1.7;}
-.pp-h2{font-size:26px;font-weight:700;color:#111;text-align:center;margin-bottom:6px;letter-spacing:-.5px;}
-.pp-date-row{display:flex;justify-content:flex-end;margin:36px 0 20px;}
-.pp-date-badge{background:#f4f5f7;border-radius:7px;padding:5px 14px;font-size:12px;font-weight:600;color:#000;border:1px solid #e0e0e0;}
-.pp-intro{color:#000;font-size:13px;line-height:1.85;margin-bottom:8px;}
-.pp-icon-nav{border:1px solid #e2e2e5;border-radius:10px;padding:12px 16px;margin:12px 0;display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:1fr;}
-.pp-icon-item{display:flex;flex-direction:column;align-items:center;padding:8px 4px;text-align:center;}
-.pp-icon-circle{width:52px;height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
-.pp-icon-circle svg{width:52px;height:52px;}
-.pp-icon-label{font-size:11px;font-weight:700;color:#000;word-break:keep-all;}
-.pp-toc-box{background:#f4f5f7;border-radius:7px;padding:10px 16px;margin:12px 0;}
-.pp-toc-box ul{list-style:none;}
-.pp-toc-box ul li{padding:2px 0;}
-.pp-toc-link{display:flex;align-items:center;gap:4px;color:#444;text-decoration:none;padding:4px 7px;border-radius:5px;transition:background .15s,color .15s;font-size:12px;}
-.pp-toc-link:hover{background:#e4e8ff;color:#4f6ef7;}
-.pp-toc-icon{display:inline-flex;align-items:center;flex-shrink:0;}
-.pp-toc-icon svg{width:22px;height:22px;}
-.pp-toc-num{font-size:10px;font-weight:700;min-width:20px;flex-shrink:0;}
-.pp-toc-opt{font-size:9px;color:#aaa;margin-left:2px;}
-.pp-sec{font-size:14px;font-weight:700;color:#343434;margin-top:28px;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid #f0f0f0;display:flex;align-items:center;gap:7px;scroll-margin-top:20px;}
-.pp-sec-icons{display:flex;align-items:center;gap:3px;flex-shrink:0;}
-.pp-sec-icon{display:inline-flex;align-items:center;}
-.pp-sec-icon svg{width:28px;height:28px;}
-.pp p{font-size:13px;color:#000;margin-bottom:7px;line-height:1.8;}
-.pp-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;}
-.pp-table th{background:#f2f2f2;padding:7px 9px;text-align:center;border:1px solid #ddd;font-weight:700;color:#000;}
-.pp-table td{padding:7px 9px;border:1px solid #ddd;color:#000;vertical-align:middle;text-align:center;}
-.pp-table td.c{text-align:center;vertical-align:middle;}
-.pp ul.pp-list{padding-left:0;margin:6px 0;list-style:none;}
-.pp ul.pp-list li{font-size:13px;color:#000;padding:2px 0;line-height:1.7;}
-.pp ul.pp-list li::before{content:none;}
-.pp-contact-box{background:#f8f9fa;border-radius:7px;padding:14px 18px;margin:10px 0;}
-.pp-contact-title{font-weight:700;font-size:13px;color:#000;margin-bottom:5px;}
-.pp-contact-info{font-size:12px;color:#000;line-height:1.8;}
-.pp-eff-date{font-size:13px;color:#000;}
-.pp-sub-title{font-size:13px;font-weight:700;color:#000;margin:14px 0 6px;}
-.pp-placeholder{color:#bbb;font-style:italic;}
-.pp-hidden{display:none;}
-a{color:#4f6ef7;}`;
-
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${svc ? svc + " " : co + " "}개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-<style>${css}</style>
-${scriptTag}
-document.addEventListener('DOMContentLoaded',function(){
-  document.querySelectorAll('.pp-toc-link').forEach(function(a){
-    a.addEventListener('click',function(e){
-      var h=a.getAttribute('href');
-      if(h&&h.startsWith('#')){e.preventDefault();var t=document.querySelector(h);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}
-    });
-  });
-});
-${scriptCloseTag}
-</head>
-<body>
-<div class="wrapper"><div class="preview-doc"><div class="pp">${content}</div></div></div>
-</body>
-</html>`;
-}
-
-function downloadHTML() {
-  const html = generateFinalHTML();
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  const name = (S.companyName || "company").replace(/[^a-zA-Z0-9가-힣]/g, "");
-  a.download = "개인정보처리방침_" + name + ".html";
-  a.click();
-  showToast("✅ HTML 파일이 다운로드되었습니다!", "success");
-}
-
-function copyHTML() {
-  navigator.clipboard
-    .writeText(generateFinalHTML())
-    .then(() => showToast("📋 HTML 코드가 복사되었습니다!", "success"));
-}
-
-function showToast(msg, type = "") {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast " + (type || "") + " show";
-  setTimeout(() => t.classList.remove("show"), 3000);
-}
-
-// INIT
-window.onload = function () {
-  addCollect("noConsent");
-  addCollect("consent");
-  updatePreview();
-};
-
-// SIDEBAR RESIZE
-(function () {
-  const handle = document.getElementById("resizeHandle");
-  const sidebar = document.querySelector(".sidebar");
-  let dragging = false;
-  let startX, startWidth;
-
-  handle.addEventListener("mousedown", function (e) {
-    dragging = true;
-    startX = e.clientX;
-    startWidth = sidebar.offsetWidth;
-    handle.classList.add("dragging");
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  });
-
-  document.addEventListener("mousemove", function (e) {
-    if (!dragging) return;
-    const delta = e.clientX - startX;
-    const newWidth = Math.min(700, Math.max(280, startWidth + delta));
-    sidebar.style.width = newWidth + "px";
-  });
-
-  document.addEventListener("mouseup", function () {
-    if (!dragging) return;
-    dragging = false;
-    handle.classList.remove("dragging");
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-  });
-})();
