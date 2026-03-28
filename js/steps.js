@@ -24,6 +24,13 @@ function renderSteps() {
         <label class="field-label">시행일 <span class="req">*</span></label>
         <input type="text" id="effectiveDate" placeholder="예: 2025. 09. 15" oninput="updatePreview()" />
       </div>
+      <div class="field-group" style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:14px">
+        <label class="field-label">이전 개인정보 처리방침 링크
+          <span style="font-size:11px;color:#aaa;font-weight:400">(선택 · 시행일자별)</span>
+        </label>
+        <div id="prevPolicyItems"></div>
+        <button class="btn-add" onclick="addPrevPolicy()">＋ 이전 방침 추가</button>
+      </div>
     </div>
 
     <!-- ── STEP 2: 수집항목 ── -->

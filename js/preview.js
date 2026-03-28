@@ -1423,6 +1423,19 @@ ${sec("agent", "국내대리인 지정", true)}
 
 ${sec("change", "개인정보 처리방침의 변경")}
 <p class="pp-eff-date">① 이 개인정보 처리방침은 <strong>${eff}</strong>부터 적용됩니다.</p>
-<p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다. (시행일자별 링크 제공)</p>
+${(() => {
+  const valid = S.prevPolicies.filter((p) => p.date || p.url);
+  if (!valid.length) {
+    return `<p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다. (시행일자별 링크 제공)</p>`;
+  }
+  const items = valid.map((p) => {
+    const label = p.date || p.url;
+    return p.url
+      ? `<a href="${p.url}" target="_blank" class="pp-prev-list-item">${label}<span class="pp-prev-list-arrow">→</span></a>`
+      : `<div class="pp-prev-list-nolink">${label}</div>`;
+  }).join("");
+  return `<p style="margin-top:6px;font-size:12px;">② 이전의 개인정보 처리방침은 아래에서 확인하실 수 있습니다.</p>
+<div class="pp-prev-wrap"><details class="pp-prev-details"><summary class="pp-prev-header">이전 처리방침 <span class="pp-prev-toggle-arrow">▾</span></summary><div class="pp-prev-list">${items}</div></details></div>`;
+})()}
 `;
 }

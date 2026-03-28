@@ -1,4 +1,35 @@
 // ════════════════════════════════════════
+//  DYNAMIC — PREV POLICIES
+// ════════════════════════════════════════
+function addPrevPolicy() {
+  const id = "prevPolicy_" + Date.now();
+  const c = document.getElementById("prevPolicyItems");
+  const d = document.createElement("div");
+  d.className = "card-item";
+  d.id = id;
+  d.innerHTML = `
+    <div class="card-header"><span class="card-title">이전 방침</span><button class="btn-icon" onclick="removePrevPolicy('${id}')">✕</button></div>
+    <div class="field-group"><label class="field-label">시행일</label><input type="text" data-field="date" placeholder="예: 2024. 01. 01" oninput="syncPrevPolicies();updatePreview()"></div>
+    <div class="field-group" style="margin-top:6px"><label class="field-label">URL</label><input type="text" data-field="url" placeholder="예: https://example.com/privacy-2024" oninput="syncPrevPolicies();updatePreview()"></div>
+  `;
+  c.appendChild(d);
+}
+
+function removePrevPolicy(id) {
+  document.getElementById(id)?.remove();
+  syncPrevPolicies();
+  updatePreview();
+}
+
+function syncPrevPolicies() {
+  S.prevPolicies = [];
+  document.querySelectorAll("#prevPolicyItems .card-item").forEach((d) => {
+    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
+    S.prevPolicies.push({ date: g("date"), url: g("url") });
+  });
+}
+
+// ════════════════════════════════════════
 //  DYNAMIC — DEPT
 // ════════════════════════════════════════
 function addDept() {
