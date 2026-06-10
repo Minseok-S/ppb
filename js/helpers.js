@@ -48,6 +48,7 @@ function toggleItem(el, group) {
     rights: S.rights,
     rightsActions: S.rightsActions,
     agency: S.agency,
+    pseudonymSecurity: S.pseudonymSecurity,
   };
   if (maps[group]) maps[group][key] = el.classList.contains("checked");
   if (group === "rights" && key === "r_web") {

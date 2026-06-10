@@ -948,6 +948,83 @@ function renderSteps() {
             <div id="pseudonymProvideRows"></div>
             <button class="btn-add" onclick="addPseudoProvide()">+ 제공 항목 추가</button>
           </div>
+
+          <!-- 가명정보 안전성 확보조치 -->
+          <div class="field-group" style="margin-top:16px">
+            <label class="field-label">가명정보 안전성 확보조치 <span style="font-size:11px;color:#888;font-weight:400;">(보호법 제28조의4)</span></label>
+            <div style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-top:6px">
+
+              <div class="field-group">
+                <label class="field-label" style="font-size:12px;color:#3b5bdb;">관리적 조치</label>
+                <div class="toggle-group">
+                  <div class="toggle-item" data-key="ps_mgmt" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">내부 관리계획 수립·시행</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item" data-key="ps_edu" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">정기적 직원 교육</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item" data-key="ps_org" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">전담 조직 운영</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                </div>
+                <div class="sec-extra-row">
+                  <input type="text" id="ps_sec_mgmt_input" class="field-input" placeholder="관리적 조치 직접 추가" onkeydown="if(event.key==='Enter')addPsSecItem('mgmt')" />
+                  <button class="btn-add-sm" onclick="addPsSecItem('mgmt')">추가</button>
+                </div>
+                <div id="ps_sec_mgmt_chips" class="sec-chips"></div>
+              </div>
+
+              <div class="field-group" style="margin-top:10px">
+                <label class="field-label" style="font-size:12px;color:#3b5bdb;">기술적 조치</label>
+                <div class="toggle-group">
+                  <div class="toggle-item" data-key="ps_sep" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">가명정보와 추가정보의 분리 보관</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item" data-key="ps_destroy" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">추가정보 불필요 시 파기</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item" data-key="ps_access" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">접근 권한 분리 및 접근통제시스템 설치</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item" data-key="ps_log" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">처리기록 및 접속기록 보관·점검</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item" data-key="ps_sec" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">보안프로그램 설치</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                </div>
+                <div class="sec-extra-row">
+                  <input type="text" id="ps_sec_tech_input" class="field-input" placeholder="기술적 조치 직접 추가" onkeydown="if(event.key==='Enter')addPsSecItem('tech')" />
+                  <button class="btn-add-sm" onclick="addPsSecItem('tech')">추가</button>
+                </div>
+                <div id="ps_sec_tech_chips" class="sec-chips"></div>
+              </div>
+
+              <div class="field-group" style="margin-top:10px">
+                <label class="field-label" style="font-size:12px;color:#3b5bdb;">물리적 조치</label>
+                <div class="toggle-group">
+                  <div class="toggle-item" data-key="ps_phys" onclick="toggleItem(this,'pseudonymSecurity')">
+                    <div><div class="toggle-label">전산실, 자료보관실 등의 출입통제</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                </div>
+                <div class="sec-extra-row">
+                  <input type="text" id="ps_sec_phys_input" class="field-input" placeholder="물리적 조치 직접 추가" onkeydown="if(event.key==='Enter')addPsSecItem('phys')" />
+                  <button class="btn-add-sm" onclick="addPsSecItem('phys')">추가</button>
+                </div>
+                <div id="ps_sec_phys_chips" class="sec-chips"></div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </div>

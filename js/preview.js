@@ -1128,15 +1128,15 @@ ${
         const rows = S.pseudonymRows || [];
         const hasRows =
           rows.length > 0 &&
-          rows.some((r) => r.purpose || r.items || r.retention);
+          rows.some((r) => r.category || r.purpose || r.items || r.retention);
         const tableRows = hasRows
           ? rows
               .map(
                 (r) =>
-                  `<tr><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td><td>${r.retention || "-"}</td></tr>`,
+                  `<tr><td>${r.category || "-"}</td><td>${r.purpose || "-"}</td><td>${r.items || "-"}</td><td>${r.retention || "-"}</td></tr>`,
               )
               .join("\n    ")
-          : `<tr><td colspan="3" style="color:#aaa;font-style:italic;text-align:center;">← 가명처리 항목을 추가해 주세요</td></tr>`;
+          : `<tr><td colspan="4" style="color:#aaa;font-style:italic;text-align:center;">← 가명처리 항목을 추가해 주세요</td></tr>`;
 
         const provideRows = S.pseudonymProvideRows || [];
         const hasProvide =
@@ -1147,7 +1147,7 @@ ${
           );
         const provideTable = hasProvide
           ? `
-<p>또한 ${alias}는 가명처리된 개인정보를 다음과 같이 제3자에게 제공하고 있습니다.</p>
+<p>▶ 가명정보의 제3자 제공에 관한 사항 </p>
 <table class="pp-table">
   <thead><tr><th>제공받는 자</th><th>제공 항목</th><th>제공 목적</th><th>보유 기간</th></tr></thead>
   <tbody>
@@ -1161,15 +1161,58 @@ ${
 </table>`
           : "";
 
+        const ps = S.pseudonymSecurity || {};
+        const psMgmt = ["ps_mgmt", "ps_edu", "ps_org"]
+          .filter((k) => ps[k])
+          .map(
+            (k) =>
+              ({
+                ps_mgmt: "내부 관리계획 수립·시행",
+                ps_edu: "정기적 직원 교육",
+                ps_org: "전담 조직 운영",
+              })[k],
+          )
+          .concat(ps.ps_mgmt_extra || []);
+        const psTech = ["ps_sep", "ps_destroy", "ps_access", "ps_log", "ps_sec"]
+          .filter((k) => ps[k])
+          .map(
+            (k) =>
+              ({
+                ps_sep: "가명정보와 추가정보의 분리 보관",
+                ps_destroy: "추가정보 불필요 시 파기",
+                ps_access:
+                  "가명정보와 추가정보에 대한 접근 권한의 분리, 접근통제시스템 설치",
+                ps_log: "가명정보 처리기록 및 접속기록의 보관·점검",
+                ps_sec: "보안프로그램 설치",
+              })[k],
+          )
+          .concat(ps.ps_tech_extra || []);
+        const psPhys = ["ps_phys"]
+          .filter((k) => ps[k])
+          .map(() => "가명정보가 보관된 전산실, 자료보관실 등의 출입통제")
+          .concat(ps.ps_phys_extra || []);
+        const hasSecMeasures =
+          psMgmt.length > 0 || psTech.length > 0 || psPhys.length > 0;
+        const secMeasuresHtml = hasSecMeasures
+          ? `
+<p style="margin-top:12px;">▶ 「개인정보 보호법」 제28조의4에 따른 가명정보의 안전성 확보조치에 관한 사항</p>
+<ul class="pp-list">
+  ${psMgmt.length > 0 ? `<li><strong>관리적 조치:</strong> ${psMgmt.join(", ")}</li>` : ""}
+  ${psTech.length > 0 ? `<li><strong>기술적 조치:</strong> ${psTech.join(", ")}</li>` : ""}
+  ${psPhys.length > 0 ? `<li><strong>물리적 조치:</strong> ${psPhys.join(", ")}</li>` : ""}
+</ul>`
+          : "";
+
         return `
 ${sec("pseudo", "가명정보 처리에 관한 사항", true)}
-<p>${alias}는 수집한 개인정보를 「개인정보 보호법」 제28조의2에 따라 다음과 같이 가명처리하여 활용하고 있습니다.</p>
+<p>${alias}는 수집한 개인정보를 「개인정보 보호법」 제28조의2에 따라 통계작성, 과학적 연구, 공익적 기록보존 등을 위하여 특정 개인을 알아볼 수 없도록 가명처리하여 다음과 같이 활용하고 있습니다.</p>
+<p>▶ 가명정보의 처리에 관한 사항</p>
 <table class="pp-table">
-  <thead><tr><th>처리 목적</th><th>가명처리 항목</th><th>보유 기간</th></tr></thead>
+  <thead><tr><th>구분</th><th>처리 목적</th><th>이용 항목</th><th>보유 및 이용 기간</th></tr></thead>
   <tbody>
     ${tableRows}
   </tbody>
-</table>${provideTable}`;
+</table>${provideTable}${secMeasuresHtml}`;
       })()
     : ""
 }

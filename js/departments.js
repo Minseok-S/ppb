@@ -135,5 +135,6 @@ function readFields() {
   syncSensitive();
   syncPseudo();
   syncPseudoProvide();
+  syncPseudoSecurity();
   syncAdInfo();
 }
