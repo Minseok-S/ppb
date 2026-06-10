@@ -1,4 +1,37 @@
 // ════════════════════════════════════════
+//  DYNAMIC — BH OWN DEVICES (설치·운영하는 자동 수집 장치)
+// ════════════════════════════════════════
+function addBhOwnDevice() {
+  const id = "bod_" + Date.now(), c = document.getElementById("bhOwnDeviceItems");
+  const d = document.createElement("div");
+  d.className = "card-item";
+  d.id = id;
+  d.innerHTML = `
+    <div class="card-header"><span class="card-title">자동수집장치</span><button class="btn-icon" onclick="removeAndSyncBhOwnDevice('${id}')">✕</button></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">수집장치 명칭</label><input type="text" data-field="name" placeholder="예: 쿠키, 픽셀, SDK" oninput="syncBhOwnDevices();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">수집장치 종류</label><input type="text" data-field="type" placeholder="예: 웹 쿠키, 자바스크립트 태그" oninput="syncBhOwnDevices();updatePreview()"></div>
+    </div>
+    <div class="field-group" style="margin-top:6px"><label class="field-label">수집 목적</label><input type="text" data-field="purpose" placeholder="예: 맞춤형 서비스 제공, 광고 효과 측정" oninput="syncBhOwnDevices();updatePreview()"></div>
+  `;
+  c.appendChild(d);
+}
+
+function removeAndSyncBhOwnDevice(id) {
+  document.getElementById(id)?.remove();
+  syncBhOwnDevices();
+  updatePreview();
+}
+
+function syncBhOwnDevices() {
+  S.bhOwnDevices = [];
+  document.querySelectorAll("#bhOwnDeviceItems .card-item").forEach((d) => {
+    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
+    S.bhOwnDevices.push({ name: g("name"), type: g("type"), purpose: g("purpose") });
+  });
+}
+
+// ════════════════════════════════════════
 //  DYNAMIC — BEHAVIORAL
 // ════════════════════════════════════════
 function addBehavioral() {
@@ -10,7 +43,7 @@ function addBehavioral() {
   d.innerHTML = `
     <div class="card-header"><span class="card-title">행태정보 항목</span><button class="btn-icon" onclick="removeAndSyncBH('${id}')">✕</button></div>
     <div class="field-row">
-      <div class="field-group"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 정보주체 동의" oninput="syncBH();updatePreview()"></div>
+      <div class="field-group bh-legal-field" style="display:${S.bhIdentifyMode === 'identify' ? 'block' : 'none'}"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 정보주체 동의" oninput="syncBH();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 웹사이트 방문·이용 이력" oninput="syncBH();updatePreview()"></div>
     </div>
     <div class="field-row">
@@ -56,7 +89,7 @@ function addTpItem() {
   d.innerHTML = `
     <div class="card-header"><span class="card-title">제3자 제공 항목</span><button class="btn-icon" onclick="removeAndSyncBhTP('${id}')">✕</button></div>
     <div class="field-row">
-      <div class="field-group"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 정보주체 동의" oninput="syncBhTP();updatePreview()"></div>
+      <div class="field-group bh-legal-field" style="display:${S.bhIdentifyMode === 'identify' ? 'block' : 'none'}"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 정보주체 동의" oninput="syncBhTP();updatePreview()"></div>
       <div class="field-group"><label class="field-label">제공받는 자</label><input type="text" data-field="recipient" placeholder="예: 광고사업자명" oninput="syncBhTP();updatePreview()"></div>
     </div>
     <div class="field-row">
@@ -93,6 +126,51 @@ function syncBhTP() {
 }
 
 // ════════════════════════════════════════
+//  DYNAMIC — BH THIRD OUT (제3자가 수집해가는 행태정보)
+// ════════════════════════════════════════
+function addBhThirdOutItem() {
+  const id = "bto_" + Date.now(), c = document.getElementById("bhThirdOutItems");
+  const d = document.createElement("div");
+  d.className = "card-item";
+  d.id = id;
+  d.innerHTML = `
+    <div class="card-header"><span class="card-title">제3자 수집 항목</span><button class="btn-icon" onclick="removeAndSyncBhThirdOut('${id}')">✕</button></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">수집장치 명칭</label><input type="text" data-field="device" placeholder="예: □□ 태그, △△ SDK" oninput="syncBhThirdOut();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">수집장치 종류</label><input type="text" data-field="type" placeholder="예: 자바스크립트(웹), SDK(앱)" oninput="syncBhThirdOut();updatePreview()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">수집해가는 사업자</label><input type="text" data-field="company" placeholder="예: ㈜OOO, OOO Inc" oninput="syncBhThirdOut();updatePreview()"></div>
+      <div class="field-group"><label class="field-label">수집해가는 행태정보 항목</label><input type="text" data-field="items" placeholder="예: 웹사이트 방문 이력, 광고식별자" oninput="syncBhThirdOut();updatePreview()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">수집해가는 목적</label><input type="text" data-field="purpose" placeholder="예: 맞춤형 광고 게재" oninput="syncBhThirdOut();updatePreview()"></div>
+    </div>
+  `;
+  c.appendChild(d);
+}
+
+function removeAndSyncBhThirdOut(id) {
+  document.getElementById(id)?.remove();
+  syncBhThirdOut();
+  updatePreview();
+}
+
+function syncBhThirdOut() {
+  S.bhThirdOutItems = [];
+  document.querySelectorAll("#bhThirdOutItems .card-item").forEach((d) => {
+    const g = (f) => d.querySelector('[data-field="' + f + '"]')?.value || "";
+    S.bhThirdOutItems.push({
+      device: g("device"),
+      type: g("type"),
+      company: g("company"),
+      items: g("items"),
+      purpose: g("purpose"),
+    });
+  });
+}
+
+// ════════════════════════════════════════
 //  DYNAMIC — AUTO DEVICE (제3자 웹·앱에서 수집) = 가이드 §14 ④
 // ════════════════════════════════════════
 function addAutoDevice() {
@@ -104,7 +182,7 @@ function addAutoDevice() {
   d.innerHTML = `
     <div class="card-header"><span class="card-title">제3자 웹·앱 수집 항목</span><button class="btn-icon" onclick="removeAndSyncAD('${id}')">✕</button></div>
     <div class="field-row">
-      <div class="field-group"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 「개인정보 보호법」제15조제1항제1호 (동의)" oninput="syncAD();updatePreview()"></div>
+      <div class="field-group bh-legal-field" style="display:${S.bhIdentifyMode === 'identify' ? 'block' : 'none'}"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 「개인정보 보호법」제15조제1항제1호 (동의)" oninput="syncAD();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 타사 웹사이트 방문·이용 이력" oninput="syncAD();updatePreview()"></div>
     </div>
     <div class="field-row">
@@ -181,5 +259,12 @@ function syncCED() {
       items: g("items"),
       purpose: g("purpose"),
     });
+  });
+}
+
+function toggleBhLegalFields(mode) {
+  const show = mode === "identify" ? "block" : "none";
+  document.querySelectorAll(".bh-legal-field").forEach((el) => {
+    el.style.display = show;
   });
 }

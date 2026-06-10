@@ -11,11 +11,12 @@ function selectR(onId, offId, key, val) {
     thirdParty: ["tpDetail", "yes"],
     delegate: ["dlDetail", "yes"],
     overseas: ["otDetail", "yes"],
-    cookie: ["cookieDetail", "yes"],
     cookie3rdParty: ["ck3rdDetail", "yes"],
     behavioral: ["bhDetail", "yes"],
     bhProvide: ["bhTpDetail", "yes"],
     bhExtCollect: ["bhExtDetail", "yes"],
+    bhThirdOut: ["bhThirdOutDetail", "yes"],
+    bhAdUse: ["bhAdUseDetail", "yes"],
     addUsage: ["addUsageDetail", "yes"],
     sensitive: ["sensitiveDetail", "yes"],
     pseudonym: ["pseudonymDetail", "yes"],
@@ -31,6 +32,7 @@ function selectR(onId, offId, key, val) {
     if (key === "child" && val === showVal) syncChildItems();
     if (key === "addUsage" && val === showVal) initAU();
   }
+  if (key === "bhIdentifyMode") toggleBhLegalFields(val);
   updatePreview();
 }
 
@@ -41,7 +43,6 @@ function toggleItem(el, group) {
     retention: S.retention,
     destroy: S.destroy,
     security: S.security,
-    browser: S.browser,
     bhBrowsers: S.bhBrowsers,
     bhFlags: S.bhFlags,
     sensitiveTypes: S.sensitiveTypes,
@@ -57,5 +58,16 @@ function toggleItem(el, group) {
     const panel = document.getElementById("rightsOnlineDetail");
     if (panel) panel.style.display = on ? "block" : "none";
   }
+  updatePreview();
+}
+
+function selectBrowserEnv(env) {
+  ["be_web", "be_mobile", "be_both"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("selected");
+  });
+  const target = document.getElementById("be_" + env);
+  if (target) target.classList.add("selected");
+  S.browserEnv = env;
   updatePreview();
 }

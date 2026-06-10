@@ -387,10 +387,14 @@ function buildPreview() {
       p: "모바일 브라우저 아래쪽 '탭' 아이콘 > 비밀 모드 켜기 > 시작",
     },
   };
-  const webBrowsers = ["b_chrome", "b_edge"].filter((k) => S.browser[k]);
-  const mobileBrowsers = ["b_chrome_m", "b_safari", "b_samsung"].filter(
-    (k) => S.browser[k],
-  );
+  const webBrowsers =
+    S.browserEnv === "web" || S.browserEnv === "both"
+      ? ["b_chrome", "b_edge"]
+      : [];
+  const mobileBrowsers =
+    S.browserEnv === "mobile" || S.browserEnv === "both"
+      ? ["b_chrome_m", "b_safari", "b_samsung"]
+      : [];
 
   // Agencies
   const agMap = {
@@ -528,7 +532,12 @@ function buildPreview() {
     {
       svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><rect x="17" y="21.5" width="13" height="8" rx="1.5" fill="white" stroke="#f97316" stroke-width="1.3"/><text x="23.5" y="27.5" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#f97316" font-family="Arial,sans-serif">AI</text></svg>`,
       l: "자동화 수집",
-      show: S.cookie === "yes",
+      show:
+        S.behavioral === "yes" ||
+        (S.cookie3rdParty === "yes" &&
+          S.cookieExtDevices &&
+          S.cookieExtDevices.some((d) => d.device)) ||
+        S.bhThirdOut === "yes",
     },
     {
       svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${HEX}/><${FOLDER}/><circle cx="22" cy="26" r="5.5" fill="#f97316"/><circle cx="19.5" cy="25" r="2" fill="white"/><circle cx="24.5" cy="25" r="2" fill="white"/><path d="M19 28.5c0.5 1 1.5 1.5 3 1.5s2.5-0.5 3-1.5" fill="none" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>`,
@@ -632,7 +641,7 @@ function buildPreview() {
     민감정보: "sensitive",
     가명정보처리: "pseudo",
     "자동화 수집": "cookie",
-    "행태정보 수집": "behavior",
+    "행태정보 수집": "cookie",
     "정보주체의 권리의무": "rights",
     열람청구: "rights",
     안전성확보조치: "security",
@@ -723,23 +732,13 @@ function buildPreview() {
     },
     {
       k: "cookie",
-      l: "개인정보 자동수집 장치의 설치·운영 및 거부",
-      show: S.cookie === "yes",
-      opt: true,
-    },
-    {
-      k: "cookie3rdp",
-      l: "개인정보 자동수집 장치를 통해 제3자가 행태정보를 수집하도록 허용하는 경우",
+      l: "개인정보 자동 수집 장치의 설치·운영 및 거부에 관한 사항",
       show:
-        S.cookie3rdParty === "yes" &&
-        S.cookieExtDevices &&
-        S.cookieExtDevices.some((d) => d.device),
-      opt: true,
-    },
-    {
-      k: "behavior",
-      l: "행태정보의 수집·이용·제공 및 거부",
-      show: S.behavioral === "yes",
+        (S.cookie3rdParty === "yes" &&
+          S.cookieExtDevices &&
+          S.cookieExtDevices.some((d) => d.device)) ||
+        S.behavioral === "yes" ||
+        S.bhThirdOut === "yes",
       opt: true,
     },
     {
@@ -1217,11 +1216,18 @@ ${sec("pseudo", "가명정보 처리에 관한 사항", true)}
     : ""
 }
 
-<!-- 11 쿠키 -->
+<!-- 11+12 통합: 개인정보 자동 수집 장치의 설치·운영 및 거부 -->
 ${
-  S.cookie === "yes"
+  (S.cookie3rdParty === "yes" &&
+    S.cookieExtDevices &&
+    S.cookieExtDevices.some((d) => d.device)) ||
+  S.behavioral === "yes" ||
+  S.bhThirdOut === "yes"
     ? `
-${sec("cookie", "개인정보 자동수집 장치의 설치·운영 및 거부", true)}
+${sec("cookie", "개인정보 자동 수집 장치의 설치·운영 및 거부에 관한 사항", true)}
+${
+  S.behavioral === "yes" || S.bhThirdOut === "yes"
+    ? `<p style="font-weight:700;margin:0 0 6px">&lt;  설치·운영하는 개인정보 자동 수집 장치  &gt;</p>
 <ul class="pp-list">
   <li>① ${alias}는 정보주체에게 개별적인 서비스와 편의를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 '쿠키(cookie)'를 사용합니다.</li>
   <li>② 쿠키는 웹사이트 운영에 이용되는 서버(http)가 정보주체의 브라우저에 보내는 소량의 정보로서 정보주체의 컴퓨터 또는 모바일에 저장되며, 웹사이트 접속 시 정보주체의 브라우저에서 서버로 자동 전송됩니다.</li>
@@ -1231,7 +1237,7 @@ ${sec("cookie", "개인정보 자동수집 장치의 설치·운영 및 거부",
 <ul style="margin-top:8px; padding-left:16px;">
   ${
     webBrowsers.length > 0
-      ? `<li style="margin-bottom:6px;">웹 브라우저에서 쿠키 허용/차단
+      ? `<li style="margin-bottom:6px;">웹 브라우저에서 쿠키 차단 방법
 <table class="pp-table" style="margin-top:6px;">
   <thead><tr><th style="width:35%">브라우저</th><th>설정 방법</th></tr></thead>
   <tbody>${webBrowsers.map((k) => `<tr><td class="c">${bMap[k].n}</td><td>${bMap[k].p}</td></tr>`).join("")}</tbody>
@@ -1240,7 +1246,7 @@ ${sec("cookie", "개인정보 자동수집 장치의 설치·운영 및 거부",
   }
   ${
     mobileBrowsers.length > 0
-      ? `<li style="margin-top:6px;">모바일 브라우저에서 쿠키 허용/차단
+      ? `<li style="margin-top:6px;">모바일 브라우저에서 쿠키 차단 방법
 <table class="pp-table" style="margin-top:6px;">
   <thead><tr><th style="width:35%">브라우저</th><th>설정 방법</th></tr></thead>
   <tbody>${mobileBrowsers.map((k) => `<tr><td class="c">${bMap[k].n}</td><td>${bMap[k].p}</td></tr>`).join("")}</tbody>
@@ -1250,19 +1256,15 @@ ${sec("cookie", "개인정보 자동수집 장치의 설치·운영 및 거부",
 </ul>`
       : ""
   }</li>
-</ul>
-`
+</ul>`
     : ""
 }
-
-<!-- 11.5 제3자 자동수집장치 (가이드 §15) -->
 ${
   S.cookie3rdParty === "yes" &&
   S.cookieExtDevices &&
   S.cookieExtDevices.length > 0 &&
   S.cookieExtDevices.some((d) => d.device)
-    ? `
-${sec("cookie3rdp", "개인정보 자동수집 장치를 통해 제3자가 행태정보를 수집하도록 허용하는 경우", true)}
+    ? `<p style="font-weight:700;margin:${S.behavioral === "yes" ? "16px" : "0"} 0 6px">&lt; 제3자 자동수집 장치 허용 &gt;</p>
 <ul class="pp-list">
 <li>① ${alias}는 정보주체가 웹·앱을 방문하거나 이용하는 경우, 효과적인 서비스 이용과 광고 및 마케팅을 위해 제3자 쿠키 및 광고식별자 등을 자동 수집 장치를 통해 제3자가 수집해가도록 허용하고 있습니다.</li>
 <li>② ${alias}의 웹·앱으로부터 제3자가 수집해가는 행태정보는 다음과 같습니다.
@@ -1304,19 +1306,36 @@ ${buildPolicyTable(
 </ul>`
           : ""
       }</li>
-</ul>
-`
+</ul>`
     : ""
 }
-
-<!-- 12 행태정보 -->
+${
+  S.behavioral === "yes" || S.bhThirdOut === "yes"
+    ? `<p style="font-weight:700;margin:${S.cookie3rdParty === "yes" && S.cookieExtDevices && S.cookieExtDevices.some((d) => d.device) ? "16px" : "0"} 0 6px">&lt; 행태정보의 수집·이용·제공 및 거부 등에 관한 사항 &gt;</p>
+${
+  S.bhOwnDevices &&
+  S.bhOwnDevices.length > 0 &&
+  S.bhOwnDevices.some((d) => d.name)
+    ? `<p style="font-weight:700;margin:8px 0 6px;padding-left:8px">&lt; 설치·운영하는 개인정보 자동 수집 장치 &gt;</p>
+<p style="padding-left:8px">${alias}는 다음과 같은 개인정보 자동 수집 장치를 설치·운영하고 있습니다.</p>
+${buildPolicyTable(
+  S.bhOwnDevices,
+  [
+    { key: "name", label: "수집장치 명칭" },
+    { key: "type", label: "수집장치 종류" },
+    { key: "purpose", label: "수집 목적" },
+  ],
+  "",
+  true,
+)}
+<p style="font-weight:700;margin:14px 0 6px;padding-left:8px">&lt; 행태정보 수집·이용·제공 및 거부 &gt;</p>`
+    : ""
+}
+<ul class="pp-list">
+${S.behavioral === "yes" ? `<li>① ${alias}는 서비스 이용과정에서 ${S.bhPurpose || "(목적을 입력해 주세요)"}하기 위하여 쿠키 등 자동수집 장치를 활용하여 ${S.bhIdentifyMode === "identify" ? "개인을 식별하는 방식" : "개인을 식별하지 않는 방식"}으로 행태정보를 처리하고 있습니다.</li>` : ""}
 ${
   S.behavioral === "yes"
-    ? `
-${sec("behavior", "행태정보의 수집·이용·제공 및 거부", true)}
-<ul class="pp-list">
-<li>① ${alias}는 서비스 이용과정에서 ${S.bhPurpose || "(목적을 입력해 주세요)"}하기 위하여 ${S.bhTool || "쿠키"}를 활용하여 ${S.bhIdentifyMode === "identify" ? "개인을 식별하는 방식" : "개인을 식별하지 않는 방식"}으로 행태정보를 처리하고 있습니다.</li>
-<li>② ${alias}는 자사가 운영하는 웹사이트에서 다음과 같이 행태정보를 수집하고 있습니다.
+    ? `<li>② ${alias}는 자사가 운영하는 웹사이트에서 다음과 같이 행태정보를 수집하고 있습니다.
 ${
   S.bhItems.length > 0 && S.bhItems.some((r) => r.items)
     ? buildPolicyTable(
@@ -1335,7 +1354,9 @@ ${
       )
     : '<p style="color:#aaa;font-style:italic;font-size:12px;">행태정보 항목을 추가해 주세요.</p>'
 }
-</li>
+</li>`
+    : ""
+}
 ${
   S.bhProvide === "yes"
     ? `<li>③ ${alias}는 다음과 같이 행태정보를 제3자에게 제공하고 있습니다.
@@ -1365,10 +1386,95 @@ ${
     : ""
 }
 ${
+  S.bhThirdOut === "yes" &&
+  S.bhThirdOutItems.length > 0 &&
+  S.bhThirdOutItems.some((d) => d.device || d.items)
+    ? (() => {
+        const n = [
+          S.behavioral === "yes",
+          S.behavioral === "yes",
+          S.behavioral === "yes" && S.bhProvide === "yes",
+        ].filter(Boolean).length;
+        const idx = ["①", "②", "③", "④"][n] || "④";
+        return `<li>${idx} ${alias}의 웹·앱으로부터 제3자가 수집해가는 행태정보는 다음과 같습니다.
+${buildPolicyTable(
+  S.bhThirdOutItems,
+  [
+    { key: "device", label: "수집장치 명칭" },
+    { key: "type", label: "수집장치 종류" },
+    { key: "company", label: "수집해가는 사업자" },
+    { key: "items", label: "수집해가는 행태정보 항목" },
+    { key: "purpose", label: "수집해가는 목적" },
+  ],
+  true,
+)}
+${(() => {
+  const hasWeb = S.browserEnv === "web" || S.browserEnv === "both";
+  const hasMob = S.browserEnv === "mobile" || S.browserEnv === "both";
+  const webChrome = hasWeb;
+  const webEdge = hasWeb;
+  const mobChrome = hasMob;
+  const mobSafari = hasMob;
+  const mobSamsung = hasMob;
+  if (!hasWeb && !hasMob) return "";
+  return `<div style="margin-top:12px">
+<p style="font-weight:700;margin:0 0 8px">&lt;제3자 수집 행태정보의 차단 방법&gt;</p>
+${
+  hasWeb
+    ? `<p style="font-weight:600;margin:0 0 4px">▶ 웹 브라우저에서 제3자가 수집해가는 행태정보의 차단 방법</p>
+<div class="policy_table scroll" style="margin-top:6px;"><table><colgroup><col style="width:18%"><col style="width:26%"><col></colgroup>
+<thead><tr><th>브라우저</th><th>구분</th><th>설정 방법</th></tr></thead>
+<tbody>
+${
+  webChrome
+    ? `<tr><td rowspan="2" class="c">크롬<br>(Chrome)</td><td>제3자 쿠키 차단</td><td>오른쪽 상단 '⋮' → ｢설정｣ → ｢개인정보 보호 및 보안｣ → 「서드파티쿠키」 → ｢서드파티쿠키 차단｣ 선택</td></tr>
+<tr><td>모든 쿠키 차단</td><td>오른쪽 상단 '⋮' → ｢새 시크릿 창｣ (시크릿 모드 전환 시 방문 기록·쿠키·사이트 데이터 미저장)</td></tr>`
+    : ""
+}
+${
+  webEdge
+    ? `<tr><td rowspan="2" class="c">엣지<br>(Edge)</td><td>제3자 쿠키 차단</td><td>오른쪽 상단 '‧‧‧' → ｢설정｣ → ｢개인정보, 검색 및 서비스｣ → ｢추적방지｣ 수준 선택(균형조정 또는 엄격)<br>또는 '‧‧‧' → ｢설정｣ → ｢쿠키 및 사이트 권한｣ → ｢쿠키 및 사이트 데이터 관리 및 삭제｣ → ｢타사 쿠키 차단｣</td></tr>
+<tr><td>모든 쿠키 차단</td><td>오른쪽 상단 '‧‧‧' → ｢새 InPrivate 창｣ (시크릿 모드 전환 시 방문 기록·쿠키·사이트 데이터 미저장)</td></tr>`
+    : ""
+}
+</tbody></table></div>`
+    : ""
+}
+${
+  hasMob
+    ? `<p style="font-weight:600;margin:10px 0 4px">▶ 모바일 브라우저에서 제3자가 수집해가는 행태정보의 차단 방법</p>
+<div class="policy_table scroll" style="margin-top:6px;"><table><colgroup><col style="width:18%"><col style="width:26%"><col></colgroup>
+<thead><tr><th>브라우저</th><th>구분</th><th>설정 방법</th></tr></thead>
+<tbody>
+${mobChrome ? `<tr><td class="c">크롬<br>(Chrome)<br><span style="font-size:11px;font-weight:400">[Android]</span></td><td>제3자 쿠키 차단</td><td>크롬 앱 → 오른쪽 상단 '⋮' → ｢설정｣ → ｢사이트 설정｣ → ｢서드파티쿠키｣ → ｢서드파티쿠키 차단｣<br>※ 특정 사이트 허용 시: ｢서드파티쿠키｣ 하단 ｢사이트 예외 추가｣에서 주소 입력</td></tr>` : ""}
+${mobSafari ? `<tr><td class="c">사파리<br>(Safari)</td><td>모든 쿠키 차단</td><td>｢설정｣ → ｢Safari｣ → ｢고급｣ → ｢모든 쿠키 차단｣ 선택</td></tr>` : ""}
+${
+  mobSamsung
+    ? `<tr><td rowspan="2" class="c">삼성<br>인터넷</td><td>제3자 쿠키 차단</td><td>삼성인터넷 앱 → 하단 '≡' → ｢개인정보｣ → ｢개인정보 보호 현황｣ → ｢스마트 추적 방지｣ → ｢엄격｣ 선택</td></tr>
+<tr><td>모든 쿠키 차단</td><td>앱 하단 '탭' → ｢비밀모드 켜기｣ → ｢시작｣ (시크릿 모드 전환 시 방문 기록·쿠키·사이트 데이터 미저장)</td></tr>`
+    : ""
+}
+</tbody></table></div>`
+    : ""
+}
+</div>`;
+})()}
+</li>`;
+      })()
+    : ""
+}
+${
   S.bhExtCollect === "yes" &&
   S.bhAutoDevices.length > 0 &&
   S.bhAutoDevices.some((d) => d.items)
-    ? `<li>${S.bhProvide === "yes" ? "④" : "③"} ${alias}는 온라인 맞춤형 광고 등을 제공하기 위하여 제3자가 운영하는 웹·앱에 설치된 개인정보 자동 수집 장치로부터 행태정보를 수집·이용하고 있습니다.
+    ? (() => {
+        const n = [
+          S.bhProvide === "yes",
+          S.bhThirdOut === "yes" &&
+            S.bhThirdOutItems.some((d) => d.device || d.items),
+        ].filter(Boolean).length;
+        const idx = ["③", "④", "⑤"][n] || "⑤";
+        return `<li>${idx} ${alias}는 온라인 맞춤형 광고 등을 제공하기 위하여 제3자가 운영하는 웹·앱에 설치된 개인정보 자동 수집 장치로부터 행태정보를 수집·이용하고 있습니다.
 ${buildPolicyTable(
   S.bhAutoDevices,
   [
@@ -1383,44 +1489,53 @@ ${buildPolicyTable(
   "제3자 웹·앱 수집 현황",
   true,
 )}
-</li>`
+</li>`;
+      })()
     : ""
 }
 ${
-  S.bhFlags.bh_nosensitive
+  S.bhAdUse === "yes" && S.bhFlags.bh_nosensitive
     ? (() => {
         const n = [
           S.bhProvide === "yes",
+          S.bhThirdOut === "yes" &&
+            S.bhThirdOutItems.some((d) => d.device || d.items),
           S.bhExtCollect === "yes" && S.bhAutoDevices.some((d) => d.items),
         ].filter(Boolean).length;
-        const idx = ["③", "④", "⑤"][n] || "⑤";
+        const idx = ["③", "④", "⑤", "⑥"][n] || "⑥";
         return `<li>${idx} ${alias}는 ${S.bhSensitivePurpose || "온라인 맞춤형 광고 등"}에 필요한 최소한의 행태 정보만을 수집하며, 사상, 신념, 병력 등 개인의 권리·이익이나 사생활을 침해할 우려가 있는 민감한 행태 정보를 수집하지 않습니다.</li>`;
       })()
     : ""
 }
 ${
-  S.bhFlags.bh_nochild
+  S.bhAdUse === "yes"
     ? (() => {
         const n = [
           S.bhProvide === "yes",
+          S.bhThirdOut === "yes" &&
+            S.bhThirdOutItems.some((d) => d.device || d.items),
           S.bhExtCollect === "yes" && S.bhAutoDevices.some((d) => d.items),
-          S.bhFlags.bh_nosensitive,
+          S.bhAdUse === "yes" && S.bhFlags.bh_nosensitive,
         ].filter(Boolean).length;
-        const idx = ["③", "④", "⑤", "⑥"][n] || "⑥";
-        return `<li>${idx} ${alias}는 14세 미만임을 알고 있는 ${S.bhChildAction || "아동에게 맞춤형 광고를 제공"}하려는 경우 사전에 법정대리인의 동의를 받고 있으며, 이외에는 맞춤형 광고를 목적으로 아동의 행태정보를 수집하지 않고, 아동에게 맞춤형 광고를 제공하지 않습니다.</li>`;
+        const idx = ["③", "④", "⑤", "⑥", "⑦"][n] || "⑦";
+        return S.bhIdentifyMode === "identify"
+          ? `<li>${idx} ${alias}는 14세 미만임을 알고 있는 아동에게 맞춤형 광고를 제공하려는 경우 사전에 법정대리인의 동의를 받고 있으며, 이외에는 맞춤형 광고를 목적으로 아동의 행태정보를 수집하지 않고, 아동에게 맞춤형 광고를 제공하지 않습니다.</li>`
+          : `<li>${idx} ${alias}는 맞춤형 광고를 목적으로 아동의 행태정보를 수집하지 않으며, 아동에게 맞춤형 광고를 제공하지 않습니다.</li>`;
       })()
     : ""
 }
 ${
-  S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge
+  S.bhAdUse === "yes" && (S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge)
     ? (() => {
         const n = [
           S.bhProvide === "yes",
+          S.bhThirdOut === "yes" &&
+            S.bhThirdOutItems.some((d) => d.device || d.items),
           S.bhExtCollect === "yes" && S.bhAutoDevices.some((d) => d.items),
-          S.bhFlags.bh_nosensitive,
-          S.bhFlags.bh_nochild,
+          S.bhAdUse === "yes" && S.bhFlags.bh_nosensitive,
+          S.bhAdUse === "yes",
         ].filter(Boolean).length;
-        const idx = ["③", "④", "⑤", "⑥", "⑦"][n] || "⑦";
+        const idx = ["③", "④", "⑤", "⑥", "⑦", "⑧"][n] || "⑧";
         const show3rdCookie =
           S.bhProvide === "yes" || S.cookie3rdParty === "yes";
         return `<li>${idx} 정보주체는 웹브라우저의 쿠키 설정 변경 등을 통해 맞춤형 광고를 일괄적으로 차단·허용할 수 있습니다. 다만, 쿠키 설정 변경 시 웹사이트 자동로그인 등 일부 서비스의 이용이 제한될 수 있습니다.
@@ -1438,7 +1553,7 @@ ${
   S.bhBrowsers.bh_edge
     ? `<tr><td rowspan="${show3rdCookie ? 3 : 2}">엣지(Edge)</td><td>웹브라우저에 저장된 쿠키 삭제 방법</td><td>오른쪽 상단 '…' → 설정 → '쿠키 및 사이트 권한' → '쿠키 및 사이트 데이터 관리 및 삭제' → 제거 여부 선택</td></tr>
 ${show3rdCookie ? `<tr><td>웹브라우저에서 제3자 쿠키 차단 방법</td><td>오른쪽 상단 '…' → 설정 → '개인정보, 검색 및 서비스' → '추적방지' : 추적방지 여부 및 수준(균형조정 또는 엄격) 선택<br>(또는) 오른쪽 상단 '…' → 설정 → '쿠키 및 사이트 권한' → '쿠키 및 사이트 데이터 관리 및 삭제' → '타사 쿠키 차단' 선택</td></tr>` : ""}
-<tr><td>웹브라우저에서 모든 쿠키 저장 차단 방법</td><td>오른쪽 상단 '…' → '새 InPrivate 창'</td></tr>`
+<tr><td>웹브라우저에서 모든 쿠키 저장 차단 방법</td><td>오른쪽 상단 '…' → '새 InPrivate 창'</tr>`
     : ""
 }
 </tbody></table></div>
@@ -1447,16 +1562,19 @@ ${show3rdCookie ? `<tr><td>웹브라우저에서 제3자 쿠키 차단 방법</t
     : ""
 }
 ${
-  S.bhFlags.bh_mobile
+  S.bhAdUse === "yes" && S.bhFlags.bh_mobile
     ? (() => {
         const n = [
           S.bhProvide === "yes",
+          S.bhThirdOut === "yes" &&
+            S.bhThirdOutItems.some((d) => d.device || d.items),
           S.bhExtCollect === "yes" && S.bhAutoDevices.some((d) => d.items),
-          S.bhFlags.bh_nosensitive,
-          S.bhFlags.bh_nochild,
-          S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge,
+          S.bhAdUse === "yes" && S.bhFlags.bh_nosensitive,
+          S.bhAdUse === "yes",
+          S.bhAdUse === "yes" &&
+            (S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge),
         ].filter(Boolean).length;
-        const idx = ["③", "④", "⑤", "⑥", "⑦", "⑧"][n] || "⑧";
+        const idx = ["③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"][n] || "⑨";
         return `<li>${idx} ${alias}는 앱에서 ${S.bhMobileAction || "맞춤형 광고를 위하여 광고식별자를 수집·이용"}합니다. 정보주체는 모바일 단말기의 설정 변경을 통해 앱의 ${S.bhMobileAdType || "맞춤형 광고"}를 차단·허용할 수 있습니다.
 <div class="policy_table scroll" style="margin-top:8px;"><table><colgroup><col style="width:22%"><col></colgroup>
 <thead><tr><th>구분</th><th>설정 경로</th></tr></thead>
@@ -1474,13 +1592,16 @@ ${
     ? (() => {
         const n = [
           S.bhProvide === "yes",
+          S.bhThirdOut === "yes" &&
+            S.bhThirdOutItems.some((d) => d.device || d.items),
           S.bhExtCollect === "yes" && S.bhAutoDevices.some((d) => d.items),
-          S.bhFlags.bh_nosensitive,
-          S.bhFlags.bh_nochild,
-          S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge,
-          S.bhFlags.bh_mobile,
+          S.bhAdUse === "yes" && S.bhFlags.bh_nosensitive,
+          S.bhAdUse === "yes",
+          S.bhAdUse === "yes" &&
+            (S.bhBrowsers.bh_chrome || S.bhBrowsers.bh_edge),
+          S.bhAdUse === "yes" && S.bhFlags.bh_mobile,
         ].filter(Boolean).length;
-        const idx = ["③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"][n] || "⑨";
+        const idx = ["③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"][n] || "⑩";
         return `<li>${idx} 정보주체는 아래의 연락처로 행태정보와 관련하여 궁금한 사항과 거부권 행사, 피해 신고 접수 등을 문의할 수 있습니다.
 <div class="policy_table scroll" style="margin-top:8px;"><table><colgroup><col style="width:22%"><col style="width:28%"><col></colgroup>
 <thead><tr><th>구분</th><th>담당부서 / 담당자</th><th>연락처</th></tr></thead>
@@ -1492,6 +1613,9 @@ ${
     : ""
 }
 </ul>
+`
+    : ""
+}
 `
     : ""
 }

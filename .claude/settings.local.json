@@ -7,7 +7,8 @@
       "Bash(wc -l /Users/mac/Desktop/ppb/js/*.js)",
       "Skill(run)",
       "Skill(run:*)",
-      "Bash(open /Users/mac/Desktop/ppb/index.html)"
+      "Bash(open /Users/mac/Desktop/ppb/index.html)",
+      "Bash(node --check /Users/mac/Desktop/ppb/js/preview.js)"
     ]
   }
 }

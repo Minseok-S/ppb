@@ -466,85 +466,33 @@ function renderSteps() {
     <div class="section-panel" id="step9">
       <div class="section-title">
         <div class="section-num">9</div>
-        쿠키(자동수집장치) <span class="badge-opt">해당시</span>
+        자동수집장치 및 행태정보 <span class="badge-opt">해당시</span>
       </div>
-      <div class="section-desc">쿠키 사용 여부와 브라우저별 거부 방법을 설정합니다.</div>
+      <div class="section-desc">쿠키·행태정보 등 개인정보 자동 수집 장치에 관한 사항을 설정합니다.</div>
       <div class="field-group">
-        <label class="field-label">쿠키 사용 여부</label>
+        <label class="field-label">쿠키 차단 안내 환경</label>
         <div class="radio-group">
-          <div class="radio-item selected" id="ck_yes" onclick="selectR('ck_yes','ck_no','cookie','yes')">
+          <div class="radio-item selected" id="be_web" onclick="selectBrowserEnv('web')">
             <div class="radio-dot"></div>
-            <div><div class="radio-text">쿠키를 사용합니다</div></div>
+            <div><div class="radio-text">웹 브라우저</div><div class="radio-desc">PC 등 웹브라우저(Chrome, Edge 등)만 해당</div></div>
           </div>
-          <div class="radio-item" id="ck_no" onclick="selectR('ck_no','ck_yes','cookie','no')">
+          <div class="radio-item" id="be_mobile" onclick="selectBrowserEnv('mobile')">
             <div class="radio-dot"></div>
-            <div><div class="radio-text">사용하지 않습니다</div></div>
+            <div><div class="radio-text">모바일 브라우저</div><div class="radio-desc">모바일(Safari, Chrome 모바일, 삼성인터넷 등)만 해당</div></div>
+          </div>
+          <div class="radio-item" id="be_both" onclick="selectBrowserEnv('both')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">웹+모바일 모두</div><div class="radio-desc">웹브라우저와 모바일 브라우저 모두 해당</div></div>
           </div>
         </div>
       </div>
-      <div id="cookieDetail">
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">웹 브라우저</label>
-          <div class="toggle-group">
-            <div class="toggle-item checked" data-key="b_chrome" onclick="toggleItem(this,'browser')">
-              <div><div class="toggle-label">크롬 (Chrome)</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-            <div class="toggle-item checked" data-key="b_edge" onclick="toggleItem(this,'browser')">
-              <div><div class="toggle-label">엣지 (Edge)</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-          </div>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">모바일 브라우저</label>
-          <div class="toggle-group">
-            <div class="toggle-item" data-key="b_chrome_m" onclick="toggleItem(this,'browser')">
-              <div><div class="toggle-label">크롬 (Chrome)</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-            <div class="toggle-item" data-key="b_safari" onclick="toggleItem(this,'browser')">
-              <div><div class="toggle-label">사파리 (Safari)</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-            <div class="toggle-item" data-key="b_samsung" onclick="toggleItem(this,'browser')">
-              <div><div class="toggle-label">삼성 인터넷</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-          </div>
-        </div>
+      <!-- ▶ 행태정보 서브섹션 -->
+      <div style="margin-top:14px;padding-top:12px;border-top:2px solid #e5e7eb;margin-bottom:10px">
+        <div style="font-size:11.5px;font-weight:700;color:#374151;margin-bottom:3px">행태정보(Behavioral) 관련</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">맞춤형 광고 등을 위해 행태정보를 수집·이용하는 경우 기재합니다.</div>
       </div>
-      <div class="field-group" style="margin-top:12px;border-top:1px solid #eee;padding-top:12px">
-        <label class="field-label">제3자 자동수집장치 허용 여부 <span class="badge-opt">해당시</span></label>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">
-          제3자 쿠키·SDK 등을 통해 귀사 웹·앱에서 제3자가 행태정보를 수집해가도록 허용하는 경우 기재합니다.
-        </div>
-        <div class="radio-group">
-          <div class="radio-item selected" id="ck3rd_no" onclick="selectR('ck3rd_no','ck3rd_yes','cookie3rdParty','no')">
-            <div class="radio-dot"></div>
-            <div><div class="radio-text">해당 없음</div></div>
-          </div>
-          <div class="radio-item" id="ck3rd_yes" onclick="selectR('ck3rd_yes','ck3rd_no','cookie3rdParty','yes')">
-            <div class="radio-dot"></div>
-            <div><div class="radio-text">제3자 자동수집장치 허용</div></div>
-          </div>
-        </div>
-        <div id="ck3rdDetail" style="display:none;margin-top:8px">
-          <div id="cedItems"></div>
-          <button class="btn-add" style="margin-top:6px" onclick="addCookieExtDevice()">＋ 자동수집장치 추가</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── STEP 10: 행태정보 ── -->
-    <div class="section-panel" id="step10">
-      <div class="section-title">
-        <div class="section-num">10</div>
-        행태정보 <span class="badge-opt">해당시</span>
-      </div>
-      <div class="section-desc">맞춤형 광고 등을 위해 행태정보를 수집·이용하는 경우 기재합니다.</div>
       <div class="field-group">
-        <label class="field-label">행태정보 처리 여부</label>
+        <label class="field-label">회사의 행태정보 처리 여부</label>
         <div class="radio-group">
           <div class="radio-item selected" id="bh_no" onclick="selectR('bh_no','bh_yes','behavioral','no')">
             <div class="radio-dot"></div>
@@ -557,12 +505,11 @@ function renderSteps() {
         </div>
       </div>
       <div id="bhDetail" style="display:none">
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">① 처리 목적 / 수집도구 / 식별여부</label>
-          <input type="text" id="bhPurpose" placeholder="목적 예: 정보주체에게 최적화된 맞춤형 서비스 및 혜택을 제공" oninput="updatePreview()" style="margin-bottom:4px"/>
-          <input type="text" id="bhTool" placeholder="수집도구 예: 쿠키" value="쿠키" oninput="updatePreview()" style="margin-bottom:8px"/>
-          <label class="field-label" style="font-size:11px;color:var(--text3);margin-bottom:4px">개인 식별 여부 (테이블 법적 근거 칼럼 포함 여부에 영향)</label>
-          <div class="radio-group">
+
+        <!-- 정보주체 식별 여부 -->
+        <div class="field-group" style="margin-top:12px;padding:10px 12px;border:1.5px solid var(--accent);border-radius:8px;background:#fafbff">
+          <label class="field-label">정보주체 식별 여부 <span style="font-size:11px;color:var(--text3);font-weight:400">(법적 근거 칼럼 포함 여부에 영향)</span></label>
+          <div class="radio-group" style="margin-top:6px">
             <div class="radio-item" id="bhIM_identify" onclick="selectR('bhIM_identify','bhIM_nonidentify','bhIdentifyMode','identify')">
               <div class="radio-dot"></div>
               <div>
@@ -579,108 +526,157 @@ function renderSteps() {
             </div>
           </div>
         </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">② 행태정보 수집 항목 <span class="opt">(표)</span></label>
-          <div id="bhItems"></div>
-          <button class="btn-add" style="margin-top:6px" onclick="addBehavioral()">＋ 행태정보 항목 추가</button>
+
+        <!-- 행태정보의 수집·이용·제공 및 거부 등에 관한 사항 -->
+        <div style="margin-top:14px;padding-top:12px;border-top:2px solid #e5e7eb">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:-0.2px">
+            &lt; 행태정보의 수집·이용·제공 및 거부 등에 관한 사항 &gt;
+          </div>
+
+          <!-- 3-1 행태정보 수집·이용 관련 -->
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+            <div style="font-size:11.5px;font-weight:700;color:#374151;margin-bottom:8px">행태정보 수집·이용 관련</div>
+            <div class="field-group">
+              <label class="field-label">처리 목적</label>
+              <input type="text" id="bhPurpose" placeholder="예: 정보주체에게 최적화된 맞춤형 서비스 및 혜택을 제공" oninput="updatePreview()" style="margin-bottom:6px"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">행태정보 수집 항목 <span class="opt">(표)</span></label>
+              <div id="bhItems"></div>
+              <button class="btn-add" style="margin-top:6px" onclick="addBehavioral()">＋ 행태정보 항목 추가</button>
+            </div>
+          </div>
+
+          <!-- 3-2 행태정보의 제3자(광고사업자 등) 제공 관련 -->
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+            <div style="font-size:11.5px;font-weight:700;color:#374151;margin-bottom:8px">행태정보의 제3자(광고사업자 등) 제공 관련</div>
+            <div class="radio-group">
+              <div class="radio-item selected" id="bhProvide_no" onclick="selectR('bhProvide_no','bhProvide_yes','bhProvide','no')" style="margin-bottom:0">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">제공하지 않습니다</div></div>
+              </div>
+              <div class="radio-item" id="bhProvide_yes" onclick="selectR('bhProvide_yes','bhProvide_no','bhProvide','yes')" style="margin-bottom:0">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">제공합니다</div></div>
+              </div>
+            </div>
+            <div id="bhTpDetail" style="display:none;margin-top:8px">
+              <div id="tpBhItems"></div>
+              <button class="btn-add" style="margin-top:6px" onclick="addTpItem()">＋ 제3자 제공 항목 추가</button>
+            </div>
+          </div>
+
+
+
+          <!-- 3-4 제3자가 운영하는 웹‧앱에 설치된 개인정보 자동 수집 장치로부터 행태정보를 수집하는 경우 -->
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+            <div style="font-size:11.5px;font-weight:700;color:#374151;margin-bottom:4px">제3자가 운영하는 웹‧앱에 설치된 개인정보 자동 수집 장치로부터 행태정보를 수집하는 경우</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">귀사가 제3자가 운영하는 웹·앱에 설치된 자동수집장치로부터 행태정보를 수집·이용하는 경우</div>
+            <div class="radio-group">
+              <div class="radio-item selected" id="bhExtCollect_no" onclick="selectR('bhExtCollect_no','bhExtCollect_yes','bhExtCollect','no')" style="margin-bottom:0">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">해당 없음</div></div>
+              </div>
+              <div class="radio-item" id="bhExtCollect_yes" onclick="selectR('bhExtCollect_yes','bhExtCollect_no','bhExtCollect','yes')" style="margin-bottom:0">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">해당 있음</div></div>
+              </div>
+            </div>
+            <div id="bhExtDetail" style="display:none;margin-top:8px">
+              <div id="adItems"></div>
+              <button class="btn-add" style="margin-top:6px" onclick="addAutoDevice()">＋ 자동수집장치 추가</button>
+            </div>
+          </div>
+
+          <!-- 3-4 수집한 행태정보를 맞춤형 광고에 활용하는 경우 -->
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+            <div style="font-size:11.5px;font-weight:700;color:#374151;margin-bottom:8px">수집한 행태정보를 맞춤형 광고에 활용하는 경우</div>
+            <div class="radio-group">
+              <div class="radio-item selected" id="bhAdUse_no" onclick="selectR('bhAdUse_no','bhAdUse_yes','bhAdUse','no')" style="margin-bottom:0">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">해당 없음</div></div>
+              </div>
+              <div class="radio-item" id="bhAdUse_yes" onclick="selectR('bhAdUse_yes','bhAdUse_no','bhAdUse','yes')" style="margin-bottom:0">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">맞춤형 광고에 활용합니다</div></div>
+              </div>
+            </div>
+            <div id="bhAdUseDetail" style="display:none;margin-top:10px">
+              <div class="field-group">
+                <label class="field-label">민감정보 미수집 문구</label>
+                <div class="toggle-group">
+                  <div class="toggle-item checked" data-key="bh_nosensitive" onclick="toggleItem(this,'bhFlags')">
+                    <div><div class="toggle-label">민감한 행태정보 수집하지 않음</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                </div>
+                <input type="text" id="bhSensitivePurpose" placeholder="수집 목적 예: 최적화된 맞춤형 서비스 및 혜택, 온라인 맞춤형 광고 등"
+                  value="최적화된 맞춤형 서비스 및 혜택, 온라인 맞춤형 광고 등" oninput="updatePreview()" style="margin-top:6px"/>
+              </div>
+              <div class="field-group" style="margin-top:8px">
+                <label class="field-label">웹브라우저 쿠키 차단 안내</label>
+                <div class="toggle-group">
+                  <div class="toggle-item checked" data-key="bh_chrome" onclick="toggleItem(this,'bhBrowsers')">
+                    <div><div class="toggle-label">크롬 (Chrome)</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                  <div class="toggle-item checked" data-key="bh_edge" onclick="toggleItem(this,'bhBrowsers')">
+                    <div><div class="toggle-label">엣지 (Edge)</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="field-group" style="margin-top:8px">
+                <label class="field-label">모바일 광고 식별자 문구</label>
+                <div class="toggle-group">
+                  <div class="toggle-item checked" data-key="bh_mobile" onclick="toggleItem(this,'bhFlags')">
+                    <div><div class="toggle-label">모바일 광고 식별자 차단 안내 포함</div></div>
+                    <div class="toggle-switch"></div>
+                  </div>
+                </div>
+                <input type="text" id="bhMobileAction" placeholder="앱에서 하는 행위 예: 맞춤형 광고를 위하여 광고식별자를 수집·이용"
+                  value="맞춤형 광고를 위하여 광고식별자를 수집·이용" oninput="updatePreview()" style="margin-top:6px;margin-bottom:4px"/>
+                <input type="text" id="bhMobileAdType" placeholder="차단 대상 예: 맞춤형 광고"
+                  value="맞춤형 광고" oninput="updatePreview()"/>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- 행태정보 담당부서 연락처 -->
         <div class="field-group" style="margin-top:10px">
-          <label class="field-label">③ 행태정보 제3자 제공 여부</label>
-          <div class="radio-group">
-            <div class="radio-item selected" id="bhProvide_no" onclick="selectR('bhProvide_no','bhProvide_yes','bhProvide','no')" style="margin-bottom:0">
-              <div class="radio-dot"></div>
-              <div><div class="radio-text">제공하지 않습니다</div></div>
-            </div>
-            <div class="radio-item" id="bhProvide_yes" onclick="selectR('bhProvide_yes','bhProvide_no','bhProvide','yes')" style="margin-bottom:0">
-              <div class="radio-dot"></div>
-              <div><div class="radio-text">제공합니다</div></div>
-            </div>
-          </div>
-          <div id="bhTpDetail" style="display:none;margin-top:8px">
-            <div id="tpBhItems"></div>
-            <button class="btn-add" style="margin-top:6px" onclick="addTpItem()">＋ 제3자 제공 항목 추가</button>
-          </div>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">④ 제3자 웹·앱 자동수집장치로부터 수집 여부</label>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.5">귀사가 제3자가 운영하는 웹·앱에 설치된 자동수집장치로부터 행태정보를 수집·이용하는 경우 </div>
-          <div class="radio-group">
-            <div class="radio-item selected" id="bhExtCollect_no" onclick="selectR('bhExtCollect_no','bhExtCollect_yes','bhExtCollect','no')" style="margin-bottom:0">
-              <div class="radio-dot"></div>
-              <div><div class="radio-text">해당 없음</div></div>
-            </div>
-            <div class="radio-item" id="bhExtCollect_yes" onclick="selectR('bhExtCollect_yes','bhExtCollect_no','bhExtCollect','yes')" style="margin-bottom:0">
-              <div class="radio-dot"></div>
-              <div><div class="radio-text">해당 있음</div></div>
-            </div>
-          </div>
-          <div id="bhExtDetail" style="display:none;margin-top:8px">
-            <div id="adItems"></div>
-            <button class="btn-add" style="margin-top:6px" onclick="addAutoDevice()">＋ 자동수집장치 추가</button>
-          </div>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">⑤ 민감정보 미수집 문구</label>
-          <div class="toggle-group">
-            <div class="toggle-item checked" data-key="bh_nosensitive" onclick="toggleItem(this,'bhFlags')">
-              <div><div class="toggle-label">민감한 행태정보 수집하지 않음</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-          </div>
-          <input type="text" id="bhSensitivePurpose" placeholder="수집 목적 예: 최적화된 맞춤형 서비스 및 혜택, 온라인 맞춤형 광고 등"
-            value="최적화된 맞춤형 서비스 및 혜택, 온라인 맞춤형 광고 등" oninput="updatePreview()" style="margin-top:6px"/>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">⑥ 아동 광고 관련 문구</label>
-          <div class="toggle-group">
-            <div class="toggle-item checked" data-key="bh_nochild" onclick="toggleItem(this,'bhFlags')">
-              <div><div class="toggle-label">아동 행태정보 수집·제공 조항 포함</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-          </div>
-          <input type="text" id="bhChildAction" placeholder="아동 대상 행위 예: 아동에게 맞춤형 광고를 제공"
-            value="아동에게 맞춤형 광고를 제공" oninput="updatePreview()" style="margin-top:6px"/>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">⑦ 웹브라우저 쿠키 차단 안내</label>
-          <div class="toggle-group">
-            <div class="toggle-item checked" data-key="bh_chrome" onclick="toggleItem(this,'bhBrowsers')">
-              <div><div class="toggle-label">크롬 (Chrome)</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-            <div class="toggle-item checked" data-key="bh_edge" onclick="toggleItem(this,'bhBrowsers')">
-              <div><div class="toggle-label">엣지 (Edge)</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-          </div>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">⑧ 모바일 광고 식별자 문구</label>
-          <div class="toggle-group">
-            <div class="toggle-item checked" data-key="bh_mobile" onclick="toggleItem(this,'bhFlags')">
-              <div><div class="toggle-label">모바일 광고 식별자 차단 안내 포함</div></div>
-              <div class="toggle-switch"></div>
-            </div>
-          </div>
-          <input type="text" id="bhMobileAction" placeholder="앱에서 하는 행위 예: 맞춤형 광고를 위하여 광고식별자를 수집·이용"
-            value="맞춤형 광고를 위하여 광고식별자를 수집·이용" oninput="updatePreview()" style="margin-top:6px;margin-bottom:4px"/>
-          <input type="text" id="bhMobileAdType" placeholder="차단 대상 예: 맞춤형 광고"
-            value="맞춤형 광고" oninput="updatePreview()"/>
-        </div>
-        <div class="field-group" style="margin-top:10px">
-          <label class="field-label">⑨ 행태정보 담당부서 연락처 <span class="opt">(선택)</span></label>
+          <label class="field-label">행태정보 담당부서 연락처 <span class="opt">(선택)</span></label>
           <input type="text" id="bhContactDept" placeholder="부서명 예: 개인정보보호팀" oninput="updatePreview()" style="margin-bottom:4px"/>
           <input type="text" id="bhContactPerson" placeholder="담당자명 예: 개인정보보호팀장" oninput="updatePreview()" style="margin-bottom:4px"/>
           <input type="text" id="bhContactPhone" placeholder="전화번호 예: 02-1234-5678" oninput="updatePreview()" style="margin-bottom:4px"/>
           <input type="text" id="bhContactEmail" placeholder="이메일 예: privacy@company.com" oninput="updatePreview()"/>
         </div>
       </div>
+      <!-- 제3자가 수집해가는 행태정보 관련 (귀사 행태정보 처리 여부와 독립) -->
+      <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-top:12px">
+        <div style="font-size:11.5px;font-weight:700;color:#374151;margin-bottom:4px">제3자가 수집해가는 행태정보 관련</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">귀사 웹·앱에서 제3자가 행태정보를 수집해가는 경우</div>
+        <div class="radio-group">
+          <div class="radio-item selected" id="bhThirdOut_no" onclick="selectR('bhThirdOut_no','bhThirdOut_yes','bhThirdOut','no')" style="margin-bottom:0">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">해당 없음</div></div>
+          </div>
+          <div class="radio-item" id="bhThirdOut_yes" onclick="selectR('bhThirdOut_yes','bhThirdOut_no','bhThirdOut','yes')" style="margin-bottom:0">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">해당 있음</div></div>
+          </div>
+        </div>
+        <div id="bhThirdOutDetail" style="display:none;margin-top:8px">
+          <div id="bhThirdOutItems"></div>
+          <button class="btn-add" style="margin-top:6px" onclick="addBhThirdOutItem()">＋ 항목 추가</button>
+        </div>
+      </div>
     </div>
 
-    <!-- ── STEP 11: 권리행사 ── -->
-    <div class="section-panel" id="step11">
+    <!-- ── STEP 10: 권리행사 ── -->
+    <div class="section-panel" id="step10">
       <div class="section-title">
-        <div class="section-num">11</div>
+        <div class="section-num">10</div>
         정보주체 권리 행사 <span class="badge-req">필수</span>
       </div>
       <div class="section-desc">권리 행사 방법·수단·청구 접수 부서를 설정합니다.</div>
@@ -773,10 +769,10 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 12: 책임자 ── -->
-    <div class="section-panel" id="step12">
+    <!-- ── STEP 11: 책임자 ── -->
+    <div class="section-panel" id="step11">
       <div class="section-title">
-        <div class="section-num">12</div>
+        <div class="section-num">11</div>
         개인정보 보호책임자 <span class="badge-req">필수</span>
       </div>
       <div class="section-desc">CPO 정보와 담당 부서를 입력합니다.</div>
@@ -830,10 +826,10 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 13: 추가적 이용·제공 ── -->
-    <div class="section-panel" id="step13">
+    <!-- ── STEP 12: 추가적 이용·제공 ── -->
+    <div class="section-panel" id="step12">
       <div class="section-title">
-        <div class="section-num">13</div>
+        <div class="section-num">12</div>
         추가적 이용·제공 판단기준 <span class="badge-opt">해당시</span>
       </div>
       <div class="section-desc">정보주체 동의 없이 추가적으로 이용·제공하는 경우에만 포함합니다.</div>
@@ -884,10 +880,10 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 14: 민감정보 ── -->
-    <div class="section-panel" id="step14">
+    <!-- ── STEP 13: 민감정보 ── -->
+    <div class="section-panel" id="step13">
       <div class="section-title">
-        <div class="section-num">14</div>
+        <div class="section-num">13</div>
         민감정보 공개 가능성 <span class="badge-opt">해당시</span>
       </div>
       <div class="section-desc">공개 설정된 게시물 등에 민감정보가 포함·노출될 수 있는 경우에만 포함합니다.</div>
@@ -909,10 +905,10 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 15: 가명정보 ── -->
-    <div class="section-panel" id="step15">
+    <!-- ── STEP 14: 가명정보 ── -->
+    <div class="section-panel" id="step14">
       <div class="section-title">
-        <div class="section-num">15</div>
+        <div class="section-num">14</div>
         가명정보 처리 <span class="badge-opt">해당시</span>
       </div>
       <div class="section-desc">개인정보를 가명처리하여 활용하는 경우에만 포함합니다.</div>
@@ -1029,10 +1025,10 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 16: 자동화된 결정 ── -->
-    <div class="section-panel" id="step16">
+    <!-- ── STEP 15: 자동화된 결정 ── -->
+    <div class="section-panel" id="step15">
       <div class="section-title">
-        <div class="section-num">16</div>
+        <div class="section-num">15</div>
         자동화된 결정 <span class="badge-opt">해당시</span>
       </div>
       <div class="section-desc">AI 등 자동화된 시스템으로 개인에 관한 결정을 내리는 경우에만 포함합니다.</div>
@@ -1147,10 +1143,10 @@ function renderSteps() {
       </div>
     </div>
 
-    <!-- ── STEP 17: 국내대리인 ── -->
-    <div class="section-panel" id="step17">
+    <!-- ── STEP 16: 국내대리인 ── -->
+    <div class="section-panel" id="step16">
       <div class="section-title">
-        <div class="section-num">17</div>
+        <div class="section-num">16</div>
         국내대리인 지정 <span class="badge-opt">해당시</span>
       </div>
       <div class="section-desc">국내에 주소·영업소가 없는 해외사업자로서 아래 조건에 해당하는 경우에만 포함합니다.</div>
