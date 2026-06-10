@@ -1143,22 +1143,196 @@ function renderSteps() {
       </div>
     </div>
 
+    <!-- ── STEP 17: 영상정보처리기기 ── -->
+    <div class="section-panel" id="step17">
+      <div class="section-title">
+        <div class="section-num">17</div>
+        영상정보처리기기 운영·관리에 관한 사항 <span class="badge-opt">해당시</span>
+      </div>
+      <div class="section-desc">고정형·이동형 영상정보처리기기(CCTV 등)를 운영하는 경우 기재합니다.</div>
+
+      <!-- ▶ 가. 고정형 -->
+      <div style="margin-top:6px;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fafbff">
+        <div style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:8px">가. 고정형 영상정보처리기기</div>
+        <div class="field-group">
+          <div class="radio-group">
+            <div class="radio-item selected" id="cctvFixed_no" onclick="selectCCTV('fixed','no')">
+              <div class="radio-dot"></div>
+              <div><div class="radio-text">운영하지 않습니다</div></div>
+            </div>
+            <div class="radio-item" id="cctvFixed_yes" onclick="selectCCTV('fixed','yes')">
+              <div class="radio-dot"></div>
+              <div><div class="radio-text">운영합니다 (상세 입력)</div></div>
+            </div>
+          </div>
+        </div>
+        <div id="cctvFixedDetail" style="display:none;margin-top:10px">
+          <!-- ① 설치 목적 -->
+          <div class="field-group">
+            <label class="field-label">① 설치 목적 <span class="req">*</span></label>
+            <input type="text" id="cctvFixedPurpose" placeholder="예: 시설 안전 및 화재예방, 범죄 예방" oninput="S.cctvFixedPurpose=this.value;updatePreview()" />
+          </div>
+          <!-- ② 설치 위치 및 대수 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">② 설치 위치 및 대수</label>
+            <div id="cctvFixedLocations"></div>
+            <button class="btn-add" onclick="addCCTVLocation('fixed')">＋ 위치 추가</button>
+          </div>
+          <!-- ③ 관리책임자 및 접근권한자 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">③ 관리책임자</label>
+            <div class="field-row" style="margin-bottom:4px">
+              <input type="text" id="cctvFixedManagerName" placeholder="이름" oninput="S.cctvFixedManagerName=this.value;updatePreview()" />
+              <input type="text" id="cctvFixedManagerTitle" placeholder="직위" oninput="S.cctvFixedManagerTitle=this.value;updatePreview()" />
+            </div>
+            <div class="field-row">
+              <input type="text" id="cctvFixedManagerDept" placeholder="소속 (부서명)" oninput="S.cctvFixedManagerDept=this.value;updatePreview()" />
+              <input type="tel" id="cctvFixedManagerPhone" placeholder="연락처" oninput="S.cctvFixedManagerPhone=this.value;updatePreview()" />
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label">③ 접근권한자</label>
+            <div class="field-row" style="margin-bottom:4px">
+              <input type="text" id="cctvFixedAccessName" placeholder="이름" oninput="S.cctvFixedAccessName=this.value;updatePreview()" />
+              <input type="text" id="cctvFixedAccessTitle" placeholder="직위" oninput="S.cctvFixedAccessTitle=this.value;updatePreview()" />
+            </div>
+            <div class="field-row">
+              <input type="text" id="cctvFixedAccessDept" placeholder="소속 (부서명)" oninput="S.cctvFixedAccessDept=this.value;updatePreview()" />
+              <input type="tel" id="cctvFixedAccessPhone" placeholder="연락처" oninput="S.cctvFixedAccessPhone=this.value;updatePreview()" />
+            </div>
+          </div>
+          <!-- ④ 촬영시간, 보관기간, 보관장소 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">④ 촬영 시간</label>
+            <input type="text" id="cctvFixedHours" placeholder="예: 24시간 연속 촬영" oninput="S.cctvFixedHours=this.value;updatePreview()" />
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label">보관 기간</label>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="text" id="cctvFixedRetention" value="30" min="1" style="width:80px" oninput="S.cctvFixedRetention=this.value;updatePreview()" />
+              <span style="font-size:12px;color:var(--text2)">일</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label">보관 장소</label>
+            <input type="text" id="cctvFixedStorageLocation" placeholder="예: 보안실 서버실" oninput="S.cctvFixedStorageLocation=this.value;updatePreview()" />
+          </div>
+          <!-- ⑤ 위탁 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">⑤ 설치·관리 위탁 여부</label>
+            <div class="radio-group">
+              <div class="radio-item selected" id="cctvFixedDelegate_no" onclick="selectCCTVDelegate('fixed','no')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">위탁하지 않습니다</div></div>
+              </div>
+              <div class="radio-item" id="cctvFixedDelegate_yes" onclick="selectCCTVDelegate('fixed','yes')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">위탁합니다</div></div>
+              </div>
+            </div>
+            <div id="cctvFixedDelegateDetail" style="display:none;margin-top:6px">
+              <div id="cctvFixedDelegateItems"></div>
+              <button class="btn-add" onclick="addCCTVDelegate('fixed')">＋ 수탁업체 추가</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▶ 나. 이동형 -->
+      <div style="margin-top:10px;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fafbff">
+        <div style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:8px">나. 이동형 영상정보처리기기</div>
+        <div class="field-group">
+          <div class="radio-group">
+            <div class="radio-item selected" id="cctvMobile_no" onclick="selectCCTV('mobile','no')">
+              <div class="radio-dot"></div>
+              <div><div class="radio-text">운영하지 않습니다</div></div>
+            </div>
+            <div class="radio-item" id="cctvMobile_yes" onclick="selectCCTV('mobile','yes')">
+              <div class="radio-dot"></div>
+              <div><div class="radio-text">운영합니다 (상세 입력)</div></div>
+            </div>
+          </div>
+        </div>
+        <div id="cctvMobileDetail" style="display:none;margin-top:10px">
+          <!-- ① 운영 목적 -->
+          <div class="field-group">
+            <label class="field-label">① 운영 목적 <span class="req">*</span></label>
+            <input type="text" id="cctvMobilePurpose" placeholder="예: 현장 안전 관리, 시설 점검" oninput="S.cctvMobilePurpose=this.value;updatePreview()" />
+          </div>
+          <!-- ② 촬영 대상 지역 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">② 촬영 대상 지역</label>
+            <input type="text" id="cctvMobileArea" placeholder="예: 사업장 내외 공공장소" oninput="S.cctvMobileArea=this.value;updatePreview()" />
+          </div>
+          <!-- ③ 운영 담당자 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">③ 관리책임자</label>
+            <div class="field-row" style="margin-bottom:4px">
+              <input type="text" id="cctvMobileManagerName" placeholder="이름" oninput="S.cctvMobileManagerName=this.value;updatePreview()" />
+              <input type="text" id="cctvMobileManagerTitle" placeholder="직위" oninput="S.cctvMobileManagerTitle=this.value;updatePreview()" />
+            </div>
+            <div class="field-row">
+              <input type="text" id="cctvMobileManagerDept" placeholder="소속 (부서명)" oninput="S.cctvMobileManagerDept=this.value;updatePreview()" />
+              <input type="tel" id="cctvMobileManagerPhone" placeholder="연락처" oninput="S.cctvMobileManagerPhone=this.value;updatePreview()" />
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label">③ 접근권한자</label>
+            <div class="field-row" style="margin-bottom:4px">
+              <input type="text" id="cctvMobileAccessName" placeholder="이름" oninput="S.cctvMobileAccessName=this.value;updatePreview()" />
+              <input type="text" id="cctvMobileAccessTitle" placeholder="직위" oninput="S.cctvMobileAccessTitle=this.value;updatePreview()" />
+            </div>
+            <div class="field-row">
+              <input type="text" id="cctvMobileAccessDept" placeholder="소속 (부서명)" oninput="S.cctvMobileAccessDept=this.value;updatePreview()" />
+              <input type="tel" id="cctvMobileAccessPhone" placeholder="연락처" oninput="S.cctvMobileAccessPhone=this.value;updatePreview()" />
+            </div>
+          </div>
+          <!-- ④ 촬영시간, 보관기간, 보관장소 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">④ 촬영 시간대</label>
+            <input type="text" id="cctvMobileHours" placeholder="예: 업무시간 중(09:00~18:00), 필요 시 수시" oninput="S.cctvMobileHours=this.value;updatePreview()" />
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label">보관 기간</label>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="text" id="cctvMobileRetention" value="30" min="1" style="width:80px" oninput="S.cctvMobileRetention=this.value;updatePreview()" />
+              <span style="font-size:12px;color:var(--text2)">일</span>
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:6px">
+            <label class="field-label">보관 장소</label>
+            <input type="text" id="cctvMobileStorageLocation" placeholder="예: 보안실 서버실" oninput="S.cctvMobileStorageLocation=this.value;updatePreview()" />
+          </div>
+          <!-- ⑤ 위탁 -->
+          <div class="field-group" style="margin-top:8px">
+            <label class="field-label">⑤ 설치·관리 위탁 여부</label>
+            <div class="radio-group">
+              <div class="radio-item selected" id="cctvMobileDelegate_no" onclick="selectCCTVDelegate('mobile','no')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">위탁하지 않습니다</div></div>
+              </div>
+              <div class="radio-item" id="cctvMobileDelegate_yes" onclick="selectCCTVDelegate('mobile','yes')">
+                <div class="radio-dot"></div>
+                <div><div class="radio-text">위탁합니다</div></div>
+              </div>
+            </div>
+            <div id="cctvMobileDelegateDetail" style="display:none;margin-top:6px">
+              <div id="cctvMobileDelegateItems"></div>
+              <button class="btn-add" onclick="addCCTVDelegate('mobile')">＋ 수탁업체 추가</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── STEP 16: 국내대리인 ── -->
     <div class="section-panel" id="step16">
       <div class="section-title">
         <div class="section-num">16</div>
         국내대리인 지정 <span class="badge-opt">해당시</span>
       </div>
-      <div class="section-desc">국내에 주소·영업소가 없는 해외사업자로서 아래 조건에 해당하는 경우에만 포함합니다.</div>
-      <div class="info-box" style="margin-bottom:14px">
-        <div class="info-title">국내대리인을 지정하여야 하는 경우 (보호법 제31조의2)</div>
-        <ul style="margin:6px 0 0 0;padding-left:16px;font-size:12px;line-height:1.8">
-          <li>① 전년도 전체 매출액이 <strong>1조 원 이상</strong>인 자</li>
-          <li>② 직전 3개월간 국내 정보주체 수가 일일평균 <strong>100만 명 이상</strong>인 자</li>
-          <li>③ 보호위원회가 심의·의결하여 지정이 필요하다고 인정한 자</li>
-        </ul>
-        <p style="margin:8px 0 0 0;font-size:11px;color:#e53935;">※ 성명·주소·전화번호·이메일을 처리방침에 포함하지 않으면 <strong>1천만 원 이하 과태료</strong> 부과 ('25.10월 시행)</p>
-      </div>
+      <div class="section-desc">국내에 주소·영업소가 없는 해외사업자로서 법적 조건에 해당하는 경우에만 포함합니다.</div>
+    
       <div class="field-group">
         <div class="radio-group">
           <div class="radio-item selected" id="da_no" onclick="selectR('da_no','da_yes','domAgent','no')">

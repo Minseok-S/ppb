@@ -956,6 +956,14 @@ textarea {
   color: #000;
   line-height: 1.8;
 }
+.pp-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px 8px;
+  font-size: 13px;
+  color: #000;
+  line-height: 1.9;
+}
 .pp-contact-table {
   width: 100%;
   border-collapse: collapse;

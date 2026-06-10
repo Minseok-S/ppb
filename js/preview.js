@@ -604,7 +604,10 @@ function buildPreview() {
     {
       svg: `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><${SQ}/><text x="22" y="29" text-anchor="middle" font-size="18">📹</text></svg>`,
       l: "영상정보처리기기",
-      show: allCollected.includes("영상"),
+      show:
+        allCollected.includes("영상") ||
+        S.cctvFixed === "yes" ||
+        S.cctvMobile === "yes",
     },
   ].filter((ic) => ic.show);
   // 상단 카테고리 nav에 표시할 라벨 목록
@@ -653,6 +656,7 @@ function buildPreview() {
     고충처리부서: "cpo",
     국내대리인: "agent",
     "권익침해 구제": "remedy",
+    영상정보처리기기: "cctv",
   };
   const iconGroups = [
     {
@@ -759,6 +763,12 @@ function buildPreview() {
       show: activeAgencies.length > 0,
     },
     { k: "agent", l: "국내대리인 지정", show: S.domAgent === "yes", opt: true },
+    {
+      k: "cctv",
+      l: "영상정보처리기기 운영·관리에 관한 사항",
+      show: S.cctvFixed === "yes" || S.cctvMobile === "yes",
+      opt: true,
+    },
     { k: "change", l: "개인정보 처리방침의 변경", show: true },
   ];
   const visibleToc = tocItems.filter((t) => t.show);
@@ -1625,10 +1635,10 @@ ${
   S.autoDecision === "yes"
     ? `
 ${sec("autodec", "자동화된 결정에 관한 사항", true)}
-<p>${alias}은(는) 인공지능 기술을 적용한 완전히 자동화된 시스템으로 개인정보를 처리하여 이루어지는 결정(이하 '자동화된 결정'이라 함)을 하고 있습니다. 이에 「개인정보 보호법」 제37조의2에 따라 다음과 같이 자동화된 결정에 관한 사항을 안내드립니다.</p>
+<p>${alias}는 인공지능 기술을 적용한 완전히 자동화된 시스템으로 개인정보를 처리하여 이루어지는 결정(이하 '자동화된 결정'이라 함)을 하고 있습니다. 이에 「개인정보 보호법」 제37조의2에 따라 다음과 같이 자동화된 결정에 관한 사항을 안내드립니다.</p>
 
 <p><strong>〈자동화된 결정이 이루어진다는 사실과 그 목적 및 대상이 되는 정보주체의 범위〉</strong></p>
-<p>- ${alias}은(는) ${S.adPurpose || "[결정의 목적을 입력해 주세요]"}을 위해 자동화된 결정 시스템을 활용하고 있습니다. 대상이 되는 정보주체의 범위는 ${S.adSubjectScope || "[대상 범위를 입력해 주세요]"}입니다.</p>
+<p>- ${alias}는 ${S.adPurpose || "[결정의 목적을 입력해 주세요]"}을 위해 자동화된 결정 시스템을 활용하고 있습니다. 대상이 되는 정보주체의 범위는 ${S.adSubjectScope || "[대상 범위를 입력해 주세요]"}입니다.</p>
 
 <p><strong>〈자동화된 결정에 사용되는 주요 개인정보의 유형과 자동화된 결정의 관계〉</strong></p>
 ${(() => {
@@ -1665,11 +1675,11 @@ ${(() => {
 ${
   S.adSensitive === "yes"
     ? `<p>- ${S.adSensitiveDetail || "[민감정보 또는 아동 개인정보의 처리 목적 및 항목을 입력해 주세요]"}</p>`
-    : `<p>- ${alias}은(는) 자동화된 결정 과정에서 민감정보 및 14세 미만 아동의 개인정보를 처리하지 않습니다.</p>`
+    : `<p>- ${alias}는 자동화된 결정 과정에서 민감정보 및 14세 미만 아동의 개인정보를 처리하지 않습니다.</p>`
 }
 
 <p><strong>〈자동화된 결정에 대하여 정보주체가 거부·설명등요구를 할 수 있다는 사실과 그 방법 및 절차〉</strong></p>
-<p>- ${alias}은(는) 자동화된 결정에 대하여 정보주체가 아래의 요구를 할 수 있음을 알려드립니다.</p>
+<p>- ${alias}는 자동화된 결정에 대하여 정보주체가 아래의 요구를 할 수 있음을 알려드립니다.</p>
 <ul class="pp-list" style="padding-left:1.5em;">
   <li>1. 자동화된 결정에 대한 거부</li>
   <li>2. 자동화된 결정에 대한 설명을 요구</li>
@@ -1789,41 +1799,30 @@ ${sec("rights", "정보주체와 법정대리인의 권리·의무 및 행사방
 </ul>
 
 ${sec("cpo", "개인정보 보호책임자 및 고충처리 부서")}
-<p>① ${alias}는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+<p>① ${alias}는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
 <div class="pp-contact-box">
-  <div class="pp-contact-title">▶ 개인정보 보호책임자(CPO)</div>
-  <table class="pp-contact-table">
-    <thead><tr>
-      <th class="pp-ct-head">이름</th>
-      <th class="pp-ct-head">부서/직책</th>
-      <th class="pp-ct-head">연락처</th>
-      <th class="pp-ct-head">전자우편</th>
-    </tr></thead>
-    <tbody><tr>
-      <td class="pp-ct-value">${S.cpoName || '<span class="pp-placeholder">미입력</span>'}</td>
-      <td class="pp-ct-value">${S.cpoTitle || '<span class="pp-placeholder">미입력</span>'}</td>
-      <td class="pp-ct-value">${S.cpoPhone || '<span class="pp-placeholder">미입력</span>'}</td>
-      <td class="pp-ct-value">${S.cpoEmail || '<span class="pp-placeholder">미입력</span>'}</td>
-    </tr></tbody>
-  </table>
-</div>
-<p style="margin-top:8px;">② 정보주체는 ${alias}의 서비스를 이용하시면서 발생한 모든 개인정보보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자 및 담당부서로 문의하실 수 있습니다.</p>
-<div class="pp-contact-box">
-  <div class="pp-contact-title">▶ 개인정보 업무 담당부서</div>
+  <p class="pp-contact-title">▶ 개인정보 보호책임자</p>
+  <ul class="pp-contact-list">
+    <li> - 성명 : ${S.cpoName || '<span class="pp-placeholder">미입력</span>'}</li>
+    <li> - 직위 : ${S.cpoTitle || '<span class="pp-placeholder">미입력</span>'}</li>
+    <li> - 연락처 : ${[S.cpoPhone, S.cpoEmail].filter(Boolean).join(", ") || '<span class="pp-placeholder">미입력</span>'}</li>
+  </ul>
+  <p class="pp-contact-title" style="margin-top:10px;">▶ 개인정보보호 담당부서</p>
   ${(() => {
     const rows = S.depts.filter((d) => d.name || d.email || d.phone);
     if (!rows.length)
       return '<span class="pp-placeholder">부서 정보를 입력해 주세요</span>';
-    return `<table class="pp-contact-table">
-    <thead><tr>
-      <th class="pp-ct-head">부서</th>
-      <th class="pp-ct-head">연락처</th>
-      <th class="pp-ct-head">전자우편</th>
-    </tr></thead>
-    <tbody>${buildContactRows(rows, ["name", "phone", "email"])}</tbody>
-  </table>`;
+    return rows
+      .map(
+        (d) => `<ul class="pp-contact-list">
+    <li> - 부서명 : ${d.name || '<span class="pp-placeholder">미입력</span>'}</li>
+    <li> - 연락처 : ${[d.phone, d.email].filter(Boolean).join(", ") || '<span class="pp-placeholder">미입력</span>'}</li>
+  </ul>`,
+      )
+      .join("");
   })()}
 </div>
+<p style="margin-top:8px;">② 정보주체는 ${alias}의 서비스(또는 사업)를 이용하시면서 발생한 모든 개인정보보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자 및 개인정보보호 담당부서로 문의할 수 있습니다. ${co}는 정보주체의 문의에 대해 지체없이 답변 및 처리해드릴 것입니다.</p>
 
 <!-- 16 구제방법 -->
 ${
@@ -1837,13 +1836,214 @@ ${sec("remedy", "정보주체의 권익침해에 대한 구제방법", true)}
     : ""
 }
 
+<!-- 영상정보처리기기 -->
+${(() => {
+  const hasFixed = S.cctvFixed === "yes";
+  const hasMobile = S.cctvMobile === "yes";
+  if (!hasFixed && !hasMobile) return "";
+
+  const fixedBlock = hasFixed
+    ? (() => {
+        const locs = (S.cctvFixedLocations || []).filter(
+          (l) => l.location || l.count,
+        );
+        const locRows = locs.length
+          ? locs
+              .map(
+                (l) =>
+                  `<tr><td class="c">${l.count ? l.count + "대" : "-"}</td><td>${l.location || "-"}</td></tr>`,
+              )
+              .join("")
+          : `<tr><td colspan="2" style="color:#aaa">미입력</td></tr>`;
+        const delItems = (S.cctvFixedDelegateItems || []).filter(
+          (d) => d.company || d.manager || d.phone,
+        );
+        const delRows = delItems
+          .map(
+            (d) =>
+              `<tr><td>${d.company || "-"}</td><td>${d.manager || "-"}</td><td>${d.phone || "-"}</td></tr>`,
+          )
+          .join("");
+        const hasDelegate = S.cctvFixedDelegate === "yes" && delRows;
+
+        return `
+<p style="margin:12px 0 6px;font-weight:700;font-size:13.5px;color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:4px;">가. 고정형 영상정보처리기기 운영·관리</p>
+
+<p style="margin:10px 0 4px;font-weight:600;">① 설치 근거 및 설치 목적</p>
+<p style="margin:0 0 4px;">${alias}는 「개인정보 보호법」 제25조제1항에 따라 다음과 같은 목적으로 고정형 영상정보처리기기를 설치·운영합니다.</p>
+${
+  S.cctvFixedPurpose
+    ? S.cctvFixedPurpose
+        .split(/[,，、]/)
+        .map((p) => `<p style="margin:1px 0 0 12px;"> - ${p.trim()}</p>`)
+        .join("")
+    : '<p style="color:#aaa;margin:2px 0 0 12px;">미입력</p>'
+}
+
+<p style="margin:10px 0 4px;font-weight:600;">② 설치 대수, 설치 위치 및 촬영범위</p>
+<table class="pp-table">
+  <thead><tr><th style="width:22%;text-align:center;">설치 대수</th><th>설치 위치 및 촬영 범위</th></tr></thead>
+  <tbody>${locRows}</tbody>
+</table>
+
+<p style="margin:10px 0 4px;font-weight:600;">③ 관리책임자 및 접근권한자</p>
+<p style="margin:0 0 4px;">귀하의 개인영상정보를 보호하고 관련 불만을 처리하기 위하여 아래와 같이 개인영상정보 관리책임자 및 접근권한자를 두고 있습니다.</p>
+<table class="pp-table">
+  <thead><tr><th style="width:18%">구분</th><th>이름</th><th>직위</th><th>소속</th><th>연락처</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>관리책임자</td>
+      <td>${S.cctvFixedManagerName || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td>${S.cctvFixedManagerTitle || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td>${S.cctvFixedManagerDept || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td>${S.cctvFixedManagerPhone || '<span class="pp-placeholder">미입력</span>'}</td>
+    </tr>
+    ${
+      S.cctvFixedAccessName || S.cctvFixedAccessDept
+        ? `<tr>
+      <td>접근권한자</td>
+      <td>${S.cctvFixedAccessName || "-"}</td>
+      <td>${S.cctvFixedAccessTitle || "-"}</td>
+      <td>${S.cctvFixedAccessDept || "-"}</td>
+      <td>${S.cctvFixedAccessPhone || "-"}</td>
+    </tr>`
+        : ""
+    }
+  </tbody>
+</table>
+
+<p style="margin:10px 0 4px;font-weight:600;">④ 촬영시간, 보관기간, 보관장소 및 처리방법</p>
+<table class="pp-table">
+  <thead><tr><th>촬영시간</th><th>보관기간</th><th>보관장소</th></tr></thead>
+  <tbody><tr>
+    <td>${S.cctvFixedHours || '<span class="pp-placeholder">미입력</span>'}</td>
+    <td>촬영일로부터 ${S.cctvFixedRetention || "30"}일</td>
+    <td>${S.cctvFixedStorageLocation || '<span class="pp-placeholder">미입력</span>'}</td>
+  </tr></tbody>
+</table>
+<p style="margin:4px 0 0 4px;font-size:11.5px;color:#374151;"> - 처리방법 : 개인영상정보의 목적 외 이용, 제3자 제공, 파기, 열람 등 요구에 관한 사항을 기록·관리하고, 보관기간 만료 시 복원이 불가능한 방법으로 영구 삭제(출력물의 경우 파쇄 또는 소각)합니다.</p>
+
+${
+  hasDelegate
+    ? `
+<p style="margin:10px 0 4px;font-weight:600;">⑤ 고정형 영상정보처리기기 설치 및 관리 등의 위탁</p>
+<p style="margin:0 0 4px;">${alias}는 아래와 같이 고정형 영상정보처리기기 설치 및 관리 등을 위탁하고 있으며, 관계 법령에 따라 위탁계약 시 개인정보가 안전하게 관리될 수 있도록 필요한 사항을 규정하고 있습니다.</p>
+<table class="pp-table">
+  <thead><tr><th>수탁업체</th><th>담당자</th><th>연락처</th></tr></thead>
+  <tbody>${delRows}</tbody>
+</table>`
+    : ""
+}
+
+<p style="margin:10px 0 4px;font-weight:600;">${hasDelegate ? "⑥" : "⑤"} 개인영상정보의 확인 방법 및 장소</p>
+<p style="margin:0 0 2px;"> - 확인 방법 : 개인영상정보 관리책임자에게 미리 연락하고 본 기관을 방문하시면 확인 가능합니다.</p>
+<p style="margin:0 0 2px;"> - 확인 장소 : ${S.cctvFixedManagerDept || '<span class="pp-placeholder">부서 미입력</span>'}</p>
+
+<p style="margin:10px 0 4px;font-weight:600;">${hasDelegate ? "⑦" : "⑥"} 정보주체의 개인영상정보 열람 등 요구에 대한 조치</p>
+<p style="margin:0 0 4px;">귀하는 개인영상정보에 관하여 열람 또는 존재확인·삭제를 원하는 경우 언제든지 고정형 영상정보처리기기 운영자에게 요구하실 수 있습니다. 단, 귀하가 촬영된 개인영상정보에 한정됩니다.</p>
+<p style="margin:0;">${alias}는 개인영상정보에 관하여 열람 또는 존재확인·삭제를 요구한 경우 지체없이 필요한 조치를 하겠습니다.</p>
+
+<p style="margin:10px 0 4px;font-weight:600;">${hasDelegate ? "⑧" : "⑦"} 개인영상정보의 안전성 확보조치</p>
+<p style="margin:0;">${alias}에서 처리하는 개인영상정보는 암호화 조치 등을 통하여 안전하게 관리되고 있습니다. 또한 ${alias}는 개인영상정보 보호를 위한 관리적 대책으로서 개인정보에 대한 접근 권한을 차등 부여하고 있고, 개인영상정보의 위·변조 방지를 위하여 생성 일시, 열람 시 열람 목적·열람자·열람 일시 등을 기록하여 관리하고 있습니다. 이 외에도 개인영상정보의 안전한 물리적 보관을 위하여 잠금장치를 설치하고 있습니다.</p>
+`;
+      })()
+    : "";
+
+  const mobileBlock = hasMobile
+    ? (() => {
+        const delItems = (S.cctvMobileDelegateItems || []).filter(
+          (d) => d.company || d.manager || d.phone,
+        );
+        const delRows = delItems
+          .map(
+            (d) =>
+              `<tr><td>${d.company || "-"}</td><td>${d.manager || "-"}</td><td>${d.phone || "-"}</td></tr>`,
+          )
+          .join("");
+        const hasDelegate = S.cctvMobileDelegate === "yes" && delRows;
+
+        return `
+<p style="margin:18px 0 6px;font-weight:700;font-size:13.5px;color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:4px;">나. 이동형 영상정보처리기기 운영·관리</p>
+
+<p style="margin:10px 0 4px;font-weight:600;">① 운영 목적</p>
+<p style="margin:0 0 4px;">${alias}는 「개인정보 보호법」 제25조의2에 따라 다음과 같은 목적으로 이동형 영상정보처리기기를 운영합니다.</p>
+${
+  S.cctvMobilePurpose
+    ? S.cctvMobilePurpose
+        .split(/[,，、]/)
+        .map((p) => `<p style="margin:1px 0 0 12px;"> - ${p.trim()}</p>`)
+        .join("")
+    : '<p style="color:#aaa;margin:2px 0 0 12px;">미입력</p>'
+}
+
+<p style="margin:10px 0 4px;font-weight:600;">② 촬영 대상 지역</p>
+<p style="margin:0 0 4px;">${S.cctvMobileArea || '<span class="pp-placeholder">미입력</span>'}</p>
+
+<p style="margin:10px 0 4px;font-weight:600;">③ 운영 담당자</p>
+<table class="pp-table">
+  <thead><tr><th style="width:18%">구분</th><th>이름</th><th>직위</th><th>소속</th><th>연락처</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>관리책임자</td>
+      <td>${S.cctvMobileManagerName || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td>${S.cctvMobileManagerTitle || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td>${S.cctvMobileManagerDept || '<span class="pp-placeholder">미입력</span>'}</td>
+      <td>${S.cctvMobileManagerPhone || '<span class="pp-placeholder">미입력</span>'}</td>
+    </tr>
+    ${
+      S.cctvMobileAccessName || S.cctvMobileAccessDept
+        ? `<tr>
+      <td>접근권한자</td>
+      <td>${S.cctvMobileAccessName || "-"}</td>
+      <td>${S.cctvMobileAccessTitle || "-"}</td>
+      <td>${S.cctvMobileAccessDept || "-"}</td>
+      <td>${S.cctvMobileAccessPhone || "-"}</td>
+    </tr>`
+        : ""
+    }
+  </tbody>
+</table>
+
+<p style="margin:10px 0 4px;font-weight:600;">④ 촬영시간, 보관기간, 보관장소 및 처리방법</p>
+<table class="pp-table">
+  <thead><tr><th>촬영시간대</th><th>보관기간</th><th>보관장소</th></tr></thead>
+  <tbody><tr>
+    <td>${S.cctvMobileHours || '<span class="pp-placeholder">미입력</span>'}</td>
+    <td>촬영일로부터 ${S.cctvMobileRetention || "30"}일</td>
+    <td>${S.cctvMobileStorageLocation || '<span class="pp-placeholder">미입력</span>'}</td>
+  </tr></tbody>
+</table>
+<p style="margin:4px 0 0 4px;font-size:11.5px;color:#374151;"> - 처리방법 : 보관기간 만료 시 복원이 불가능한 방법으로 영구 삭제합니다.</p>
+
+${
+  hasDelegate
+    ? `
+<p style="margin:10px 0 4px;font-weight:600;">⑤ 이동형 영상정보처리기기 운영 위탁</p>
+<p style="margin:0 0 4px;">${alias}는 아래와 같이 이동형 영상정보처리기기 운영을 위탁하고 있습니다.</p>
+<table class="pp-table">
+  <thead><tr><th>수탁업체</th><th>담당자</th><th>연락처</th></tr></thead>
+  <tbody>${delRows}</tbody>
+</table>`
+    : ""
+}
+`;
+      })()
+    : "";
+
+  return `
+${sec("cctv", "영상정보처리기기 운영·관리에 관한 사항", true)}
+${fixedBlock}
+${mobileBlock}
+`;
+})()}
+
 <!-- 17 국내대리인 -->
 ${
   S.domAgent === "yes"
     ? `
 ${sec("agent", "국내대리인 지정", true)}
-<p>정보주체는 「개인정보 보호법」 제31조의2에 따라 지정된 ${co}의 국내대리인에게 개인정보 관련 고충처리 등의 업무를 위하여 연락을 취할 수 있습니다. ${co}은(는) 정보주체의 개인정보 관련 고충처리 등 개인정보 보호책임자의 업무 등을 신속하게 처리할 수 있도록 노력하겠습니다.</p>
-<p style="margin-top:10px;">▶ ${co}은(는) 「개인정보 보호법」 제31조의2에 따라 국내대리인을 지정하였습니다.</p>
+<p>정보주체는 「개인정보 보호법」 제31조의2에 따라 지정된 ${alias}의 국내대리인에게 개인정보 관련 고충처리 등의 업무를 위하여 연락을 취할 수 있습니다. ${alias}는 정보주체의 개인정보 관련 고충처리 등 개인정보 보호책임자의 업무 등을 신속하게 처리할 수 있도록 노력하겠습니다.</p>
+<p style="margin-top:10px;">▶ ${alias}는 「개인정보 보호법」 제31조의2에 따라 국내대리인을 지정하였습니다.</p>
 <table class="pp-table">
   <thead><tr>
     <th style="width:25%">성명(법인명)</th>
