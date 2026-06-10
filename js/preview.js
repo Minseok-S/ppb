@@ -796,7 +796,7 @@ function buildPreview() {
 <h2 class="pp-h2">${co + " "}개인정보 처리방침</h2>
 <div class="pp-date-row"><div class="pp-date-badge">${eff} 시행</div></div>
 
-<p class="pp-intro">${svc ? co + " " + '('+svc+')' : co}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다.</p>
+<p class="pp-intro">${svc ? co + " " + "(" + svc + ")" : co}(이하 '${alias}')는(은) 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다.</p>
 <p class="pp-intro">이에 「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
 
 <div class="pp-icon-nav">
@@ -927,8 +927,15 @@ ${buildMergedTable(otherRet, [
       : ""
   }
 <ul class="pp-list" style="margin-top:8px;">
-  <li>③ 파기절차: ${alias}는 파기 사유가 발생한 개인정보를 선정하고, 개인정보 보호책임자의 승인을 받아 파기합니다.</li>
-  <li>④ 파기방법${S.destroy.electronic || S.destroy.paper ? `<ul style="margin:4px 0 0 0;padding-left:16px;list-style:none;">${S.destroy.electronic ? '<li style="padding:2px 0;">• 전자적 파일: 기록을 재생할 수 없도록 파기합니다.</li>' : ""}${S.destroy.paper ? '<li style="padding:2px 0;">• 종이 문서: 분쇄기로 분쇄하거나 소각하여 파기합니다.</li>' : ""}</ul>` : ""}</li>
+  <li>③ 개인정보 파기의 절차 및 방법은 다음과 같습니다.</li>
+    <li style="margin-left:8px;"> 1. 파기절차</li>
+         <li style="margin-left:16px;">${alias}는 파기 사유가 발생한 개인정보를 선정하고, ${alias}의 개인정보 보호책임자의 승인을 받아 개인정보를 파기합니다.</li>
+     <li style="margin-left:8px;">${S.destroy.electronic || S.destroy.paper ? `2. 파기방법` : ""}</li>
+          <li style="margin-left:16px;">
+            ${S.destroy.electronic || S.destroy.paper ? `${alias}는` : ""}
+            ${S.destroy.electronic ? "전자적 파일 형태로 기록·저장된 개인정보는 기록을 재생할 수 없도록 파기합니다." : ""}
+            ${S.destroy.paper ? "종이 문서에 기록·저장된 개인정보는 분쇄기로 분쇄하거나 소각하여 파기합니다." : ""}
+          </li>
 </ul>
 
 <!-- 04 제3자 제공 -->
