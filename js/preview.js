@@ -769,6 +769,15 @@ function buildPreview() {
       show: S.cctvFixed === "yes" || S.cctvMobile === "yes",
       opt: true,
     },
+    {
+      k: "voluntary",
+      l: "자율적 개인정보 보호활동",
+      show:
+        S.voluntaryActivity === "yes" &&
+        ((S.vaFlags && Object.values(S.vaFlags).some(Boolean)) ||
+          (S.vaExtra && Object.values(S.vaExtra).some((a) => a.length > 0))),
+      opt: true,
+    },
     { k: "change", l: "개인정보 처리방침의 변경", show: true },
   ];
   const visibleToc = tocItems.filter((t) => t.show);
@@ -2061,6 +2070,81 @@ ${sec("agent", "국내대리인 지정", true)}
 `
     : ""
 }
+
+${(() => {
+  const vf = S.vaFlags || {};
+  const vx = S.vaExtra || { effort: [], reg: [], trans: [], right: [] };
+  const hasAny =
+    Object.values(vf).some(Boolean) ||
+    Object.values(vx).some((a) => a.length > 0);
+  if (S.voluntaryActivity !== "yes" || !hasAny) return "";
+
+  const rows = [];
+
+  // ① 추가적 노력
+  const effort = [];
+  if (vf.va_isms) effort.push(`ISMS-P 개인정보보호 인증 획득`);
+  if (vf.va_isms) effort.push(`ISMS 개인정보보호 인증 획득`);
+  if (vf.va_pbd) effort.push("개인정보보호 중심 설계(PbD) 적용");
+  if (vf.va_pia) effort.push("개인정보 영향평가 수행");
+  effort.push(...(vx.effort || []));
+  if (effort.length)
+    rows.push({ title: "개인정보 보호조치를 위한 추가적 노력", items: effort });
+
+  // ② 자율규제
+  const reg = [];
+  if (vf.va_joint) reg.push("공동규제 및 자율규약 참여");
+  if (vf.va_selfOrg) reg.push("자율규제 단체 활동");
+  if (vf.va_cpoCouncil) reg.push("개인정보보호책임자 협의회 활동");
+  if (vf.va_campaign) reg.push("개인정보 보호의 날 캠페인 연계 활동");
+  reg.push(...(vx.reg || []));
+  if (reg.length)
+    rows.push({ title: "개인정보보호 자율규제 활동", items: reg });
+
+  // ③ 투명성
+  const trans = [];
+  if (vf.va_transparency) trans.push("주기적인 투명성 보고서 발간");
+  if (vf.va_investment)
+    trans.push("인력·예산 할당 등 개인정보보호 투자 현황 공개");
+  if (vf.va_aiData) {
+    const criteria = S.vaAiDataCriteria
+      ? `<br><span style="font-size:12px;color:#4b5563;margin-left:1em">${S.vaAiDataCriteria.replace(/\n/g, "<br>")}</span>`
+      : "";
+    trans.push(`인공지능(AI) 학습데이터 수집·이용 기준 공개${criteria}`);
+  }
+  if (vf.va_social) trans.push("소셜미디어를 통한 개인정보보호 활동 게시");
+  trans.push(...(vx.trans || []));
+  if (trans.length)
+    rows.push({ title: "개인정보 처리 투명성 강화 활동", items: trans });
+
+  // ④ 소양 강화
+  const right = [];
+  if (vf.va_mobileAccess)
+    right.push("모바일 앱의 접근 권한 관리 및 동의 철회 방법 안내");
+  if (vf.va_childPolicy) right.push("아동·청소년의 개인정보 보호 정책 및 활동");
+  right.push(...(vx.right || []));
+  if (right.length)
+    rows.push({
+      title: "정보주체 권리 및 개인정보보호 소양 강화 노력",
+      items: right,
+    });
+
+  const body = rows
+    .map(
+      (r, i) => `
+<p style="margin:10px 0 4px;font-weight:600;">${"①②③④"[i]} ${r.title}</p>
+<ul style="margin:0 0 6px;padding-left:1.4em;">
+  ${r.items.map((it) => `<li style="margin-bottom:3px;">${it}</li>`).join("")}
+</ul>`,
+    )
+    .join("");
+
+  return `
+${sec("voluntary", "자율적 개인정보 보호활동", true)}
+<p>${alias}는 법령상 의무사항 외에 개인정보 보호를 위하여 다음과 같은 자율적 활동을 시행하고 있습니다.</p>
+${body}
+`;
+})()}
 
 ${sec("change", "개인정보 처리방침의 변경")}
 <p class="pp-eff-date">① 이 개인정보 처리방침은 <strong>${eff}</strong>부터 적용됩니다.</p>

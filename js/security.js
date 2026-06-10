@@ -30,6 +30,37 @@ function renderSecChips(cat) {
 }
 
 // ════════════════════════════════════════
+//  VOLUNTARY ACTIVITY — CUSTOM ITEMS
+// ════════════════════════════════════════
+function addVaItem(cat) {
+  const inp = document.getElementById("va_" + cat + "_input");
+  const val = inp.value.trim();
+  if (!val) return;
+  S.vaExtra[cat].push(val);
+  inp.value = "";
+  renderVaChips(cat);
+  updatePreview();
+}
+
+function removeVaItem(cat, idx) {
+  S.vaExtra[cat].splice(idx, 1);
+  renderVaChips(cat);
+  updatePreview();
+}
+
+function renderVaChips(cat) {
+  const container = document.getElementById("va_" + cat + "_chips");
+  if (!container) return;
+  const items = S.vaExtra[cat] || [];
+  container.innerHTML = items
+    .map(
+      (v, i) =>
+        `<span class="sec-chip">${v}<button onclick="removeVaItem('${cat}',${i})">×</button></span>`
+    )
+    .join("");
+}
+
+// ════════════════════════════════════════
 //  PSEUDONYM SECURITY — CUSTOM ITEMS
 // ════════════════════════════════════════
 const PS_CAT_MAP = { mgmt: "ps_mgmt_extra", tech: "ps_tech_extra", phys: "ps_phys_extra" };

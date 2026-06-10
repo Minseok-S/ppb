@@ -442,24 +442,6 @@ function renderSteps() {
         </div>
         <div id="sec_phys_chips" class="sec-chips"></div>
       </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">추가 인증</label>
-        <div class="toggle-group">
-          <div class="toggle-item" data-key="s_isms" onclick="toggleItem(this,'security')">
-            <div><div class="toggle-label">ISMS-P 인증</div><div class="toggle-sub">정보보호 관리체계 인증</div></div>
-            <div class="toggle-switch"></div>
-          </div>
-          <div class="toggle-item" data-key="s_isms_cert" onclick="toggleItem(this,'security')">
-            <div><div class="toggle-label">ISMS 인증</div><div class="toggle-sub">정보보호 관리체계 인증</div></div>
-            <div class="toggle-switch"></div>
-          </div>
-        </div>
-        <div class="sec-extra-row">
-          <input type="text" id="sec_cert_input" class="field-input" placeholder="인증 항목 직접 추가" onkeydown="if(event.key==='Enter')addSecItem('cert')" />
-          <button class="btn-add-sm" onclick="addSecItem('cert')">추가</button>
-        </div>
-        <div id="sec_cert_chips" class="sec-chips"></div>
-      </div>
     </div>
 
     <!-- ── STEP 9: 쿠키 ── -->
@@ -1321,6 +1303,149 @@ function renderSteps() {
               <button class="btn-add" onclick="addCCTVDelegate('mobile')">＋ 수탁업체 추가</button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 18: 자율적 개인정보 보호활동 ── -->
+    <div class="section-panel" id="step18">
+      <div class="section-title">
+        <div class="section-num">18</div>
+        자율적 개인정보 보호활동 <span class="badge-opt">선택</span>
+      </div>
+      <div class="section-desc">법령상 의무사항 외에 개인정보처리자가 자율적으로 이행하는 보호활동을 공개할 수 있습니다.</div>
+      <div class="field-group">
+        <div class="radio-group">
+          <div class="radio-item selected" id="va_no" onclick="selectR('va_no','va_yes','voluntaryActivity','no')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">해당 없음</div></div>
+          </div>
+          <div class="radio-item" id="va_yes" onclick="selectR('va_yes','va_no','voluntaryActivity','yes')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">자율적 보호활동을 공개합니다</div></div>
+          </div>
+        </div>
+        <div id="voluntaryActivityDetail" style="display:none;margin-top:12px">
+
+          <!-- ① 개인정보 보호조치를 위한 추가적 노력 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:8px">
+              ① 개인정보 보호조치를 위한 추가적 노력
+            </label>
+            <div class="toggle-group">
+              <div class="toggle-item" data-key="va_isms" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">ISMS-P 등 개인정보보호 인증 획득</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_pbd" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">개인정보보호 중심 설계(PbD) 적용</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_pia" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">개인정보 영향평가 수행</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_dormant" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">휴면고객 정책 운영</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+            </div>
+          
+            <div class="sec-extra-row" style="margin-top:8px">
+              <input type="text" id="va_effort_input" class="field-input" placeholder="항목 직접 추가" onkeydown="if(event.key==='Enter')addVaItem('effort')" />
+              <button class="btn-add-sm" onclick="addVaItem('effort')">추가</button>
+            </div>
+            <div id="va_effort_chips" class="sec-chips"></div>
+          </div>
+
+          <!-- ② 개인정보보호 자율규제 활동 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:8px">
+              ② 개인정보보호 자율규제 활동
+            </label>
+            <div class="toggle-group">
+              <div class="toggle-item" data-key="va_joint" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">공동규제 및 자율규약 참여</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_selfOrg" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">자율규제 단체 활동</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_cpoCouncil" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">개인정보보호책임자 협의회 활동</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_campaign" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">개인정보 보호의 날 캠페인 연계 활동</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+            </div>
+            <div class="sec-extra-row" style="margin-top:8px">
+              <input type="text" id="va_reg_input" class="field-input" placeholder="항목 직접 추가" onkeydown="if(event.key==='Enter')addVaItem('reg')" />
+              <button class="btn-add-sm" onclick="addVaItem('reg')">추가</button>
+            </div>
+            <div id="va_reg_chips" class="sec-chips"></div>
+          </div>
+
+          <!-- ③ 개인정보 처리 투명성 강화 활동 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px;margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:8px">
+              ③ 개인정보 처리 투명성 강화 활동
+            </label>
+            <div class="toggle-group">
+              <div class="toggle-item" data-key="va_transparency" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">주기적인 투명성 보고서 발간</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_investment" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">인력·예산 할당 등 개인정보보호 투자 현황 공개</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_aiData" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">인공지능(AI) 학습데이터 수집·이용 기준 공개</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_social" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">소셜미디어를 통한 개인정보보호 활동 게시</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+            </div>
+            <div id="vaAiDataDetail" style="display:none;margin-top:8px">
+              <label class="field-label" style="font-size:11.5px">AI 학습데이터 수집·이용 기준 <span style="font-size:10px;color:#aaa;font-weight:400">(주요 수집 출처, 수집 방법, 최소 품질기준, 안전성 확보 조치 등)</span></label>
+              <textarea id="vaAiDataCriteria" rows="3"
+                placeholder="예: 공개된 웹 데이터 및 이용자 동의 기반 수집 데이터를 활용하며, 민감정보는 수집하지 않습니다. 수집 전 품질 검증 및 비식별화 처리를 수행하고, 접근 권한을 제한하여 안전하게 관리합니다."
+                oninput="updatePreview()"></textarea>
+            </div>
+            <div class="sec-extra-row" style="margin-top:8px">
+              <input type="text" id="va_trans_input" class="field-input" placeholder="항목 직접 추가" onkeydown="if(event.key==='Enter')addVaItem('trans')" />
+              <button class="btn-add-sm" onclick="addVaItem('trans')">추가</button>
+            </div>
+            <div id="va_trans_chips" class="sec-chips"></div>
+          </div>
+
+          <!-- ④ 정보주체 권리 및 개인정보보호 소양 강화 -->
+          <div class="field-group" style="background:#f8f9ff;border:1px solid #e0e4f0;border-radius:8px;padding:12px">
+            <label class="field-label" style="font-size:12px;font-weight:700;color:#3b5bdb;margin-bottom:8px">
+              ④ 정보주체 권리 및 개인정보보호 소양 강화 노력
+            </label>
+            <div class="toggle-group">
+              <div class="toggle-item" data-key="va_mobileAccess" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">모바일 앱의 접근 권한 관리 및 동의 철회 방법 안내</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div class="toggle-item" data-key="va_childPolicy" onclick="toggleItem(this,'vaFlags')">
+                <div><div class="toggle-label">아동·청소년의 개인정보 보호 정책 및 활동</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+            </div>
+            <div class="sec-extra-row" style="margin-top:8px">
+              <input type="text" id="va_right_input" class="field-input" placeholder="항목 직접 추가" onkeydown="if(event.key==='Enter')addVaItem('right')" />
+              <button class="btn-add-sm" onclick="addVaItem('right')">추가</button>
+            </div>
+            <div id="va_right_chips" class="sec-chips"></div>
+          </div>
+
         </div>
       </div>
     </div>

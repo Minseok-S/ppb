@@ -24,6 +24,7 @@ function selectR(onId, offId, key, val) {
     autoDecision: ["autoDecisionDetail", "yes"],
     adSensitive: ["adSensitiveDetailPanel", "yes"],
     domAgent: ["domAgentDetail", "yes"],
+    voluntaryActivity: ["voluntaryActivityDetail", "yes"],
   };
   if (map[key]) {
     const [panelId, showVal] = map[key];
@@ -50,8 +51,19 @@ function toggleItem(el, group) {
     rightsActions: S.rightsActions,
     agency: S.agency,
     pseudonymSecurity: S.pseudonymSecurity,
+    vaFlags: S.vaFlags,
   };
   if (maps[group]) maps[group][key] = el.classList.contains("checked");
+  if (group === "vaFlags" && key === "va_isms") {
+    const on = el.classList.contains("checked");
+    const panel = document.getElementById("vaIsmsDetail");
+    if (panel) panel.style.display = on ? "block" : "none";
+  }
+  if (group === "vaFlags" && key === "va_aiData") {
+    const on = el.classList.contains("checked");
+    const panel = document.getElementById("vaAiDataDetail");
+    if (panel) panel.style.display = on ? "block" : "none";
+  }
   if (group === "rights" && key === "r_web") {
     const on = el.classList.contains("checked");
     S.rightsOnline = on ? "yes" : "no";
