@@ -1,71 +1,40 @@
 // ════════════════════════════════════════
 //  EXPORT
 // ════════════════════════════════════════
+function getExportCSS() {
+  const base = `*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f7;color:#333;}
+.wrapper{max-width:780px;margin:0 auto;padding:36px 20px 80px;}
+a{color:#4f6ef7;}
+@media(max-width:600px){.pp{padding:28px 20px;}}
+`;
+  let extracted = "";
+  for (const sheet of document.styleSheets) {
+    try {
+      for (const rule of sheet.cssRules) {
+        const text = rule.cssText;
+        if (
+          text.includes(".pp") ||
+          text.includes(".policy_") ||
+          text.includes("sub_txt") ||
+          text.includes(".preview-doc")
+        ) {
+          extracted += text + "\n";
+        }
+      }
+    } catch (e) {}
+  }
+  return base + extracted;
+}
+
 function generateFinalHTML() {
   const content = document.getElementById("previewContent").innerHTML;
   const co = S.companyName || "회사";
-  const svc = S.serviceName || "";
   const eff = S.effectiveDate || "";
   const scriptTag = "<scr" + "ipt>";
   const scriptCloseTag = "</" + "script>";
 
-  const css = `*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f7;color:#333;}
-.wrapper{max-width:780px;margin:0 auto;padding:36px 20px 80px;}
-.preview-doc{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.15);overflow:hidden;font-family:'Noto Sans KR',sans-serif;}
-@media(max-width:600px){.pp{padding:28px 20px;}}
-.pp{padding:48px 56px;color:#000;font-size:14px;line-height:1.7;}
-.pp-h2{font-size:26px;font-weight:700;color:#111;text-align:center;margin-bottom:6px;letter-spacing:-.5px;}
-.pp-date-row{display:flex;justify-content:flex-end;margin:36px 0 20px;}
-.pp-date-badge{background:#f4f5f7;border-radius:7px;padding:5px 14px;font-size:12px;font-weight:600;color:#000;border:1px solid #e0e0e0;}
-.pp-intro{color:#000;font-size:13px;line-height:1.85;margin-bottom:8px;}
-.pp-icon-nav{border:1px solid #e2e2e5;border-radius:10px;padding:12px 16px;margin:12px 0;display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:1fr;}
-.pp-icon-item{display:flex;flex-direction:column;align-items:center;padding:8px 4px;text-align:center;}
-.pp-icon-circle{width:52px;height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
-.pp-icon-circle svg{width:52px;height:52px;}
-.pp-icon-label{font-size:11px;font-weight:700;color:#000;word-break:keep-all;}
-.pp-toc-box{background:#f4f5f7;border-radius:7px;padding:10px 16px;margin:12px 0;}
-.pp-toc-box ul{list-style:none;}
-.pp-toc-box ul li{padding:2px 0;}
-.pp-toc-link{display:flex;align-items:center;gap:4px;color:#444;text-decoration:none;padding:4px 7px;border-radius:5px;transition:background .15s,color .15s;font-size:12px;}
-.pp-toc-link:hover{background:#e4e8ff;color:#4f6ef7;}
-.pp-toc-icon{display:inline-flex;align-items:center;flex-shrink:0;}
-.pp-toc-icon svg{width:22px;height:22px;}
-.pp-toc-num{font-size:10px;font-weight:700;min-width:20px;flex-shrink:0;}
-.pp-toc-opt{font-size:9px;color:#aaa;margin-left:2px;}
-.pp-sec{font-size:14px;font-weight:700;color:#343434;margin-top:28px;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid #f0f0f0;display:flex;align-items:center;gap:7px;scroll-margin-top:20px;}
-.pp-sec-icons{display:flex;align-items:center;gap:3px;flex-shrink:0;}
-.pp-sec-icon{display:inline-flex;align-items:center;}
-.pp-sec-icon svg{width:28px;height:28px;}
-.pp p{font-size:13px;color:#000;margin-bottom:7px;line-height:1.8;}
-.pp-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;}
-.pp-table th{background:#f2f2f2;padding:7px 9px;text-align:center;border:1px solid #ddd;font-weight:700;color:#000;}
-.pp-table td{padding:7px 9px;border:1px solid #ddd;color:#000;vertical-align:middle;text-align:center;}
-.pp-table td.c{text-align:center;vertical-align:middle;}
-.pp ul.pp-list{padding-left:0;margin:6px 0;list-style:none;}
-.pp ul.pp-list li{font-size:13px;color:#000;padding:2px 0;line-height:1.7;}
-.pp ul.pp-list li::before{content:none;}
-.pp-contact-box{background:#f8f9fa;border-radius:7px;padding:14px 18px;margin:10px 0;}
-.pp-contact-title{font-weight:700;font-size:13px;color:#000;margin-bottom:5px;}
-.pp-contact-info{font-size:12px;color:#000;line-height:1.8;}
-.pp-contact-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;table-layout:fixed;}
-.pp-ct-head{background:#e9ecef;color:#495057;font-weight:600;padding:5px 10px;border:1px solid #dee2e6;text-align:center;}
-.pp-ct-label{width:25%;background:#e9ecef;color:#495057;font-weight:600;padding:5px 10px;border:1px solid #dee2e6;text-align:center;}
-.pp-ct-value{width:25%;padding:5px 10px;border:1px solid #dee2e6;color:#000;word-break:break-all;text-align:center;vertical-align:middle;}
-.pp-eff-date{font-size:13px;color:#000;}
-.pp-sub-title{font-size:13px;font-weight:700;color:#000;margin:14px 0 6px;}
-.pp-placeholder{color:#bbb;font-style:italic;}
-.pp-hidden{display:none;}
-a{color:#4f6ef7;}
-.policy_cnt{margin:8px 0;}
-.policy_table{margin:8px 0;}
-.policy_table.scroll{overflow-x:auto;}
-.policy_table table{width:100%;border-collapse:collapse;font-size:12px;}
-.policy_table table caption{font-size:11px;color:#888;text-align:left;margin-bottom:4px;caption-side:top;}
-.policy_table table th{background:#f2f2f2;padding:7px 9px;text-align:center;border:1px solid #ddd;font-weight:700;color:#000;}
-.policy_table table td{padding:7px 9px;border:1px solid #ddd;color:#000;vertical-align:middle;text-align:left;}
-.policy_table table td.c{text-align:center;}
-p.sub_txt{font-size:11px;color:#888;margin:4px 0 0;}`;
+  const css = getExportCSS();
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -112,18 +81,20 @@ function copyHTML() {
 function downloadWord() {
   const content = document.getElementById("previewContent").innerHTML;
   const co = S.companyName || "회사";
-  const svc = S.serviceName || "";
   const eff = S.effectiveDate || "";
 
-  // SVG 요소 제거 (Word 호환성)
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = content;
+  // Word 비호환 요소 제거
   tempDiv.querySelectorAll("svg").forEach((el) => el.remove());
-  // 아이콘 네비게이션·TOC 숨김 (인쇄용 불필요)
-  tempDiv
-    .querySelectorAll(".pp-icon-nav, .pp-toc-box")
-    .forEach((el) => el.remove());
+  tempDiv.querySelectorAll(".pp-icon-nav, .pp-toc-box, .pp-sec-icons").forEach((el) => el.remove());
+  // TOC 클릭 안내 문구 제거
+  tempDiv.querySelectorAll("p").forEach((p) => {
+    if (p.textContent.includes("목차를 클릭")) p.remove();
+  });
   const wordContent = tempDiv.innerHTML;
+
+  const MG = "'맑은 고딕','Malgun Gothic',sans-serif";
 
   const wordHtml = `<!DOCTYPE html>
 <html xmlns:o='urn:schemas-microsoft-com:office:office'
@@ -140,33 +111,79 @@ function downloadWord() {
 </w:WordDocument>
 </xml><![endif]-->
 <style>
-  body{font-family:'맑은 고딕','Malgun Gothic',sans-serif;font-size:10pt;color:#000;margin:40pt 50pt;}
-  table{border-collapse:collapse;width:100%;font-size:9pt;margin:8pt 0;}
-  th{background:#f2f2f2;padding:5pt 7pt;border:1pt solid #ccc;font-weight:bold;text-align:center;}
-  td{padding:5pt 7pt;border:1pt solid #ccc;vertical-align:middle;}
-  .pp-h2{font-size:16pt;font-weight:bold;text-align:center;margin-bottom:4pt;}
-  .pp-date-row{text-align:right;margin:16pt 0 10pt;}
-  .pp-date-badge{font-size:9pt;border:1pt solid #ccc;padding:2pt 8pt;}
-  .pp-intro{font-size:10pt;line-height:1.8;margin-bottom:6pt;}
-  .pp-sec{font-size:11pt;font-weight:bold;border-bottom:1pt solid #ccc;padding-bottom:4pt;margin-top:18pt;margin-bottom:8pt;}
-  .pp-sub-title{font-size:10pt;font-weight:bold;margin:10pt 0 4pt;}
-  p{font-size:10pt;line-height:1.7;margin-bottom:5pt;}
-  ul.pp-list{margin:4pt 0 4pt 16pt;padding:0;}
-  ul.pp-list li{font-size:10pt;line-height:1.7;list-style:disc;}
-  .pp-contact-box{border:1pt solid #e0e0e0;padding:8pt 12pt;margin:8pt 0;}
-  .pp-contact-title{font-size:10pt;font-weight:bold;margin-bottom:4pt;}
-  .pp-contact-info{font-size:9pt;line-height:1.8;}
-  .pp-contact-table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:4pt;}
-  .pp-ct-head,.pp-ct-label{background:#e9ecef;font-weight:600;padding:4pt 8pt;border:1pt solid #ccc;text-align:center;}
-  .pp-ct-value{padding:4pt 8pt;border:1pt solid #ccc;word-break:break-all;text-align:center;}
-  .pp-eff-date{font-size:10pt;}
+  *{font-family:${MG};box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:${MG};font-size:10pt;color:#000;margin:40pt 50pt;line-height:1.7;}
+
+  /* 제목 */
+  .pp-h2{font-size:18pt;font-weight:bold;color:#111;text-align:center;margin-bottom:4pt;letter-spacing:-0.5px;}
+
+  /* 시행일 */
+  .pp-date-row{text-align:right;margin:18pt 0 12pt;}
+  .pp-date-badge{font-size:9pt;font-weight:600;color:#000;border:1pt solid #e0e0e0;padding:3pt 10pt;background:#f4f5f7;}
+
+  /* 서문 */
+  .pp-intro{font-size:10pt;line-height:1.85;margin-bottom:6pt;color:#000;}
+
+  /* 섹션 헤딩 */
+  .pp-sec{font-size:11pt;font-weight:bold;color:#343434;margin-top:20pt;margin-bottom:7pt;padding-bottom:5pt;border-bottom:1.5pt solid #e0e0e0;}
+  .pp-sec-num{font-size:9pt;font-weight:bold;color:#555;margin-right:4pt;}
+  .pp-sec-label{font-size:11pt;font-weight:bold;}
+
+  /* 소제목 */
+  .pp-sub-title{font-size:10pt;font-weight:bold;color:#000;margin:10pt 0 4pt;}
+
+  /* 본문 단락 */
+  p{font-size:10pt;line-height:1.8;margin-bottom:5pt;color:#000;}
+
+  /* 목록 */
+  ul.pp-list{padding-left:0;margin:4pt 0;list-style:none;}
+  ul.pp-list li{font-size:10pt;color:#000;padding:1pt 0;line-height:1.7;}
+  ul.pp-list li::before{content:none;}
+
+  /* 테이블 공통 */
+  table{border-collapse:collapse;width:100%;font-size:9pt;margin:6pt 0;table-layout:fixed;}
+  th{background:#f2f2f2;padding:5pt 7pt;border:1pt solid #ddd;font-weight:bold;text-align:center;color:#000;}
+  td{padding:5pt 7pt;border:1pt solid #ddd;color:#000;vertical-align:middle;text-align:center;}
+
+  /* pp-table */
+  .pp-table{width:100%;border-collapse:collapse;margin:6pt 0;font-size:9pt;table-layout:fixed;}
+  .pp-table th{background:#f2f2f2;padding:5pt 7pt;text-align:center;border:1pt solid #ddd;font-weight:bold;color:#000;}
+  .pp-table td{padding:5pt 7pt;border:1pt solid #ddd;color:#000;vertical-align:middle;text-align:center;}
+  .pp-table td.c{text-align:center;vertical-align:middle;}
+
+  /* 연락처 박스 */
+  .pp-contact-box{border:1pt solid #e0e0e0;padding:10pt 14pt;margin:7pt 0;background:#f8f9fa;}
+  .pp-contact-title{font-size:10pt;font-weight:bold;margin-bottom:4pt;color:#000;}
+  .pp-contact-info{font-size:9pt;line-height:1.8;color:#000;}
+  .pp-contact-list{list-style:none;padding:0;margin:0 0 3pt 6pt;font-size:10pt;color:#000;line-height:1.9;}
+  .pp-contact-table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:3pt;table-layout:fixed;}
+  .pp-ct-head{background:#e9ecef;color:#495057;font-weight:600;padding:4pt 8pt;border:1pt solid #dee2e6;text-align:center;}
+  .pp-ct-label{width:25%;background:#e9ecef;color:#495057;font-weight:600;padding:4pt 8pt;border:1pt solid #dee2e6;}
+  .pp-ct-value{width:25%;padding:4pt 8pt;border:1pt solid #dee2e6;color:#000;word-break:break-all;text-align:center;vertical-align:middle;}
+
+  /* policy_table (행태정보 등) */
+  .policy_cnt{margin:5pt 0;}
+  .policy_table{margin:5pt 0;}
+  .policy_table table{width:100%;border-collapse:collapse;font-size:9pt;table-layout:fixed;}
+  .policy_table table caption{font-size:8.5pt;color:#888;text-align:left;margin-bottom:3pt;}
+  .policy_table table th{background:#f2f2f2;padding:5pt 7pt;text-align:center;border:1pt solid #ddd;font-weight:bold;color:#000;}
+  .policy_table table td{padding:5pt 7pt;border:1pt solid #ddd;color:#000;vertical-align:middle;text-align:left;}
+  .policy_table table td.c{text-align:center;}
+
+  /* 이전 방침 */
+  .pp-prev-wrap{margin-top:7pt;}
+  .pp-prev-header{font-size:9pt;font-weight:bold;color:#888;}
+  .pp-prev-list{border:1pt solid #e2e4f0;margin-top:4pt;font-size:10pt;}
+  .pp-prev-list-item{display:block;padding:6pt 10pt;color:#333;text-decoration:none;border-bottom:1pt solid #eef0f8;}
+  .pp-prev-list-nolink{padding:6pt 10pt;color:#aaa;border-bottom:1pt solid #eef0f8;}
+  .pp-prev-list-arrow{margin-left:4pt;color:#ccc;}
+
+  /* 기타 */
+  .pp-eff-date{font-size:10pt;color:#000;}
+  p.sub_txt{font-size:8.5pt;color:#888;margin:2pt 0 0;}
+  a{color:#4f6ef7;}
   .pp-placeholder{color:#bbb;font-style:italic;}
   .pp-hidden{display:none;}
-  .policy_table table{width:100%;border-collapse:collapse;font-size:9pt;}
-  .policy_table table th{background:#f2f2f2;padding:5pt 7pt;border:1pt solid #ccc;font-weight:bold;text-align:center;}
-  .policy_table table td{padding:5pt 7pt;border:1pt solid #ccc;}
-  p.sub_txt{font-size:9pt;color:#888;margin:2pt 0 0;}
-  a{color:#4f6ef7;}
 </style>
 </head>
 <body>
@@ -174,7 +191,7 @@ ${wordContent}
 </body>
 </html>`;
 
-  const blob = new Blob(["\ufeff", wordHtml], {
+  const blob = new Blob(["﻿", wordHtml], {
     type: "application/msword;charset=utf-8",
   });
   const a = document.createElement("a");
