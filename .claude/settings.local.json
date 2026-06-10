@@ -6,7 +6,8 @@
       "Bash(git push:*)",
       "Bash(wc -l /Users/mac/Desktop/ppb/js/*.js)",
       "Skill(run)",
-      "Skill(run:*)"
+      "Skill(run:*)",
+      "Bash(open /Users/mac/Desktop/ppb/index.html)"
     ]
   }
 }
