@@ -282,38 +282,85 @@ function renderSteps() {
         <div class="section-num">7</div>
         국외 이전 <span class="badge-opt">해당시</span>
       </div>
-      <div class="section-desc">개인정보를 국외로 이전(제공·위탁·보관)하는 경우 기재합니다.</div>
+      <div class="section-desc">개인정보를 국외로 이전하는 경우 해당 유형을 선택하여 입력합니다.</div>
+
+      <!-- 가. 국외 제3자 제공 -->
       <div class="field-group">
-        <label class="field-label">국외 이전 여부</label>
+        <label class="field-label">가. 개인정보 국외 제3자 제공</label>
         <div class="radio-group">
-          <div class="radio-item selected" id="ot_no" onclick="selectR('ot_no','ot_yes','overseas','no')">
+          <div class="radio-item selected" id="otP_no" onclick="selectOTType('provide','no')">
             <div class="radio-dot"></div>
             <div><div class="radio-text">해당 없음</div></div>
           </div>
-          <div class="radio-item" id="ot_yes" onclick="selectR('ot_yes','ot_no','overseas','yes')">
+          <div class="radio-item" id="otP_yes" onclick="selectOTType('provide','yes')">
             <div class="radio-dot"></div>
-            <div><div class="radio-text">국외 이전 있음 (상세 입력)</div></div>
+            <div><div class="radio-text">해당 있음 (상세 입력)</div></div>
           </div>
         </div>
       </div>
-      <div id="otDetail" style="display:none">
-        <div id="otItems"></div>
-        <button class="btn-add" style="margin-top:6px" onclick="addOverseas()">＋ 이전 대상 추가</button>
-        <div class="field-group" style="margin-top:14px">
-          <label class="field-label">국외 이전 거부 시 불이익</label>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <span style="white-space:nowrap;font-size:13px;color:#333">국외 이전을 거부할 경우</span>
-            <input type="text" class="field-input" id="otRefuseDisadvantage" placeholder="서비스 이용이 불가능" style="flex:1;min-width:120px" oninput="syncOT();updatePreview()" />
-            <span style="white-space:nowrap;font-size:13px;color:#333">합니다.</span>
+      <div id="otProvideDetail" style="display:none;margin-bottom:14px">
+        <div id="otProvideItems"></div>
+        <button class="btn-add" style="margin-top:6px" onclick="addOverseas('provide')">＋ 제공 대상 추가</button>
+      </div>
+
+      <!-- 나. 국외 처리위탁·보관 -->
+      <div class="field-group" style="margin-top:10px">
+        <label class="field-label">나. 개인정보 국외 처리위탁·보관</label>
+        <div class="radio-group">
+          <div class="radio-item selected" id="otD_no" onclick="selectOTType('delegate','no')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">해당 없음</div></div>
+          </div>
+          <div class="radio-item" id="otD_yes" onclick="selectOTType('delegate','yes')">
+            <div class="radio-dot"></div>
+            <div><div class="radio-text">해당 있음 (상세 입력)</div></div>
           </div>
         </div>
-        <div class="field-group">
+      </div>
+      <div id="otDelegateDetail" style="display:none;margin-bottom:14px">
+        <div id="otDelegateItems"></div>
+        <button class="btn-add" style="margin-top:6px" onclick="addOverseas('delegate')">＋ 위탁·보관 대상 추가</button>
+      </div>
+
+      <!-- 공통: 거부 불이익 + 거부 방법 -->
+      <div id="otRefuseSection" style="display:none">
+        <div class="field-group" style="margin-top:10px">
           <label class="field-label">국외 이전 거부 방법</label>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <span style="white-space:nowrap;font-size:13px;color:#333">국외 이전을 원치 않을 경우</span>
-            <input type="text" class="field-input" id="otRefuseMethod" placeholder="홈페이지(메뉴 – 내 정보 – 회원 탈퇴)" style="flex:1;min-width:160px" oninput="syncOT();updatePreview()" />
-            <span style="white-space:nowrap;font-size:13px;color:#333">를 통하여 회원 탈퇴를 요청할 수 있습니다.</span>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div>
+              <div class="toggle-item" id="otRef_web_toggle" onclick="toggleRefuseChannel('web')">
+                <div><div class="toggle-label">홈페이지</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div id="otRef_web_input" style="display:none;margin-top:4px;padding:0 4px">
+                <input type="text" class="field-input" id="otRef_web_path" placeholder="예: 메뉴 – 내 정보 – 회원 탈퇴" oninput="syncOT();updatePreview()" />
+              </div>
+            </div>
+            <div>
+              <div class="toggle-item" id="otRef_mobile_toggle" onclick="toggleRefuseChannel('mobile')">
+                <div><div class="toggle-label">모바일 앱</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div id="otRef_mobile_input" style="display:none;margin-top:4px;padding:0 4px">
+                <input type="text" class="field-input" id="otRef_mobile_path" placeholder="예: 메뉴 – 내 정보 – 회원 탈퇴" oninput="syncOT();updatePreview()" />
+              </div>
+            </div>
+            <div>
+              <div class="toggle-item" id="otRef_cs_toggle" onclick="toggleRefuseChannel('cs')">
+                <div><div class="toggle-label">고객센터</div></div>
+                <div class="toggle-switch"></div>
+              </div>
+              <div id="otRef_cs_input" style="display:none;margin-top:4px;padding:0 4px">
+                <input type="text" class="field-input" id="otRef_cs_phone" placeholder="예: 0000-0000" oninput="syncOT();updatePreview()" />
+              </div>
+            </div>
           </div>
+          <div class="sec-extra-row" style="margin-top:6px">
+            <input type="text" id="otRef_custom_name" class="field-input" placeholder="채널명 (예: 우편, 팩스)" style="flex:1.2" onkeydown="if(event.key==='Enter')addRefuseCustom()" />
+            <input type="text" id="otRef_custom_detail" class="field-input" placeholder="세부 내용 (예: 주소, 번호)" style="flex:2" onkeydown="if(event.key==='Enter')addRefuseCustom()" />
+            <button class="btn-add-sm" onclick="addRefuseCustom()">추가</button>
+          </div>
+          <div id="otRef_custom_chips" class="sec-chips"></div>
         </div>
       </div>
     </div>

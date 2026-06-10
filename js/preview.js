@@ -1015,21 +1015,35 @@ ${
     ? `
 ${sec("overseas", "개인정보의 국외 이전", true)}
 <p>${alias}는 서비스 이용자로부터 수집한 개인정보를 아래와 같이 국외에 이전하고 있으며, 「개인정보 보호법」 제28조의8제2항에 따라 국외이전에 대해 다음과 같이 안내합니다.</p>
-${S.otRefuseDisadvantage ? `<p style="margin-top:6px;">국외 이전을 거부할 경우 ${S.otRefuseDisadvantage}합니다.</p>` : ""}
-${
-  S.otItems.length > 0 && S.otItems.some((r) => r.receiver)
-    ? `
-${buildMergedTable(S.otItems, [
-  { key: "receiver", label: "이전받는 자" },
-  { key: "country", label: "이전 국가", cls: "c" },
-  { key: "items", label: "이전 항목" },
-  { key: "purpose", label: "이용 목적" },
-  { key: "method", label: "이전 방법" },
-  { key: "retention", label: "보유기간", cls: "c" },
-])}`
-    : '<p style="color:#aaa;font-style:italic;font-size:12px;">이전 대상을 추가해 주세요.</p>'
-}
-${S.otRefuseMethod ? `<p style="margin-top:8px;">국외 이전을 원치 않을 경우 ${S.otRefuseMethod}를 통하여 회원 탈퇴를 요청할 수 있습니다.</p>` : ""}
+${`<p style="margin-top:6px;">국외 이전을 거부할 경우 서비스 이용이 불가 합니다. ${`<p style="margin-top:8px;">${S.otRefuseMethod}</p>`}</p>`}
+${(() => {
+  const OT_COLS = [
+    { key: "basis", label: "관련 근거" },
+    { key: "items", label: "이전하는 개인정보 항목" },
+    { key: "country", label: "이전 국가", cls: "c" },
+    { key: "method", label: "이전 시기 및 방법" },
+    { key: "receiver", label: "이전받는 자" },
+    { key: "purpose", label: "이용 목적" },
+    { key: "retention", label: "개인정보 보유 및 이용기간", cls: "c" },
+  ];
+  let html = "";
+  if (S.otProvide === "yes") {
+    html += `<p style="margin-top:10px;font-weight:600;">가. 개인정보 국외 제3자 제공</p>`;
+    html +=
+      S.otProvideItems.length > 0 && S.otProvideItems.some((r) => r.receiver)
+        ? buildMergedTable(S.otProvideItems, OT_COLS)
+        : '<p style="color:#aaa;font-style:italic;font-size:12px;">제공 대상을 추가해 주세요.</p>';
+  }
+  if (S.otDelegate === "yes") {
+    html += `<p style="margin-top:10px;font-weight:600;">나. 개인정보 국외 처리위탁·보관</p>`;
+    html +=
+      S.otDelegateItems.length > 0 && S.otDelegateItems.some((r) => r.receiver)
+        ? buildMergedTable(S.otDelegateItems, OT_COLS)
+        : '<p style="color:#aaa;font-style:italic;font-size:12px;">위탁·보관 대상을 추가해 주세요.</p>';
+  }
+  return html;
+})()}
+
 `
     : ""
 }
