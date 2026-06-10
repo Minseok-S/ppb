@@ -9,7 +9,20 @@ function addPrevPolicy() {
   d.id = id;
   d.innerHTML = `
     <div class="card-header"><span class="card-title">이전 방침</span><button class="btn-icon" onclick="removePrevPolicy('${id}')">✕</button></div>
-    <div class="field-group"><label class="field-label">시행일</label><input type="text" data-field="date" placeholder="예: 2024. 01. 01" oninput="syncPrevPolicies();updatePreview()"></div>
+    <div class="field-group">
+      <label class="field-label">시행일</label>
+      <div class="date-wrapper">
+        <input type="date" data-field="date" oninput="syncPrevPolicies();updatePreview()">
+        <span class="date-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </span>
+      </div>
+    </div>
     <div class="field-group" style="margin-top:6px"><label class="field-label">URL</label><input type="text" data-field="url" placeholder="예: https://example.com/privacy-2024" oninput="syncPrevPolicies();updatePreview()"></div>
   `;
   c.appendChild(d);

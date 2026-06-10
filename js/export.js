@@ -72,7 +72,7 @@ p.sub_txt{font-size:11px;color:#888;margin:4px 0 0;}`;
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${svc ? svc + " " : co + " "}개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
+<title>${co + " "}개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>${css}</style>
 ${scriptTag}
@@ -131,7 +131,7 @@ function downloadWord() {
       xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
 <meta charset="utf-8">
-<title>${svc ? svc : co} 개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
+<title>${co} 개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
 <!--[if gte mso 9]><xml>
 <w:WordDocument>
   <w:View>Print</w:View>

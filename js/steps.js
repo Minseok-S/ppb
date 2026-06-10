@@ -22,7 +22,18 @@ function renderSteps() {
       </div>
       <div class="field-group">
         <label class="field-label">시행일 <span class="req">*</span></label>
-        <input type="text" id="effectiveDate" placeholder="예: 2025. 09. 15" oninput="updatePreview()" />
+        <div class="date-wrapper">
+          <input type="date" id="effectiveDate" oninput="updatePreview()" />
+          <span class="date-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+        </div>
+       
       </div>
       <div class="field-group" style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:14px">
         <label class="field-label">이전 개인정보 처리방침 링크
@@ -1059,10 +1070,6 @@ function renderSteps() {
             <input type="email" id="daEmail" placeholder="예: privacy@example.com" oninput="updatePreview()" />
           </div>
         </div>
-      </div>
-      <div class="info-box" style="margin-top:14px">
-        <div class="info-title">✅ 완성!</div>
-        <p>오른쪽 미리보기를 확인하고 상단 <strong>HTML 다운로드</strong> 버튼으로 저장하세요.</p>
       </div>
     </div>
   `;
