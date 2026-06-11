@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>개인정보 실시간 편집기</title>
+    <link rel="stylesheet" href="editor.css" />
+  </head>
+  <body>
+    <!-- ── Header ── -->
+    <div class="header">
+      <span class="logo">📋 실시간 편집기</span>
+
+      <div class="file-zone">
+        <label class="btn btn-file" for="fileInput">파일 선택</label>
+        <input type="file" id="fileInput" accept=".html,.htm" />
+        <span class="file-name" id="fileName"
+          >HTML 파일을 선택하거나 왼쪽 화면에 드래그하세요</span
+        >
+        <button class="btn btn-primary" id="fileLoadBtn">불러오기</button>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-help" id="helpBtn">? 사용방법</button>
+
+        <button class="btn btn-success" id="exportBtn">↓ HTML 내보내기</button>
+      </div>
+    </div>
+
+    <!-- ── Workspace ── -->
+    <div class="workspace" id="workspace">
+      <!-- 원본 패널 -->
+      <div class="panel original-panel" id="originalPanel">
+        <div class="panel-header">
+          원본 (비교용)
+          <div class="zoom-ctrl">
+            <button class="zoom-btn" id="origZoomOut" title="축소">−</button>
+            <input
+              class="zoom-input"
+              id="origZoomLabel"
+              value="100%"
+              title="비율 직접 입력 후 Enter"
+            />
+            <button class="zoom-btn" id="origZoomIn" title="확대">+</button>
+          </div>
+        </div>
+        <div class="body" id="origBody">
+          <div class="loading" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p>파일을 불러오는 중...</p>
+          </div>
+          <div class="error-banner" id="errorBanner"></div>
+          <div class="placeholder" id="placeholder">
+            <div class="drop-zone" id="dropZone">
+              <svg
+                width="52"
+                height="52"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#94a3b8"
+                stroke-width="1.5"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <p>
+                HTML 파일을 여기에 드래그하거나<br />상단에서 파일을 선택하세요
+              </p>
+              <label class="btn btn-primary drop-select-btn" for="fileInput"
+                >파일 선택</label
+              >
+            </div>
+          </div>
+          <iframe
+            id="originalFrame"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          ></iframe>
+        </div>
+        <div class="click-hint" id="clickHint">
+          ✦ 스크롤이 양쪽 화면에 동기화됩니다
+        </div>
+      </div>
+
+      <!-- 분할선 -->
+      <div class="divider" id="divider"></div>
+
+      <!-- 편집 패널 -->
+      <div class="panel editor-panel" id="editorPanel">
+        <div class="panel-header">
+          편집 화면
+          <div style="display: flex; gap: 6px; align-items: center">
+            <div class="zoom-ctrl">
+              <button class="zoom-btn" id="editZoomOut" title="축소">−</button>
+              <input
+                class="zoom-input"
+                id="editZoomLabel"
+                value="100%"
+                title="비율 직접 입력 후 Enter"
+              />
+              <button class="zoom-btn" id="editZoomIn" title="확대">+</button>
+            </div>
+            <button class="btn btn-outline toggle-orig-btn" id="toggleOrigBtn">
+              원본 숨기기
+            </button>
+            <button
+              class="btn btn-outline btn-diff-toggle active"
+              id="diffToggleBtn"
+            >
+              수정 표시 ON
+            </button>
+            <button class="btn btn-outline btn-comp" id="compBtn">
+              신구 대조표
+            </button>
+            <button class="btn btn-outline" id="clearBtn">전체 지우기</button>
+          </div>
+        </div>
+
+        <!-- 툴바 -->
+        <div class="toolbar" id="toolbar">
+          <!-- 실행취소/다시실행 -->
+          <button class="tb-btn" data-cmd="undo" title="실행 취소 (Ctrl+Z)">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <polyline points="9 14 4 9 9 4" />
+              <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+            </svg>
+          </button>
+          <button class="tb-btn" data-cmd="redo" title="다시 실행 (Ctrl+Y)">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <polyline points="15 14 20 9 15 4" />
+              <path d="M4 20v-7a4 4 0 0 1 4-4h12" />
+            </svg>
+          </button>
+
+          <div class="tb-sep"></div>
+
+          <!-- 텍스트 스타일 -->
+          <button class="tb-btn" data-cmd="bold" title="굵게 (Ctrl+B)">
+            <b>B</b>
+          </button>
+          <button class="tb-btn" data-cmd="italic" title="기울임 (Ctrl+I)">
+            <i>I</i>
+          </button>
+          <button class="tb-btn" data-cmd="underline" title="밑줄 (Ctrl+U)">
+            <u>U</u>
+          </button>
+          <button class="tb-btn" data-cmd="strikeThrough" title="취소선">
+            <s>S</s>
+          </button>
+
+          <div class="tb-sep"></div>
+
+          <!-- 크기 / 글꼴 -->
+          <select class="tb-select" id="sizeSelect" title="글자 크기">
+            <option value="">크기</option>
+            <option value="1">10px</option>
+            <option value="2">12px</option>
+            <option value="3">14px</option>
+            <option value="4">16px</option>
+            <option value="5">18px</option>
+            <option value="6">24px</option>
+            <option value="7">32px</option>
+          </select>
+          <select
+            class="tb-select"
+            id="fontSelect"
+            title="글꼴"
+            style="width: 90px"
+          >
+            <option value="">글꼴</option>
+            <option value="Apple SD Gothic Neo">애플고딕</option>
+            <option value="Noto Sans KR">Noto Sans</option>
+            <option value="Malgun Gothic">맑은고딕</option>
+            <option value="Nanum Gothic">나눔고딕</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Courier New">Courier</option>
+          </select>
+
+          <div class="tb-sep"></div>
+
+          <!-- 색상 팔레트 -->
+          <div class="color-picker-wrap" id="textColorWrap">
+            <button
+              class="tb-btn color-btn"
+              id="textColorBtn"
+              title="글자 색상"
+            >
+              <span class="color-btn-inner">
+                <span class="color-letter">A</span>
+                <span
+                  class="color-indicator"
+                  id="textColorIndicator"
+                  style="background: #000000"
+                ></span>
+              </span>
+            </button>
+            <div class="color-palette" id="textColorPalette">
+              <div class="palette-label">글자 색상</div>
+              <div class="palette-swatches" id="textSwatches"></div>
+              <div class="palette-custom-row">
+                <input
+                  type="color"
+                  class="palette-custom-input"
+                  id="textColorCustom"
+                  value="#000000"
+                />
+                <span class="palette-custom-label">직접 선택</span>
+              </div>
+            </div>
+          </div>
+          <div class="color-picker-wrap" id="bgColorWrap">
+            <button
+              class="tb-btn color-btn"
+              id="bgColorBtn"
+              title="배경(형광펜) 색상"
+            >
+              <span class="color-btn-inner">
+                <span
+                  class="color-letter"
+                  style="
+                    font-size: 9px;
+                    font-weight: 800;
+                    letter-spacing: -0.5px;
+                  "
+                  >BG</span
+                >
+                <span
+                  class="color-indicator"
+                  id="bgColorIndicator"
+                  style="background: #ffff00"
+                ></span>
+              </span>
+            </button>
+            <div class="color-palette" id="bgColorPalette">
+              <div class="palette-label">배경(형광펜) 색상</div>
+              <div class="palette-swatches" id="bgSwatches"></div>
+              <div class="palette-custom-row">
+                <input
+                  type="color"
+                  class="palette-custom-input"
+                  id="bgColorCustom"
+                  value="#ffff00"
+                />
+                <span class="palette-custom-label">직접 선택</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tb-sep"></div>
+
+          <!-- 정렬 -->
+          <button class="tb-btn" data-cmd="justifyLeft" title="왼쪽 정렬">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="15" y2="12" />
+              <line x1="3" y1="18" x2="18" y2="18" />
+            </svg>
+          </button>
+          <button class="tb-btn" data-cmd="justifyCenter" title="가운데 정렬">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="6" y1="12" x2="18" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
+          <button class="tb-btn" data-cmd="justifyRight" title="오른쪽 정렬">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="9" y1="12" x2="21" y2="12" />
+              <line x1="6" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+
+          <div class="tb-sep"></div>
+
+          <!-- 목록 -->
+          <button
+            class="tb-btn"
+            data-cmd="insertUnorderedList"
+            title="글머리 목록"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="9" y1="6" x2="20" y2="6" />
+              <line x1="9" y1="12" x2="20" y2="12" />
+              <line x1="9" y1="18" x2="20" y2="18" />
+              <circle cx="4" cy="6" r="1.5" fill="currentColor" />
+              <circle cx="4" cy="12" r="1.5" fill="currentColor" />
+              <circle cx="4" cy="18" r="1.5" fill="currentColor" />
+            </svg>
+          </button>
+          <button class="tb-btn" data-cmd="insertOrderedList" title="번호 목록">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="10" y1="6" x2="21" y2="6" />
+              <line x1="10" y1="12" x2="21" y2="12" />
+              <line x1="10" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+
+          <div class="tb-sep"></div>
+
+          <!-- 들여쓰기 -->
+          <button class="tb-btn" data-cmd="outdent" title="내어쓰기">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="11 17 6 12 11 7" />
+              <line x1="6" y1="12" x2="18" y2="12" />
+            </svg>
+          </button>
+          <button class="tb-btn" data-cmd="indent" title="들여쓰기">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="13 17 18 12 13 7" />
+              <line x1="6" y1="12" x2="18" y2="12" />
+            </svg>
+          </button>
+
+          <div class="tb-sep"></div>
+
+          <!-- 단락 형식 -->
+          <select class="tb-select" id="blockSelect" title="단락 형식">
+            <option value="">단락</option>
+            <option value="h1">제목 1</option>
+            <option value="h2">제목 2</option>
+            <option value="h3">제목 3</option>
+            <option value="p">본문</option>
+            <option value="blockquote">인용</option>
+            <option value="pre">코드</option>
+          </select>
+
+          <div class="tb-sep"></div>
+
+          <!-- 표 삽입 드롭다운 -->
+          <div class="tb-dropdown" id="tableDropdownWrap">
+            <button class="tb-btn" id="tableBtn" title="표 삽입">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="1" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="3" y1="15" x2="21" y2="15" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="15" y1="3" x2="15" y2="21" />
+              </svg>
+            </button>
+            <div class="tb-dropdown-menu" id="tableMenu">
+              <div class="table-grid" id="tableGrid"></div>
+              <div class="table-size-label" id="tableSizeLabel">
+                표 크기 선택 (최대 8×8)
+              </div>
+            </div>
+          </div>
+
+          <!-- 링크 삽입 -->
+          <button class="tb-btn" id="linkBtn" title="링크 삽입">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+              />
+              <path
+                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+              />
+            </svg>
+          </button>
+
+          <!-- 이미지 삽입 -->
+          <button class="tb-btn" id="imgInsertBtn" title="이미지 삽입">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          </button>
+          <input
+            type="file"
+            id="imgFileInput"
+            accept="image/*"
+            style="display: none"
+          />
+
+          <!-- 수평선 -->
+          <button class="tb-btn tb-btn-text" id="hrBtn" title="수평선 삽입">
+            ─
+          </button>
+
+          <div class="tb-sep"></div>
+
+          <button
+            class="tb-btn tb-btn-text"
+            data-cmd="removeFormat"
+            title="서식 제거"
+          >
+            서식 지우기
+          </button>
+        </div>
+
+        <!-- 편집 영역 -->
+        <div class="frame-zoom-wrap" id="editFrameWrap">
+          <iframe id="editorFrame"></iframe>
+        </div>
+
+        <!-- 상태 바 -->
+        <div class="status-bar">
+          <span id="statusText">파일을 불러오면 편집을 시작할 수 있습니다</span>
+          <span id="charCount">0자</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 플로팅 서식 툴바 (텍스트 선택 시) ── -->
+    <div id="floatBar" class="float-bar">
+      <button class="fb-btn" data-cmd="bold" title="굵게"><b>B</b></button>
+      <button class="fb-btn" data-cmd="italic" title="기울임"><i>I</i></button>
+      <button class="fb-btn" data-cmd="underline" title="밑줄"><u>U</u></button>
+      <button class="fb-btn" data-cmd="strikeThrough" title="취소선">
+        <s>S</s>
+      </button>
+      <div class="fb-sep"></div>
+      <div class="color-picker-wrap fb-color-wrap" id="fbTextColorWrap">
+        <button
+          class="fb-btn fb-color-btn"
+          id="fbTextColorBtn"
+          title="글자 색상"
+        >
+          <span class="fb-color-inner">
+            <b style="font-size: 12px; color: #e2e8f0">A</b>
+            <span
+              class="fb-color-bar"
+              id="fbTextColorBar"
+              style="background: #e94560"
+            ></span>
+          </span>
+        </button>
+        <div class="color-palette fb-palette" id="fbTextColorPalette">
+          <div class="palette-label">글자 색상</div>
+          <div class="palette-swatches" id="fbTextSwatches"></div>
+          <div class="palette-custom-row">
+            <input
+              type="color"
+              class="palette-custom-input"
+              id="fbTextColorCustom"
+              value="#000000"
+            />
+            <span class="palette-custom-label">직접 선택</span>
+          </div>
+        </div>
+      </div>
+      <div class="fb-sep"></div>
+      <button class="fb-btn" id="fbLinkBtn" title="링크 삽입">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path
+            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+          />
+          <path
+            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── 컨텍스트 메뉴 ── -->
+    <div class="context-menu" id="contextMenu">
+      <div class="ctx-item" data-action="bold"><b>B</b>&nbsp; 굵게</div>
+      <div class="ctx-item" data-action="italic"><i>I</i>&nbsp; 기울임</div>
+      <div class="ctx-item" data-action="underline"><u>U</u>&nbsp; 밑줄</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" data-action="link">🔗 링크 삽입</div>
+      <div class="ctx-item" data-action="table">표 삽입</div>
+      <div class="ctx-item" data-action="hr">— 수평선 삽입</div>
+      <div class="ctx-sep ctx-table-sep" id="ctxTableSep"></div>
+      <div
+        class="ctx-item ctx-table-item"
+        id="ctxInsRowAbove"
+        data-action="insertRowAbove"
+      >
+        ↑ 위에 행 삽입
+      </div>
+      <div
+        class="ctx-item ctx-table-item"
+        id="ctxInsRowBelow"
+        data-action="insertRowBelow"
+      >
+        ↓ 아래에 행 삽입
+      </div>
+      <div
+        class="ctx-item ctx-table-item"
+        id="ctxInsColLeft"
+        data-action="insertColLeft"
+      >
+        ← 왼쪽에 열 삽입
+      </div>
+      <div
+        class="ctx-item ctx-table-item"
+        id="ctxInsColRight"
+        data-action="insertColRight"
+      >
+        → 오른쪽에 열 삽입
+      </div>
+      <div
+        class="ctx-item ctx-table-item ctx-danger"
+        id="ctxDelRow"
+        data-action="deleteRow"
+      >
+        행 삭제
+      </div>
+      <div
+        class="ctx-item ctx-table-item ctx-danger"
+        id="ctxDelCol"
+        data-action="deleteCol"
+      >
+        열 삭제
+      </div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" data-action="removeFormat">서식 제거</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" data-action="undo">↩ 실행 취소</div>
+      <div class="ctx-item" data-action="redo">↪ 다시 실행</div>
+    </div>
+
+    <!-- ── 링크 모달 ── -->
+    <div class="modal-overlay" id="linkModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">링크 삽입</h2>
+          <button class="modal-close" id="linkClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">표시 텍스트</label>
+            <input
+              type="text"
+              class="form-input"
+              id="linkTextInput"
+              placeholder="링크에 표시될 텍스트"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >URL <span style="color: #e94560">*</span></label
+            >
+            <input
+              type="text"
+              class="form-input"
+              id="linkUrlInput"
+              placeholder="https://example.com 또는 mailto:name@email.com"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="linkCancel">취소</button>
+          <button class="btn btn-primary" id="linkConfirm">삽입</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 사용방법 모달 ── -->
+    <div class="modal-overlay" id="helpModal">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h2 class="modal-title">사용방법</h2>
+          <button class="modal-close" id="helpClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="help-intro">
+            개인정보처리방침·동의서 등 HTML 문서를 불러와 직접 편집하고 저장하는
+            도구입니다.
+          </p>
+          <div class="help-steps">
+            <div class="help-step">
+              <div class="help-step-num">1</div>
+              <div class="help-step-content">
+                <h3>파일 불러오기</h3>
+                <p>
+                  상단 <strong>파일 선택</strong> 버튼을 클릭하거나, 왼쪽 화면에
+                  HTML 파일을 <strong>드래그&드롭</strong>합니다. 불러오기
+                  버튼을 눌러야 파일이 로드됩니다.
+                </p>
+              </div>
+            </div>
+            <div class="help-step">
+              <div class="help-step-num">2</div>
+              <div class="help-step-content">
+                <h3>텍스트 직접 편집</h3>
+                <p>
+                  오른쪽 편집 화면에서 원하는 곳을 <strong>클릭</strong>하면
+                  바로 텍스트를 수정할 수 있습니다. 회사명, 담당자, 연락처, 조항
+                  내용 등을 자유롭게 변경하세요.
+                </p>
+              </div>
+            </div>
+            <div class="help-step">
+              <div class="help-step-num">3</div>
+              <div class="help-step-content">
+                <h3>서식 적용</h3>
+                <p>
+                  텍스트를 <strong>드래그하여 선택</strong>한 후 툴바에서
+                  굵기·기울임·글자 크기·색상·정렬 등을 적용합니다. 단락 형식으로
+                  제목(H1~H3) 또는 본문을 지정할 수도 있습니다.
+                </p>
+              </div>
+            </div>
+            <div class="help-step">
+              <div class="help-step-num">4</div>
+              <div class="help-step-content">
+                <h3>표(Table) 삽입 · 편집</h3>
+                <p>
+                  툴바의 <strong>표 아이콘(⊞)</strong>을 클릭하면 격자가
+                  나타납니다. 원하는 행·열 수에 마우스를 올리고 클릭하면 표가
+                  삽입됩니다.<br />표 셀 위에서 <strong>우클릭</strong>하면
+                  행·열 추가/삭제 메뉴가 표시됩니다.
+                </p>
+              </div>
+            </div>
+            <div class="help-step">
+              <div class="help-step-num">5</div>
+              <div class="help-step-content">
+                <h3>링크 삽입</h3>
+                <p>
+                  링크를 걸 텍스트를 선택한 후 툴바의
+                  <strong>링크 아이콘(🔗)</strong>을 클릭합니다. URL 입력창이
+                  열리면 주소를 입력하고 삽입합니다.
+                </p>
+              </div>
+            </div>
+            <div class="help-step">
+              <div class="help-step-num">6</div>
+              <div class="help-step-content">
+                <h3>변경사항 비교</h3>
+                <p>
+                  수정된 부분은 <strong>빨간 테두리</strong>로 강조됩니다.
+                  왼쪽의 원본과 비교하며 확인하세요. 상단
+                  <strong>원본 숨기기</strong> 버튼으로 편집 공간을 넓힐 수
+                  있습니다.
+                </p>
+              </div>
+            </div>
+            <div class="help-step">
+              <div class="help-step-num">7</div>
+              <div class="help-step-content">
+                <h3>HTML 내보내기</h3>
+                <p>
+                  편집 완료 후 상단 <strong>HTML 내보내기</strong> 버튼을
+                  클릭하여 파일을 저장합니다. 원본 CSS·스타일이 그대로 유지된
+                  완성 파일이 저장됩니다.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="help-shortcuts">
+            <h3>단축키</h3>
+            <div class="shortcut-grid">
+              <div><kbd>Ctrl+Z</kbd> 실행 취소</div>
+              <div><kbd>Ctrl+Y</kbd> 다시 실행</div>
+              <div><kbd>Ctrl+B</kbd> 굵게</div>
+              <div><kbd>Ctrl+I</kbd> 기울임</div>
+              <div><kbd>Ctrl+U</kbd> 밑줄</div>
+              <div><kbd>Ctrl+A</kbd> 전체 선택</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="helpOk">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 신구 대조표 모달 ── -->
+    <div class="modal-overlay" id="compModal">
+      <div class="modal modal-comp">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title">신구 대조표</h2>
+            <p class="comp-subtitle">
+              수정된 내용을 현행·개정 두 열로 비교합니다.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button class="btn btn-outline comp-print-btn" id="compPrintBtn">
+              🖨 인쇄
+            </button>
+            <button class="modal-close" id="compClose">✕</button>
+          </div>
+        </div>
+        <div class="modal-body comp-modal-body" id="compContent">
+          <div class="comp-empty" id="compEmpty">변경된 내용이 없습니다.</div>
+        </div>
+        <div class="modal-footer">
+          <span class="comp-change-count" id="compChangeCount"></span>
+          <button class="btn btn-primary" id="compOk">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="editor.js?v=4"></script>
+  </body>
+</html>

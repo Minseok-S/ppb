@@ -82,7 +82,7 @@
           </div>
         </div>
 
-        <!-- step panels injected here by renderSteps() in js/steps.js -->
+        <!-- step panels injected here by renderSteps() in js/engine/steps.js -->
         <div id="stepsContent"></div>
 
         <div style="flex: 1"></div>
@@ -148,27 +148,31 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- modules (load order matters) -->
-    <script src="js/state.js"></script>
-    <script src="js/navigation.js"></script>
-    <script src="js/helpers.js"></script>
-    <script src="js/collect.js"></script>
-    <script src="js/children.js"></script>
-    <script src="js/retention.js"></script>
-    <script src="js/thirdparty.js"></script>
-    <script src="js/delegation.js"></script>
-    <script src="js/overseas.js"></script>
-    <script src="js/security.js"></script>
-    <script src="js/behavioral.js"></script>
-    <script src="js/addusage.js"></script>
-    <script src="js/sensitive.js"></script>
-    <script src="js/pseudonym.js"></script>
-    <script src="js/autodecision.js"></script>
-    <script src="js/departments.js"></script>
-    <script src="js/cctv.js"></script>
-    <script src="js/steps.js"></script>
-    <script src="js/preview.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/init.js"></script>
+    <!-- modules (load order matters — js/ 폴더: core / sections / engine) -->
+    <!-- core: 앱 골격 (state 가장 먼저) -->
+    <script src="js/core/state.js"></script>
+    <script src="js/core/navigation.js"></script>
+    <script src="js/core/helpers.js"></script>
+    <!-- sections: 스텝별 기능 모듈 -->
+    <script src="js/sections/collect.js"></script>
+    <script src="js/sections/children.js"></script>
+    <script src="js/sections/retention.js"></script>
+    <script src="js/sections/thirdparty.js"></script>
+    <script src="js/sections/delegation.js"></script>
+    <script src="js/sections/overseas.js"></script>
+    <script src="js/sections/security.js"></script>
+    <script src="js/sections/behavioral.js"></script>
+    <script src="js/sections/addusage.js"></script>
+    <script src="js/sections/sensitive.js"></script>
+    <script src="js/sections/pseudonym.js"></script>
+    <script src="js/sections/autodecision.js"></script>
+    <script src="js/sections/departments.js"></script>
+    <script src="js/sections/cctv.js"></script>
+    <!-- engine: 렌더·출력 -->
+    <script src="js/engine/steps.js"></script>
+    <script src="js/engine/preview.js"></script>
+    <script src="js/engine/export.js"></script>
+    <!-- core: 초기화 (가장 마지막) -->
+    <script src="js/core/init.js"></script>
   </body>
 </html>
