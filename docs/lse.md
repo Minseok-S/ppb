@@ -16,9 +16,14 @@
 
 ## 처리 단계
 
-### 1. 입력 (두 가지)
+### 1. 입력 (세 가지)
 - **URL**: 직접 `fetch` 시도 → 실패하면 `corsproxy.io` 프록시로 폴백.
-- **파일**: 업로드/드래그앤드롭 → `FileReader`로 읽기 (`loadFromFile`).
+- **HTML 파일**: 업로드/드래그앤드롭 → `FileReader`로 텍스트 읽기 (`loadFromFile`).
+- **PDF 파일**: 업로드/드래그앤드롭 → `loadPdfFile`. CDN으로 로드한 **pdf.js**(`window.pdfjsLib`)로 **원본 레이아웃을 그대로 재현**한다 (`extractPdfToHtml` → `extractPdfPage`):
+  - 글자: `getTextContent`의 각 아이템을 `pdfjsLib.Util.transform`으로 뷰포트 좌표로 변환해 `position:absolute` `<span>`으로 **글자별 절대배치** (좌표·폰트 크기·굵게/기울임 보존).
+  - 표 테두리·구분선: `getOperatorList`를 훑어 사각형/선 그리기 연산만 추려(`buildPdfGraphics`) 페이지마다 `<svg>`로 복원. 얇은 사각형은 채움(선), 큰 사각형은 테두리로 렌더.
+  - 페이지: 크기를 **pt 단위**로 잡아(`buildPdfDocHtml`) 인쇄 시 원본과 동일한 물리 크기로 출력. 페이지마다 `.pdf-page` div, `@page{margin:0}` + `page-break-after`로 페이지 분할.
+  - 이후 동일한 `loadBothPanels` 파이프라인에 태운다. 색상 채움은 흑백 선/테두리로 단순화되고, 스캔(이미지) PDF는 추출할 텍스트가 없어 안내 후 중단된다.
 
 ### 2. 패널 로드 (`loadBothPanels`)
 - 원본 HTML → 좌측 iframe(`originalFrame`).
@@ -41,7 +46,8 @@
 - 비교 모달: `collectDiffPairs` → `showCompModal` (정규화는 `sanitizeHtmlForComp`, 표 분기 `hasTable`).
 
 ### 5. 내보내기
-- `exportHTML`: 편집 결과를 HTML 파일로 다운로드.
+- 편집 결과 추출은 `getEditorExportHtml`이 담당 (주입 스타일 `id^="__"` 임시 제거 후 직렬화).
+- `exportHTML`: 추출한 HTML을 파일로 다운로드.
 - `clearEditor`: 초기화.
 
 ## 작업 시 주의

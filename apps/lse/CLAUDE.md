@@ -14,11 +14,11 @@
 
 ## 동작 흐름
 
-1. **입력**: URL 입력(직접 fetch 시도 후 실패 시 `corsproxy.io` 폴백) 또는 HTML 파일 업로드/드래그앤드롭 (`loadFromFile`).
+1. **입력**: URL 입력(직접 fetch 시도 후 실패 시 `corsproxy.io` 폴백), HTML 파일 업로드/드래그앤드롭 (`loadFromFile`), 또는 PDF 업로드/드래그앤드롭 (`loadPdfFile` — CDN `pdfjsLib`로 텍스트 추출 후 편집용 HTML로 변환, 표·다단 레이아웃은 단순화).
 2. **로드**: 원본을 좌측 iframe(`originalFrame`), 편집본을 우측 iframe(`editorFrame`)에 주입 (`loadBothPanels`). 편집본은 `contenteditable`로 만들고 편집 외 상호작용을 제한(`restrictEditorInteractions`).
 3. **편집**: 서식(`fmt`), 표 삽입/행열 추가·삭제(`insertTable`/`tableInsert*`/`tableDelete*`), 링크(`showLinkModal`/`confirmInsertLink`), 이미지, 가로줄(`insertHR`), 우클릭 컨텍스트 메뉴(`showContextMenu`), 컬러 팔레트(`togglePalette`).
 4. **Diff**: 편집본 변경을 `MutationObserver`로 감시(`initDiffTracking`/`scheduleDiff`/`runDiff`)해 원본 스냅샷과 비교, 변경 노드에 마커 표시. 단어 단위 diff(`tokenizeWords`/`wordDiff`)와 비교 모달(`showCompModal`)도 제공.
-5. **내보내기**: `exportHTML`로 편집 결과를 HTML 파일로 저장.
+5. **내보내기**: 편집 결과를 `getEditorExportHtml`로 추출해 `exportHTML`(HTML 파일 다운로드)로 저장. diff 마커 속성(`data-changed`, `data-deleted`)은 내보내기 전 임시 제거 후 복원.
 
 ## 작업 시 주의
 
