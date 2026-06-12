@@ -62,6 +62,8 @@ function applyRowMerge() {
 
 function updatePreview() {
   readFields();
+  // 편집모드 중이거나 수동 편집본이 있으면 재렌더하지 않는다 — 직접 고친 내용 보존
+  if (S.editMode || S.editedHTML !== null) return;
   document.getElementById("previewContent").innerHTML = buildPreview();
   applyRowMerge();
   // bind TOC scroll

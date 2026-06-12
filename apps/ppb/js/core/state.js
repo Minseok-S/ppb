@@ -2,6 +2,8 @@
 //  STATE
 // ════════════════════════════════════════
 const S = {
+  editMode: false,
+  editedHTML: null,
   companyName: "",
   serviceName: "",
   effectiveDate: "",

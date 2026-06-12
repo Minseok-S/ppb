@@ -124,6 +124,22 @@
           <div style="flex: 1"></div>
           <button
             class="btn btn-ghost"
+            id="revertEditBtn"
+            style="font-size: 10px; padding: 5px 10px; display: none"
+            onclick="revertEdits()"
+          >
+            ↺ 원본으로
+          </button>
+          <button
+            class="btn btn-ghost"
+            id="editModeBtn"
+            style="font-size: 10px; padding: 5px 10px"
+            onclick="toggleEditMode()"
+          >
+            ✏️ 편집
+          </button>
+          <button
+            class="btn btn-ghost"
             style="font-size: 10px; padding: 5px 10px"
             onclick="downloadWord()"
           >
@@ -137,6 +153,7 @@
             ⬇️ HTML
           </button>
         </div>
+        <div class="edit-banner" id="editBanner" style="display: none"></div>
         <div class="preview-frame">
           <div class="preview-doc">
             <div id="previewContent" class="pp"></div>
@@ -172,6 +189,7 @@
     <script src="js/engine/steps.js"></script>
     <script src="js/engine/preview.js"></script>
     <script src="js/engine/export.js"></script>
+    <script src="js/engine/editmode.js"></script>
     <!-- core: 초기화 (가장 마지막) -->
     <script src="js/core/init.js"></script>
   </body>

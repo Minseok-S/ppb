@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PDF 편집기 — CELA</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="editor.css" />
+  </head>
+  <body>
+    <!-- ─── Toolbar ─── -->
+    <div class="toolbar">
+      <div class="tb-group">
+        <button class="tb-btn primary" id="openBtn">📂 PDF 열기</button>
+        <input type="file" id="fileInput" accept=".pdf" />
+        <span class="tb-file" id="fileName">PDF 파일을 열거나 화면에 드래그하세요</span>
+      </div>
+
+      <div class="tb-group" id="editTools" style="opacity: 0.45; pointer-events: none">
+        <button class="tb-btn icon" data-cmd="bold" title="굵게"><b>B</b></button>
+        <button class="tb-btn icon" data-cmd="italic" title="기울임"><i>I</i></button>
+        <button class="tb-btn icon" data-cmd="underline" title="밑줄"><u>U</u></button>
+        <input type="color" class="tb-color" id="colorPick" value="#000000" title="글자 색" />
+        <select class="tb-sel" id="sizeSelect" title="글자 크기">
+          <option value="">크기</option>
+          <option value="1">아주 작게</option>
+          <option value="2">작게</option>
+          <option value="3">보통</option>
+          <option value="4">크게</option>
+          <option value="5">더 크게</option>
+          <option value="6">아주 크게</option>
+        </select>
+        <button class="tb-btn icon" data-cmd="undo" title="실행취소">↶</button>
+        <button class="tb-btn icon" data-cmd="redo" title="다시실행">↷</button>
+      </div>
+
+      <div class="tb-group">
+        <button class="tb-btn icon" id="zoomOut" title="축소">−</button>
+        <input class="tb-zoom" id="zoomLabel" value="100%" />
+        <button class="tb-btn icon" id="zoomIn" title="확대">+</button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="tb-group">
+        <button class="tb-btn" id="resetBtn" title="모든 편집 되돌리기">↺ 원본 복원</button>
+        <button class="tb-btn" id="printBtn" title="브라우저 인쇄 (이미지 기반)">🖨 인쇄</button>
+        <button class="tb-btn" id="exportHtmlBtn">⤓ HTML</button>
+        <button class="tb-btn primary" id="exportPdfBtn" title="수정 사항을 원본 PDF에 직접 반영해 저장">⤓ PDF 저장</button>
+        <button class="tb-btn icon" id="helpBtn" title="사용방법">?</button>
+      </div>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <!-- ─── Workspace ─── -->
+    <div class="workspace" id="workspace">
+      <div class="placeholder" id="placeholder">
+        <div class="ph-icon">📄</div>
+        <div class="ph-text">PDF를 열어 원본 그대로 편집하세요</div>
+        <div class="ph-sub">글자를 클릭하면 그 자리에서 바로 수정됩니다</div>
+      </div>
+
+      <div class="pages" id="pages"></div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">PDF 변환 중…</div>
+      </div>
+    </div>
+
+    <!-- ─── Status bar ─── -->
+    <div class="statusbar">
+      <span id="statusText">PDF를 열어주세요</span>
+      <span id="pageInfo"></span>
+      <span class="edited-count" id="editedCount"></span>
+      <span class="hint">💡 글자를 클릭 → 바로 수정 · 수정한 부분만 강조됩니다</span>
+    </div>
+
+    <!-- pdf.js: 렌더링·텍스트 추출 / pdf-lib + fontkit: 원본 PDF에 수정 사항 직접 기록 (모두 CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+    <script src="editor.js?v=3"></script>
+  </body>
+</html>

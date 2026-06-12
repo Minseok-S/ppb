@@ -1,0 +1,300 @@
+/* ════════════════════════════════════════════════
+   PDF 편집기 (WYSIWYG 오버레이)
+   원본 PDF를 canvas로 픽셀 단위 렌더링하고,
+   그 위에 좌표가 일치하는 편집 가능한 텍스트 레이어를 올린다.
+   ════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --accent: #3d5af1;
+  --accent2: #6c47e8;
+  --border: #e0e4ef;
+  --text: #1a1d2e;
+  --text2: #4a5068;
+  --text3: #9298b0;
+  --surface: #ffffff;
+  --bg: #f4f6fb;
+  --edit: #e94560;
+}
+
+html, body {
+  height: 100%;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Toolbar ─── */
+.toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  z-index: 50;
+}
+
+.tb-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border-right: 1px solid var(--border);
+}
+.tb-group:last-child { border-right: none; }
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.tb-btn:hover { background: var(--bg); color: var(--text); }
+.tb-btn:active { transform: translateY(1px); }
+.tb-btn.icon { padding: 0 9px; font-size: 14px; }
+.tb-btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+}
+.tb-btn.primary:hover { filter: brightness(1.05); color: #fff; }
+.tb-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(61, 90, 241, 0.06);
+}
+
+.tb-sel {
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text2);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.tb-zoom {
+  width: 56px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text2);
+}
+
+.tb-file {
+  font-size: 12px;
+  color: var(--text3);
+  margin-left: 4px;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tb-file.has-file { color: var(--text2); font-weight: 600; }
+
+.tb-color-wrap { position: relative; display: inline-flex; }
+input[type="color"].tb-color {
+  width: 32px; height: 32px; padding: 2px;
+  border: 1px solid var(--border); border-radius: 7px;
+  background: var(--surface); cursor: pointer;
+}
+
+.spacer { flex: 1; }
+
+#fileInput { display: none; }
+
+/* ─── Workspace ─── */
+.workspace {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: #525659;
+  min-height: 0;
+}
+
+.pages {
+  padding: 24px 0 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+}
+
+/* 한 페이지 = 흰 카드 (canvas 배경 + 텍스트 오버레이) */
+.pdf-page {
+  position: relative;
+  background: #fff;
+  margin: 0 auto 20px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+.pdf-page canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* 편집 텍스트 레이어 — canvas 위에 정확히 정렬 */
+.text-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.text-layer:focus { outline: none; }
+
+/* 개별 텍스트 런 — 기본은 투명(=canvas 원본 글자가 그대로 보임) */
+.tl-run {
+  position: absolute;
+  white-space: pre;
+  line-height: 1;
+  color: transparent;
+  caret-color: #000;
+  cursor: text;
+  transform-origin: 0 0;
+  border-radius: 1px;
+}
+.tl-run:hover {
+  background: rgba(61, 90, 241, 0.08);
+}
+/* 편집된 런 — 마스크 배경 + 실제 글자 표시 */
+.tl-run.edited {
+  color: #000;
+  caret-color: var(--edit);
+  box-shadow: 0 0 0 1px rgba(233, 69, 96, 0.35);
+}
+
+/* ─── Placeholder / Loading ─── */
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #cdd2dc;
+  pointer-events: none;
+}
+.placeholder.hidden { display: none; }
+.ph-icon { font-size: 54px; opacity: 0.7; }
+.ph-text { font-size: 15px; font-weight: 600; }
+.ph-sub { font-size: 12.5px; color: #aab0bc; }
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(82, 86, 89, 0.85);
+  z-index: 100;
+  color: #fff;
+}
+.loading.active { display: flex; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; font-weight: 600; }
+
+/* ─── Drag over ─── */
+.workspace.drag-over::after {
+  content: "PDF를 여기에 놓으세요";
+  position: absolute;
+  inset: 16px;
+  border: 3px dashed rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  background: rgba(61, 90, 241, 0.2);
+  z-index: 90;
+  pointer-events: none;
+}
+
+/* ─── Status bar ─── */
+.statusbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 14px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--text3);
+}
+.statusbar .edited-count { color: var(--edit); font-weight: 700; }
+.statusbar .hint { margin-left: auto; }
+
+/* ─── Error banner ─── */
+.error-banner {
+  display: none;
+  padding: 9px 14px;
+  background: #fff4f4;
+  border-bottom: 1px solid #f3c9c9;
+  color: #c53030;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.error-banner.active { display: block; }
+
+/* ─── Print ─── */
+@media print {
+  .toolbar, .statusbar, .error-banner, .placeholder, .loading { display: none !important; }
+  body { overflow: visible; }
+  .workspace { overflow: visible; background: #fff; position: static; }
+  .pages { padding: 0; transform: none !important; }
+  .pdf-page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+  }
+  .pdf-page:last-child { page-break-after: auto; }
+  .tl-run:hover { background: transparent; }
+  .tl-run.edited { box-shadow: none; }
+}
+@page { margin: 0; }

@@ -162,6 +162,14 @@
         background: linear-gradient(135deg, var(--accent3), #00976e);
         color: #fff;
       }
+      .seg-tag.orange {
+        background: rgba(232, 126, 34, 0.12);
+        color: #e07b1a;
+      }
+      .seg-btn.active .seg-tag.orange {
+        background: linear-gradient(135deg, #f0932b, #e07b1a);
+        color: #fff;
+      }
 
       /* Nav right — version chip */
       .nav-right {
@@ -302,6 +310,11 @@
           실시간 편집기
           <span class="seg-tag green">LSE</span>
         </button>
+        <button class="seg-btn" id="tab-pdf" onclick="switchTab('pdf')">
+          <span class="seg-icon">📄</span>
+          PDF 편집기
+          <span class="seg-tag orange">PDF</span>
+        </button>
       </div>
 
       <!-- Right -->
@@ -326,6 +339,13 @@
         <div class="loader-track"><div class="loader-bar"></div></div>
       </div>
 
+      <div class="loader done" id="loader-pdf">
+        <div class="loader-icon">📄</div>
+        <div class="loader-name">PDF 편집기</div>
+        <div class="loader-desc">loading PDF...</div>
+        <div class="loader-track"><div class="loader-bar"></div></div>
+      </div>
+
       <iframe
         id="frame-ppb"
         class="visible"
@@ -339,15 +359,23 @@
         data-src="apps/lse/index.html"
         onload="onFrameLoad('lse')"
       ></iframe>
+      <iframe
+        id="frame-pdf"
+        class="hidden"
+        src=""
+        data-src="apps/pdf/index.html"
+        onload="onFrameLoad('pdf')"
+      ></iframe>
     </div>
 
     <script>
       let current = "ppb";
-      const loaded = { ppb: false, lse: false };
+      const loaded = { ppb: false, lse: false, pdf: false };
 
       const TITLES = {
         ppb: "개인정보처리방침 빌더 — CELA",
         lse: "실시간 편집기 — CELA",
+        pdf: "PDF 편집기 — CELA",
       };
 
       function switchTab(tab) {

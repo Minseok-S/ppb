@@ -38,6 +38,7 @@
   var diffEnabled    = true;
   var origVisible    = true;
   var isMirrorClick  = false;
+  var isPdfMode      = false;
 
   /* ── Blob URL 추적 (메모리 누수 방지) ── */
   var _origBlobUrl = null;
@@ -103,24 +104,29 @@
 
     var reader = new FileReader();
     reader.onload = function (e) {
-      var buf = e.target.result;
-      extractPdfToHtml(buf)
-        .then(function (bodyHtml) {
-          if (!bodyHtml || !bodyHtml.trim()) {
-            showError("PDF에서 추출할 텍스트가 없습니다. (이미지로만 된 스캔 PDF일 수 있습니다)");
-            resetFileBtn();
-            return;
-          }
-          var title = file.name.replace(/\.pdf$/i, "");
-          var html = buildPdfDocHtml(bodyHtml, title);
-          loadBothPanels(html, "", "PDF 변환 완료 — " + file.name);
-          loadingOverlay.classList.remove("active");
+      var title = file.name.replace(/\.pdf$/i, "");
+      var buf1 = e.target.result;
+      var buf2 = buf1.slice(0); /* 두 번 사용하므로 복사 */
+      Promise.all([
+        renderPdfToImages(buf1),
+        extractPdfToHtml(buf2)
+      ]).then(function (results) {
+        var bodyHtml = results[1];
+        if (!bodyHtml || !bodyHtml.trim()) {
+          showError("PDF에서 추출할 텍스트가 없습니다. (이미지로만 된 스캔 PDF일 수 있습니다)");
           resetFileBtn();
-        })
-        .catch(function (err) {
-          showError("PDF 변환 실패: " + (err && err.message ? err.message : err));
-          resetFileBtn();
-        });
+          return;
+        }
+        var origHtml = buildPdfOrigHtml(results[0], title);
+        var editHtml = buildPdfDocHtml(bodyHtml, title);
+        isPdfMode = true;
+        loadBothPanelsDual(origHtml, editHtml, "", "PDF 변환 완료 — " + file.name);
+        loadingOverlay.classList.remove("active");
+        resetFileBtn();
+      }).catch(function (err) {
+        showError("PDF 변환 실패: " + (err && err.message ? err.message : err));
+        resetFileBtn();
+      });
     };
     reader.onerror = function () {
       showError("파일 읽기 오류가 발생했습니다.");
@@ -280,6 +286,58 @@
     return 0;
   }
 
+  /* PDF 원본 패널용: 각 페이지를 canvas로 렌더링해 이미지 배열 반환 */
+  function renderPdfToImages(arrayBuffer) {
+    return pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(function (pdf) {
+      var pages = [];
+      var chain = Promise.resolve();
+      for (var p = 1; p <= pdf.numPages; p++) {
+        (function (num) {
+          chain = chain
+            .then(function () { return renderPdfPageToImage(pdf, num); })
+            .then(function (info) { pages.push(info); });
+        })(p);
+      }
+      return chain.then(function () { return pages; });
+    });
+  }
+
+  function renderPdfPageToImage(pdf, pageNum) {
+    return pdf.getPage(pageNum).then(function (page) {
+      var SCALE = 1.5;
+      var viewport = page.getViewport({ scale: SCALE });
+      var canvas = document.createElement("canvas");
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      var ctx = canvas.getContext("2d");
+      return page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function () {
+        var base = page.getViewport({ scale: 1 });
+        return {
+          dataUrl: canvas.toDataURL("image/png"),
+          cssW: pdfNum(base.width),
+          cssH: pdfNum(base.height)
+        };
+      });
+    });
+  }
+
+  function buildPdfOrigHtml(pages, title) {
+    var body = pages.map(function (p) {
+      return '<div class="pdf-page" style="width:' + p.cssW + 'pt;height:' + p.cssH + 'pt;">' +
+        '<img src="' + p.dataUrl + '" style="width:100%;height:100%;display:block;" alt="" />' +
+        '</div>';
+    }).join("\n");
+    return (
+      '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n' +
+      '<title>' + escHtml(title) + '</title>\n<style>\n' +
+      '*{box-sizing:border-box;}\n' +
+      'body{margin:0;padding:24px 0;background:#525659;}\n' +
+      '.pdf-page{position:relative;background:#fff;margin:0 auto 20px;' +
+      'box-shadow:0 3px 12px rgba(0,0,0,.45);}\n' +
+      '</style>\n</head>\n<body>\n' + body + '\n</body>\n</html>'
+    );
+  }
+
   function buildPdfDocHtml(bodyHtml, title) {
     return (
       '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n' +
@@ -317,7 +375,27 @@
   /* ════════════════════════════════
      양쪽 패널 공통 로드
   ════════════════════════════════ */
+  function loadBothPanelsDual(origHtml, editHtml, baseUrl, statusMsg) {
+    origReady = false;
+    editReady = false;
+    editorSnapshot = null;
+    if (diffObserver) { diffObserver.disconnect(); diffObserver = null; }
+
+    frame.onload = function () {
+      frame.onload = null;
+      origReady = true;
+      tryInitDiff();
+    };
+    setOrigBlobSrc(injectScrollSync(origHtml, baseUrl));
+    frame.style.display = "block";
+    clickHint.classList.add("active");
+
+    setupEditorFrame(editHtml, baseUrl);
+    setStatus(statusMsg);
+  }
+
   function loadBothPanels(html, baseUrl, statusMsg) {
+    isPdfMode = false;
     origReady = false;
     editReady = false;
     editorSnapshot = null;
@@ -568,7 +646,7 @@
     clearMarkers(origDoc);
 
     for (var i = 0; i < eb.children.length; i++) {
-      walk(eb.children[i], ob.children[i] || null, String(i));
+      walk(eb.children[i], isPdfMode ? null : (ob.children[i] || null), String(i));
     }
 
     function walk(editEl, origEl, path) {
@@ -600,11 +678,13 @@
     }
 
     // 바디 레벨에서 삭제된 요소 (원본에만 남아있는 항목)
-    for (var i = eb.children.length; i < ob.children.length; i++) {
-      if (editorSnapshot[String(i)] !== undefined) {
-        var delEl = ob.children[i];
-        if ((delEl.innerText || delEl.textContent || "").trim()) {
-          delEl.setAttribute("data-deleted", "");
+    if (!isPdfMode) {
+      for (var i = eb.children.length; i < ob.children.length; i++) {
+        if (editorSnapshot[String(i)] !== undefined) {
+          var delEl = ob.children[i];
+          if ((delEl.innerText || delEl.textContent || "").trim()) {
+            delEl.setAttribute("data-deleted", "");
+          }
         }
       }
     }
