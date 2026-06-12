@@ -3,7 +3,8 @@
 // ════════════════════════════════════════
 const S = {
   editMode: false,
-  editedHTML: null,
+  editBase: null,
+  editView: null,
   companyName: "",
   serviceName: "",
   effectiveDate: "",

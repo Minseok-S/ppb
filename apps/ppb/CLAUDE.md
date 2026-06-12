@@ -44,7 +44,7 @@
 | [js/engine/steps.js](js/engine/steps.js) | 각 스텝 폼 UI 렌더 (`renderSteps`) — 가장 큼(~93KB) |
 | [js/engine/preview.js](js/engine/preview.js) | `S`로부터 미리보기 HTML 생성 (~102KB) — **셀 병합 알고리즘이 가장 복잡** |
 | [js/engine/export.js](js/engine/export.js) | HTML·Word(.docx) 내보내기 (`downloadHTML`/`downloadWord`) |
-| [js/engine/editmode.js](js/engine/editmode.js) | 미리보기 직접 편집 모드 (`toggleEditMode`/`revertEdits`) — 편집 중·편집본 존재 시 `updatePreview()`가 재렌더를 건너뛴다 |
+| [js/engine/editmode.js](js/engine/editmode.js) | 미리보기 직접 편집 모드 (`toggleEditMode`/`revertEdits`) — 최상위 요소 단위 3-way 병합(diff3): 순수 렌더(`S.editBase`)·편집본(`S.editView`)·새 렌더를 LCS로 비교해 수동 편집과 폼 변경을 함께 반영, 같은 요소 충돌 시 폼 우선 |
 
 ### sections/ (위저드 단계 ↔ 파일)
 
