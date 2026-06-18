@@ -1,14 +1,6 @@
 (function () {
   "use strict";
 
-  /* ── PDF.js 워커 경로 (있을 때만) ── */
-  if (window.pdfjsLib) {
-    try {
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    } catch (e) {}
-  }
-
   /* ── DOM refs ── */
   var exportBtn      = document.getElementById("exportBtn");
   var clearBtn       = document.getElementById("clearBtn");
@@ -38,7 +30,6 @@
   var diffEnabled    = true;
   var origVisible    = true;
   var isMirrorClick  = false;
-  var isPdfMode      = false;
 
   /* ── Blob URL 추적 (메모리 누수 방지) ── */
   var _origBlobUrl = null;
@@ -56,8 +47,6 @@
   function loadFromFile() {
     var file = fileInput.files[0];
     if (!file) { alert("파일을 선택해주세요."); return; }
-
-    if (/\.pdf$/i.test(file.name)) { loadPdfFile(file); return; }
 
     fileLoadBtn.disabled = true;
     fileLoadBtn.textContent = "로딩 중...";
@@ -86,278 +75,11 @@
     reader.readAsText(file, "UTF-8");
   }
 
-  /* ════════════════════════════════
-     PDF 업로드 → 텍스트 추출 → 편집용 HTML
-  ════════════════════════════════ */
-  function loadPdfFile(file) {
-    if (!window.pdfjsLib) {
-      showError("PDF 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침하세요.");
-      return;
-    }
-    fileLoadBtn.disabled = true;
-    fileLoadBtn.textContent = "변환 중...";
-    loadingOverlay.classList.add("active");
-    errorBanner.classList.remove("active");
-    placeholder.style.display = "none";
-    frame.style.display = "none";
-    editorFrame.style.display = "none";
-
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      var title = file.name.replace(/\.pdf$/i, "");
-      var buf1 = e.target.result;
-      var buf2 = buf1.slice(0); /* 두 번 사용하므로 복사 */
-      Promise.all([
-        renderPdfToImages(buf1),
-        extractPdfToHtml(buf2)
-      ]).then(function (results) {
-        var bodyHtml = results[1];
-        if (!bodyHtml || !bodyHtml.trim()) {
-          showError("PDF에서 추출할 텍스트가 없습니다. (이미지로만 된 스캔 PDF일 수 있습니다)");
-          resetFileBtn();
-          return;
-        }
-        var origHtml = buildPdfOrigHtml(results[0], title);
-        var editHtml = buildPdfDocHtml(bodyHtml, title);
-        isPdfMode = true;
-        loadBothPanelsDual(origHtml, editHtml, "", "PDF 변환 완료 — " + file.name);
-        loadingOverlay.classList.remove("active");
-        resetFileBtn();
-      }).catch(function (err) {
-        showError("PDF 변환 실패: " + (err && err.message ? err.message : err));
-        resetFileBtn();
-      });
-    };
-    reader.onerror = function () {
-      showError("파일 읽기 오류가 발생했습니다.");
-      resetFileBtn();
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
   function escHtml(s) {
     return String(s)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
-  }
-
-  function pdfNum(n) { return Math.round(n * 100) / 100; }
-
-  /* pdf.js 페이지를 원본 레이아웃 그대로(글자별 절대좌표 + 벡터 그래픽) HTML로 변환 */
-  function extractPdfToHtml(arrayBuffer) {
-    return pdfjsLib
-      .getDocument({ data: arrayBuffer })
-      .promise.then(function (pdf) {
-        var pages = [];
-        var chain = Promise.resolve();
-        for (var p = 1; p <= pdf.numPages; p++) {
-          (function (num) {
-            chain = chain
-              .then(function () { return extractPdfPage(pdf, num); })
-              .then(function (html) { pages.push(html); });
-          })(p);
-        }
-        return chain.then(function () { return pages.join("\n"); });
-      });
-  }
-
-  function extractPdfPage(pdf, pageNum) {
-    return pdf.getPage(pageNum).then(function (page) {
-      var viewport = page.getViewport({ scale: 1 });
-      return Promise.all([
-        page.getTextContent(),
-        page.getOperatorList(),
-      ]).then(function (res) {
-        var tc = res[0];
-        var ops = res[1];
-        var styles = tc.styles || {};
-        var parts = [];
-
-        /* 1) 벡터 선/사각형(표 테두리 등)을 SVG로 복원 */
-        var gfx = buildPdfGraphics(ops, viewport);
-        if (gfx) parts.push(gfx);
-
-        /* 2) 글자를 원본 좌표·크기 그대로 절대배치 */
-        tc.items.forEach(function (it) {
-          if (typeof it.str !== "string" || it.str.length === 0) return;
-          var tx = pdfjsLib.Util.transform(viewport.transform, it.transform);
-          var fontSize = Math.hypot(tx[2], tx[3]);
-          if (!fontSize) return;
-          var left = tx[4];
-          var top = tx[5] - fontSize;
-          var st = styles[it.fontName] || {};
-          var ff = (st.fontFamily || "sans-serif").replace(/"/g, "'");
-          var s =
-            "left:" + pdfNum(left) + "pt;top:" + pdfNum(top) + "pt;" +
-            "font-size:" + pdfNum(fontSize) + "pt;font-family:" + ff + ";";
-          if (st.fontFamily && /bold/i.test(it.fontName)) s += "font-weight:bold;";
-          if (/italic|oblique/i.test(it.fontName)) s += "font-style:italic;";
-          parts.push('<span class="pdf-text" style="' + s + '">' + escHtml(it.str) + "</span>");
-        });
-
-        return (
-          '<div class="pdf-page" style="width:' + pdfNum(viewport.width) +
-          "pt;height:" + pdfNum(viewport.height) + 'pt;">' +
-          parts.join("") +
-          "</div>"
-        );
-      });
-    });
-  }
-
-  /* OperatorList에서 선/사각형 채움·획만 추려 SVG로 (표 테두리·구분선 복원) */
-  function buildPdfGraphics(ops, viewport) {
-    var OPS = pdfjsLib.OPS;
-    var fnArray = ops.fnArray, argsArray = ops.argsArray;
-    var ctm = viewport.transform.slice();
-    var stack = [];
-    var rects = [];
-    var pending = [];
-    var i, j;
-
-    function mul(a, b) {
-      return [
-        a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1],
-        a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3],
-        a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5],
-      ];
-    }
-    function pt(x, y) {
-      return [ctm[0] * x + ctm[2] * y + ctm[4], ctm[1] * x + ctm[3] * y + ctm[5]];
-    }
-    function flush(stroke) {
-      pending.forEach(function (r) {
-        var a = pt(r.x, r.y), b = pt(r.x + r.w, r.y + r.h);
-        var x0 = Math.min(a[0], b[0]), y0 = Math.min(a[1], b[1]);
-        var w = Math.abs(b[0] - a[0]), h = Math.abs(b[1] - a[1]);
-        rects.push({ x: x0, y: y0, w: w, h: h, stroke: stroke });
-      });
-      pending = [];
-    }
-
-    for (i = 0; i < fnArray.length; i++) {
-      var fn = fnArray[i], args = argsArray[i];
-      if (fn === OPS.save) stack.push(ctm.slice());
-      else if (fn === OPS.restore) { if (stack.length) ctm = stack.pop(); }
-      else if (fn === OPS.transform) ctm = mul(ctm, args);
-      else if (fn === OPS.constructPath) {
-        var pathOps = args[0], pathArgs = args[1];
-        var k = 0;
-        for (j = 0; j < pathOps.length; j++) {
-          if (pathOps[j] === OPS.rectangle) {
-            pending.push({ x: pathArgs[k], y: pathArgs[k + 1], w: pathArgs[k + 2], h: pathArgs[k + 3] });
-            k += 4;
-          } else {
-            /* moveTo/lineTo/curveTo 등은 인자 수만큼 소비 */
-            k += pathOpArgCount(OPS, pathOps[j]);
-          }
-        }
-      } else if (fn === OPS.fill || fn === OPS.eoFill) flush(false);
-      else if (fn === OPS.stroke) flush(true);
-      else if (fn === OPS.fillStroke || fn === OPS.eoFillStroke) flush(true);
-      else if (fn === OPS.closePath) { /* no-op */ }
-    }
-
-    /* 가는 사각형은 선(테두리)으로 간주해 표시 */
-    var draw = rects.filter(function (r) {
-      return (r.w > 0.3 && r.h > 0.3) && (r.w < viewport.width && r.h < viewport.height);
-    });
-    if (!draw.length) return "";
-
-    var svg =
-      '<svg class="pdf-gfx" width="' + pdfNum(viewport.width) + '" height="' + pdfNum(viewport.height) +
-      '" viewBox="0 0 ' + pdfNum(viewport.width) + " " + pdfNum(viewport.height) +
-      '" xmlns="http://www.w3.org/2000/svg">';
-    draw.forEach(function (r) {
-      var thin = r.w < 2 || r.h < 2; /* 선처럼 얇으면 채움, 박스면 테두리 */
-      svg += '<rect x="' + pdfNum(r.x) + '" y="' + pdfNum(r.y) + '" width="' + pdfNum(r.w) +
-        '" height="' + pdfNum(r.h) + '" ' +
-        (thin ? 'fill="#000"' : 'fill="none" stroke="#000" stroke-width="0.5"') + " />";
-    });
-    svg += "</svg>";
-    return svg;
-  }
-
-  function pathOpArgCount(OPS, op) {
-    if (op === OPS.moveTo || op === OPS.lineTo) return 2;
-    if (op === OPS.curveTo) return 6;
-    if (op === OPS.curveTo2 || op === OPS.curveTo3) return 4;
-    return 0;
-  }
-
-  /* PDF 원본 패널용: 각 페이지를 canvas로 렌더링해 이미지 배열 반환 */
-  function renderPdfToImages(arrayBuffer) {
-    return pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(function (pdf) {
-      var pages = [];
-      var chain = Promise.resolve();
-      for (var p = 1; p <= pdf.numPages; p++) {
-        (function (num) {
-          chain = chain
-            .then(function () { return renderPdfPageToImage(pdf, num); })
-            .then(function (info) { pages.push(info); });
-        })(p);
-      }
-      return chain.then(function () { return pages; });
-    });
-  }
-
-  function renderPdfPageToImage(pdf, pageNum) {
-    return pdf.getPage(pageNum).then(function (page) {
-      var SCALE = 1.5;
-      var viewport = page.getViewport({ scale: SCALE });
-      var canvas = document.createElement("canvas");
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      var ctx = canvas.getContext("2d");
-      return page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function () {
-        var base = page.getViewport({ scale: 1 });
-        return {
-          dataUrl: canvas.toDataURL("image/png"),
-          cssW: pdfNum(base.width),
-          cssH: pdfNum(base.height)
-        };
-      });
-    });
-  }
-
-  function buildPdfOrigHtml(pages, title) {
-    var body = pages.map(function (p) {
-      return '<div class="pdf-page" style="width:' + p.cssW + 'pt;height:' + p.cssH + 'pt;">' +
-        '<img src="' + p.dataUrl + '" style="width:100%;height:100%;display:block;" alt="" />' +
-        '</div>';
-    }).join("\n");
-    return (
-      '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n' +
-      '<title>' + escHtml(title) + '</title>\n<style>\n' +
-      '*{box-sizing:border-box;}\n' +
-      'body{margin:0;padding:24px 0;background:#525659;}\n' +
-      '.pdf-page{position:relative;background:#fff;margin:0 auto 20px;' +
-      'box-shadow:0 3px 12px rgba(0,0,0,.45);}\n' +
-      '</style>\n</head>\n<body>\n' + body + '\n</body>\n</html>'
-    );
-  }
-
-  function buildPdfDocHtml(bodyHtml, title) {
-    return (
-      '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n' +
-      "<title>" + escHtml(title) + "</title>\n<style>\n" +
-      "*{box-sizing:border-box;}\n" +
-      'body{margin:0;padding:24px 0;background:#525659;' +
-      'font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;}\n' +
-      ".pdf-page{position:relative;background:#fff;margin:0 auto 20px;overflow:hidden;" +
-      "box-shadow:0 3px 12px rgba(0,0,0,.45);}\n" +
-      ".pdf-gfx{position:absolute;left:0;top:0;pointer-events:none;}\n" +
-      ".pdf-text{position:absolute;white-space:pre;line-height:1;color:#000;" +
-      "transform-origin:0 0;}\n" +
-      "@media print{\n" +
-      "  body{background:#fff;padding:0;}\n" +
-      "  .pdf-page{margin:0;box-shadow:none;page-break-after:always;}\n" +
-      "  .pdf-page:last-child{page-break-after:auto;}\n" +
-      "}\n" +
-      "@page{margin:0;}\n" +
-      "</style>\n</head>\n<body>\n" + bodyHtml + "\n</body>\n</html>"
-    );
   }
 
   function resetFileBtn() {
@@ -375,27 +97,7 @@
   /* ════════════════════════════════
      양쪽 패널 공통 로드
   ════════════════════════════════ */
-  function loadBothPanelsDual(origHtml, editHtml, baseUrl, statusMsg) {
-    origReady = false;
-    editReady = false;
-    editorSnapshot = null;
-    if (diffObserver) { diffObserver.disconnect(); diffObserver = null; }
-
-    frame.onload = function () {
-      frame.onload = null;
-      origReady = true;
-      tryInitDiff();
-    };
-    setOrigBlobSrc(injectScrollSync(origHtml, baseUrl));
-    frame.style.display = "block";
-    clickHint.classList.add("active");
-
-    setupEditorFrame(editHtml, baseUrl);
-    setStatus(statusMsg);
-  }
-
   function loadBothPanels(html, baseUrl, statusMsg) {
-    isPdfMode = false;
     origReady = false;
     editReady = false;
     editorSnapshot = null;
@@ -407,7 +109,7 @@
       origReady = true;
       tryInitDiff();
     };
-    setOrigBlobSrc(injectScrollSync(html, baseUrl));
+    setOrigSrcdoc(injectScrollSync(html, baseUrl));
     frame.style.display = "block";
     clickHint.classList.add("active");
 
@@ -473,12 +175,12 @@
 
     editorFrame.onload = function () {
       editorFrame.onload = null;
+      editorFrame.style.display = "block";
       try {
         var editDoc = editorFrame.contentDocument;
         injectDiffCSS(editDoc, true);
         restrictEditorInteractions(editDoc);
         editDoc.designMode = "on";
-        editorFrame.style.display = "block";
         editDoc.addEventListener("input", updateCharCount);
         editDoc.addEventListener("keyup", updateCharCount);
         updateCharCount();
@@ -486,22 +188,20 @@
         tryInitDiff();
       } catch (e) {}
     };
-    setEditBlobSrc(stripScripts(html));
+    setEditSrcdoc(stripScripts(html));
   }
 
-  /* ── Blob URL 헬퍼 ── */
-  function setOrigBlobSrc(html) {
+  /* ── srcdoc 헬퍼 (Blob URL 불필요 — 내부망/보안 환경 호환) ── */
+  function setOrigSrcdoc(html) {
     if (_origBlobUrl) { URL.revokeObjectURL(_origBlobUrl); _origBlobUrl = null; }
-    _origBlobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
-    frame.removeAttribute("srcdoc");
-    frame.src = _origBlobUrl;
+    frame.removeAttribute("src");
+    frame.srcdoc = html;
   }
 
-  function setEditBlobSrc(html) {
+  function setEditSrcdoc(html) {
     if (_editBlobUrl) { URL.revokeObjectURL(_editBlobUrl); _editBlobUrl = null; }
-    _editBlobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
-    editorFrame.removeAttribute("srcdoc");
-    editorFrame.src = _editBlobUrl;
+    editorFrame.removeAttribute("src");
+    editorFrame.srcdoc = html;
   }
 
   function stripScripts(html) {
@@ -646,7 +346,7 @@
     clearMarkers(origDoc);
 
     for (var i = 0; i < eb.children.length; i++) {
-      walk(eb.children[i], isPdfMode ? null : (ob.children[i] || null), String(i));
+      walk(eb.children[i], ob.children[i] || null, String(i));
     }
 
     function walk(editEl, origEl, path) {
@@ -678,13 +378,11 @@
     }
 
     // 바디 레벨에서 삭제된 요소 (원본에만 남아있는 항목)
-    if (!isPdfMode) {
-      for (var i = eb.children.length; i < ob.children.length; i++) {
-        if (editorSnapshot[String(i)] !== undefined) {
-          var delEl = ob.children[i];
-          if ((delEl.innerText || delEl.textContent || "").trim()) {
-            delEl.setAttribute("data-deleted", "");
-          }
+    for (var i = eb.children.length; i < ob.children.length; i++) {
+      if (editorSnapshot[String(i)] !== undefined) {
+        var delEl = ob.children[i];
+        if ((delEl.innerText || delEl.textContent || "").trim()) {
+          delEl.setAttribute("data-deleted", "");
         }
       }
     }
@@ -1706,8 +1404,7 @@
     origBody.classList.remove("drag-over");
     var file = e.dataTransfer.files[0];
     if (!file) return;
-    if (/\.pdf$/i.test(file.name)) { loadPdfFile(file); return; }
-    if (!/\.html?$/i.test(file.name)) { alert("HTML(.html, .htm) 또는 PDF(.pdf) 파일만 업로드할 수 있습니다."); return; }
+    if (!/\.html?$/i.test(file.name)) { alert("HTML(.html, .htm) 파일만 업로드할 수 있습니다."); return; }
     var reader = new FileReader();
     reader.onload = function (ev) {
       var html = ev.target.result;

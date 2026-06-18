@@ -170,6 +170,14 @@
         background: linear-gradient(135deg, #f0932b, #e07b1a);
         color: #fff;
       }
+      .seg-tag.purple {
+        background: rgba(108, 71, 232, 0.12);
+        color: var(--accent2);
+      }
+      .seg-btn.active .seg-tag.purple {
+        background: linear-gradient(135deg, var(--accent2), #4f2fc7);
+        color: #fff;
+      }
 
       /* Nav right — version chip */
       .nav-right {
@@ -305,6 +313,11 @@
           개인정보처리방침 빌더
           <span class="seg-tag">PPB</span>
         </button>
+        <!-- <button class="seg-btn" id="tab-csb" onclick="switchTab('csb')">
+          <span class="seg-icon">📝</span>
+          동의서 빌더
+          <span class="seg-tag purple">CSB</span>
+        </button> -->
         <button class="seg-btn" id="tab-lse" onclick="switchTab('lse')">
           <span class="seg-icon">✏️</span>
           실시간 편집기
@@ -339,6 +352,13 @@
         <div class="loader-track"><div class="loader-bar"></div></div>
       </div>
 
+      <div class="loader done" id="loader-csb">
+        <div class="loader-icon">📝</div>
+        <div class="loader-name">동의서 빌더</div>
+        <div class="loader-desc">loading CSB...</div>
+        <div class="loader-track"><div class="loader-bar"></div></div>
+      </div>
+
       <div class="loader done" id="loader-pdf">
         <div class="loader-icon">📄</div>
         <div class="loader-name">PDF 편집기</div>
@@ -350,30 +370,35 @@
         id="frame-ppb"
         class="visible"
         src="apps/ppb/builder.html"
-        onload="onFrameLoad('ppb')"
+        onload="typeof onFrameLoad === 'function' && onFrameLoad('ppb')"
       ></iframe>
       <iframe
         id="frame-lse"
         class="hidden"
-        src=""
         data-src="apps/lse/index.html"
-        onload="onFrameLoad('lse')"
+        onload="typeof onFrameLoad === 'function' && onFrameLoad('lse')"
+      ></iframe>
+      <iframe
+        id="frame-csb"
+        class="hidden"
+        data-src="apps/consent/index.html"
+        onload="typeof onFrameLoad === 'function' && onFrameLoad('csb')"
       ></iframe>
       <iframe
         id="frame-pdf"
         class="hidden"
-        src=""
         data-src="apps/pdf/index.html"
-        onload="onFrameLoad('pdf')"
+        onload="typeof onFrameLoad === 'function' && onFrameLoad('pdf')"
       ></iframe>
     </div>
 
     <script>
       let current = "ppb";
-      const loaded = { ppb: false, lse: false, pdf: false };
+      const loaded = { ppb: false, lse: false, csb: false, pdf: false };
 
       const TITLES = {
         ppb: "개인정보처리방침 빌더 — CELA",
+        csb: "동의서 빌더 — CELA",
         lse: "실시간 편집기 — CELA",
         pdf: "PDF 편집기 — CELA",
       };

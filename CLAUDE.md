@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**CELA Privacy Tools Suite** — 한국 개인정보처리방침 관련 도구 모음. 세 개의 독립 웹앱을 하나의 통합 셸로 묶었다.
+**CELA Privacy Tools Suite** — 한국 개인정보처리방침 관련 도구 모음. 네 개의 독립 웹앱을 하나의 통합 셸로 묶었다.
 
 - **PPB** (개인정보처리방침 빌더) — 18단계 위저드로 법적 요건을 충족하는 개인정보처리방침 문서를 생성하고 HTML/Word로 내보낸다.
 - **LSE** (실시간 편집기 / Live Screen Editor) — 기존 개인정보처리방침을 URL 또는 파일로 불러와 인플레이스로 편집하고 원본과의 diff를 보여준다.
+- **CSB** (동의서 빌더 / Consent Builder) — 개인정보 수집·이용 동의서를 작성해 ① 인쇄용 오프라인 서식과 ② 실제 작동하는 온라인 동의 화면을 동시에 생성하고 각각 HTML로 내보낸다.
 - **PDF** (PDF 편집기) — PDF를 canvas로 픽셀 단위 렌더링하고, 그 위에 좌표가 일치하는 편집 가능한 텍스트 레이어를 올려 원본 화면 그대로 글자를 수정한다 (WYSIWYG 오버레이).
 
 빌드 시스템·npm 없음. 순수 바닐라 HTML/CSS/JS. 브라우저에서 파일을 직접 연다.
@@ -32,6 +33,10 @@ ppb/
     │   ├── index.html
     │   ├── editor.js
     │   └── editor.css
+    ├── consent/        # 동의서 빌더 앱 (CSB) — 바닐라, LSE·PDF와 동일한 구조
+    │   ├── index.html  # 셸 마크업 (상단바·모드 스위치·빌더/미리보기 컨테이너)
+    │   ├── editor.js   # 단일 IIFE: 상태(S)·렌더·이벤트 위임·HTML 내보내기
+    │   └── editor.css  # 스타일 (내보내기 번들에도 동일 CSS가 주입됨)
     └── pdf/            # PDF 편집기 앱 (WYSIWYG 오버레이)
         ├── index.html
         ├── editor.js
@@ -42,12 +47,13 @@ ppb/
 
 빌드/서버/패키지 매니저 없음.
 
-- **전체 스위트**: `index.html`을 브라우저로 연다. PPB 탭이 기본, LSE·PDF 탭은 최초 전환 시 lazy-load.
+- **전체 스위트**: `index.html`을 브라우저로 연다. PPB 탭이 기본, LSE·CSB·PDF 탭은 최초 전환 시 lazy-load.
 - **빌더 단독**: `apps/ppb/builder.html`
 - **실시간 편집기 단독**: `apps/lse/index.html`
+- **동의서 빌더 단독**: `apps/consent/index.html`
 - **PDF 편집기 단독**: `apps/pdf/index.html`
 
-> ⚠️ 모든 경로는 상대경로다. 파일을 옮기면 폴더 단위로 옮겨 상대참조가 깨지지 않게 한다. 셸의 iframe 경로(`apps/ppb/builder.html`, `apps/lse/index.html`, `apps/pdf/index.html`)는 [index.html](index.html)에 하드코딩돼 있다.
+> ⚠️ 모든 경로는 상대경로다. 파일을 옮기면 폴더 단위로 옮겨 상대참조가 깨지지 않게 한다. 셸의 iframe 경로(`apps/ppb/builder.html`, `apps/lse/index.html`, `apps/consent/index.html`, `apps/pdf/index.html`)는 [index.html](index.html)에 하드코딩돼 있다.
 
 ## 어디를 고칠까 (라우팅)
 
@@ -56,6 +62,7 @@ ppb/
 | 탭 전환·로더·셸 UI | [index.html](index.html) |
 | 빌더의 폼/스텝/미리보기/내보내기 | [apps/ppb/](apps/ppb/) → 먼저 [apps/ppb/CLAUDE.md](apps/ppb/CLAUDE.md) |
 | 편집기의 로드/편집/diff | [apps/lse/](apps/lse/) → 먼저 [apps/lse/CLAUDE.md](apps/lse/CLAUDE.md) |
+| 동의서 섹션/오프라인 서식/온라인 동의 화면 | [apps/consent/](apps/consent/) (editor.js 단일 IIFE) |
 | PDF 렌더링/오버레이 편집/마스킹 | [apps/pdf/](apps/pdf/) (editor.js 단일 IIFE) |
 | 전체 아키텍처 이해 | [docs/architecture.md](docs/architecture.md) |
 

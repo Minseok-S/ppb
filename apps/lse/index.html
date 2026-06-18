@@ -13,9 +13,9 @@
 
       <div class="file-zone">
         <label class="btn btn-file" for="fileInput">파일 선택</label>
-        <input type="file" id="fileInput" accept=".html,.htm,.pdf" />
+        <input type="file" id="fileInput" accept=".html,.htm" />
         <span class="file-name" id="fileName"
-          >HTML·PDF 파일을 선택하거나 왼쪽 화면에 드래그하세요</span
+          >HTML 파일을 선택하거나 왼쪽 화면에 드래그하세요</span
         >
         <button class="btn btn-primary" id="fileLoadBtn">불러오기</button>
       </div>
@@ -65,7 +65,7 @@
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
               <p>
-                HTML·PDF 파일을 여기에 드래그하거나<br />상단에서 파일을 선택하세요
+                HTML 파일을 여기에 드래그하거나<br />상단에서 파일을 선택하세요
               </p>
               <label class="btn btn-primary drop-select-btn" for="fileInput"
                 >파일 선택</label
@@ -648,7 +648,7 @@
         </div>
         <div class="modal-body">
           <p class="help-intro">
-            개인정보처리방침·동의서 등 HTML 또는 PDF 문서를 불러와 직접 편집하고
+            개인정보처리방침·동의서 등 HTML 문서를 불러와 직접 편집하고
             HTML로 저장하는 도구입니다.
           </p>
           <div class="help-steps">
@@ -658,9 +658,7 @@
                 <h3>파일 불러오기</h3>
                 <p>
                   상단 <strong>파일 선택</strong> 버튼을 클릭하거나, 왼쪽 화면에
-                  HTML·PDF 파일을 <strong>드래그&드롭</strong>합니다. PDF는
-                  텍스트를 추출해 편집 가능한 형태로 변환됩니다 (표·다단 레이아웃은
-                  단순화될 수 있습니다).
+                  HTML 파일을 <strong>드래그&드롭</strong>합니다.
                 </p>
               </div>
             </div>
@@ -777,7 +775,6 @@
       </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="editor.js?v=7"></script>
+    <script src="editor.js?v=9"></script>
   </body>
 </html>
