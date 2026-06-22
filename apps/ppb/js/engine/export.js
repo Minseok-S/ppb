@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 function getExportCSS() {
   const base = `*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f7;color:#333;}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic','나눔고딕','NanumGothic',sans-serif;background:#f5f5f7;color:#333;}
 .wrapper{max-width:780px;margin:0 auto;padding:36px 20px 80px;}
 a{color:#4f6ef7;}
 @media(max-width:600px){.pp{padding:28px 20px;}}
@@ -42,7 +42,6 @@ function generateFinalHTML() {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${co + " "}개인정보 처리방침${eff ? " (" + eff + ")" : ""}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>${css}</style>
 ${scriptTag}
 document.addEventListener('DOMContentLoaded',function(){
