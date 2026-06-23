@@ -369,6 +369,16 @@ textarea {
   min-height: 60px;
   line-height: 1.5;
 }
+/* 한 줄 입력칸을 대체한 자동 높이 textarea — Shift+Enter 줄바꿈 */
+textarea.autoline {
+  resize: none;
+  overflow: hidden;
+  min-height: 34px;
+  height: 34px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

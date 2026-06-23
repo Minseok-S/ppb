@@ -3,8 +3,15 @@
 // ════════════════════════════════════════
 window.onload = function () {
   renderSteps();
-  addCollect("noConsent");
-  addCollect("consent");
+  // 설정 패널 입력칸을 줄바꿈 가능(Shift+Enter)하도록 전환 + 이후 추가 행 감시
+  if (typeof setupAutoLine === "function") setupAutoLine();
+  // 자동 저장된 작업이 있으면 이어서 복원, 없으면 기본 행으로 시작
+  const restored =
+    typeof tryRestoreAutosave === "function" && tryRestoreAutosave();
+  if (!restored) {
+    addCollect("noConsent");
+    addCollect("consent");
+  }
   updatePreview();
 };
 

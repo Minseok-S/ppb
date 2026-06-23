@@ -1,7 +1,7 @@
 // ════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════
-const S = {
+let S = {
   editMode: false,
   editBase: null,
   editView: null,

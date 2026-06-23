@@ -57,6 +57,7 @@ ${scriptCloseTag}
 </head>
 <body>
 <div class="wrapper"><div class="preview-doc"><div class="pp">${content}</div></div></div>
+${typeof buildStateScriptTag === "function" ? buildStateScriptTag() : ""}
 </body>
 </html>`;
 }

@@ -141,6 +141,29 @@
           <button
             class="btn btn-ghost"
             style="font-size: 10px; padding: 5px 10px"
+            onclick="document.getElementById('projectFileInput').click()"
+            title="저장한 .json 또는 상태가 내장된 HTML 파일을 불러옵니다"
+          >
+            📂 불러오기
+          </button>
+          <button
+            class="btn btn-ghost"
+            style="font-size: 10px; padding: 5px 10px"
+            onclick="saveProjectFile()"
+            title="현재 작업을 .json 프로젝트 파일로 저장합니다"
+          >
+            💾 저장
+          </button>
+          <input
+            type="file"
+            id="projectFileInput"
+            accept=".json,.html,.htm"
+            style="display: none"
+            onchange="loadProjectFromFile(this)"
+          />
+          <button
+            class="btn btn-ghost"
+            style="font-size: 10px; padding: 5px 10px"
             onclick="downloadWord()"
           >
             📄 Word
@@ -190,6 +213,10 @@
     <script src="js/engine/preview.js"></script>
     <script src="js/engine/export.js"></script>
     <script src="js/engine/editmode.js"></script>
+    <!-- core: 저장/불러오기/폼 복원 (preview·export 이후) -->
+    <script src="js/core/persistence.js"></script>
+    <!-- core: 설정 패널 줄바꿈(autoline) — preview 이후 로드 -->
+    <script src="js/core/autoline.js"></script>
     <!-- core: 초기화 (가장 마지막) -->
     <script src="js/core/init.js"></script>
   </body>
