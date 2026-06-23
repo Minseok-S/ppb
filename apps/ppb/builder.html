@@ -176,6 +176,20 @@
             ⬇️ HTML
           </button>
         </div>
+        <div class="restore-banner" id="restoreBanner" style="display: none">
+          <span id="restoreBannerText">이전에 작업하던 내용이 있습니다.</span>
+          <span style="flex: 1"></span>
+          <button class="btn btn-ghost" onclick="restorePending()">
+            이어서 작업
+          </button>
+          <button
+            class="btn btn-ghost"
+            onclick="dismissRestore()"
+            title="이 기록을 지우고 새 문서로 시작합니다"
+          >
+            새로 시작 ✕
+          </button>
+        </div>
         <div class="edit-banner" id="editBanner" style="display: none"></div>
         <div class="preview-frame">
           <div class="preview-doc">

@@ -5,13 +5,11 @@ window.onload = function () {
   renderSteps();
   // 설정 패널 입력칸을 줄바꿈 가능(Shift+Enter)하도록 전환 + 이후 추가 행 감시
   if (typeof setupAutoLine === "function") setupAutoLine();
-  // 자동 저장된 작업이 있으면 이어서 복원, 없으면 기본 행으로 시작
-  const restored =
-    typeof tryRestoreAutosave === "function" && tryRestoreAutosave();
-  if (!restored) {
-    addCollect("noConsent");
-    addCollect("consent");
-  }
+  // 항상 빈 문서로 시작. 이전 작업이 있으면 상단 배너로 안내하고,
+  // 사용자가 "이어서 작업"을 누를 때만 복원한다 (차단형 팝업 없음).
+  addCollect("noConsent");
+  addCollect("consent");
+  if (typeof initAutosaveBanner === "function") initAutosaveBanner();
   updatePreview();
 };
 

@@ -129,33 +129,61 @@ function extractStateFromHTML(html) {
   }
 }
 
-// 페이지 진입 시 자동 저장본 복원 여부 확인
-function tryRestoreAutosave() {
+// ── 페이지 진입 시: 자동 저장본이 있으면 배너만 안내 (자동 복원하지 않음) ──
+// 페이지는 항상 빈 문서로 시작한다. 저장본은 메모리(_ppbPendingRestore)에 보관하므로
+// 빈 상태가 자동저장으로 덮어써지더라도 "이어서 작업"으로 되살릴 수 있다.
+let _ppbPendingRestore = null;
+
+function _readAutosave() {
   let raw = null;
   try {
     raw = localStorage.getItem(PPB_STORAGE_KEY);
   } catch (e) {
-    return false;
+    return null;
   }
-  if (!raw) return false;
-  let payload = null;
+  if (!raw) return null;
   try {
-    payload = JSON.parse(raw);
+    const payload = JSON.parse(raw);
+    if (!payload || !payload.state) return null;
+    return payload;
   } catch (e) {
-    return false;
+    return null;
   }
-  if (!payload || !payload.state) return false;
+}
+
+// init에서 호출 — 이전 작업이 있으면 상단 배너로 안내. 복원은 사용자가 누를 때만.
+function initAutosaveBanner() {
+  const payload = _readAutosave();
+  if (!payload) return;
+  _ppbPendingRestore = payload;
   const when = payload.savedAt
     ? new Date(payload.savedAt).toLocaleString("ko-KR")
     : "";
-  const ok = window.confirm(
-    "이전에 작업하던 내용이 있습니다" +
-      (when ? " (" + when + ")" : "") +
-      ".\n이어서 작업하시겠습니까?\n\n[취소]를 누르면 새로 시작합니다."
-  );
-  if (!ok) return false;
-  applyState(payload);
-  return true;
+  const text = document.getElementById("restoreBannerText");
+  if (text)
+    text.textContent =
+      "이전에 작업하던 내용이 있습니다" + (when ? " (" + when + ")" : "") + ".";
+  const banner = document.getElementById("restoreBanner");
+  if (banner) banner.style.display = "flex";
+}
+
+// 배너 "이어서 작업"
+function restorePending() {
+  if (!_ppbPendingRestore) return;
+  applyState(_ppbPendingRestore);
+  _ppbPendingRestore = null;
+  const banner = document.getElementById("restoreBanner");
+  if (banner) banner.style.display = "none";
+  if (typeof showToast === "function")
+    showToast("✅ 이전 작업을 불러왔습니다.", "success");
+}
+
+// 배너 "새로 시작" — 기록을 지워 다음부터 묻지 않는다
+function dismissRestore() {
+  _ppbPendingRestore = null;
+  clearAutosave();
+  const banner = document.getElementById("restoreBanner");
+  if (banner) banner.style.display = "none";
 }
 
 // ════════════════════════════════════════
