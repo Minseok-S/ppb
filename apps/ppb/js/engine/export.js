@@ -27,8 +27,20 @@ a{color:#4f6ef7;}
   return base + extracted;
 }
 
+// 미리보기 전용 보조 요소(칸 너비 드래그 핸들 등)를 제거한 내보내기용 마크업.
+// <col>의 inline 너비는 그대로 유지돼 조절한 칸 너비가 출력물에 반영된다.
+function getPreviewExportHTML() {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = document.getElementById("previewContent").innerHTML;
+  tempDiv.querySelectorAll(".tw-resizer").forEach((el) => el.remove());
+  tempDiv
+    .querySelectorAll("table.tw-resizable")
+    .forEach((el) => el.classList.remove("tw-resizable"));
+  return tempDiv.innerHTML;
+}
+
 function generateFinalHTML() {
-  const content = document.getElementById("previewContent").innerHTML;
+  const content = getPreviewExportHTML();
   const co = S.companyName || "회사";
   const eff = S.effectiveDate || "";
   const scriptTag = "<scr" + "ipt>";
@@ -80,7 +92,7 @@ function copyHTML() {
 }
 
 function downloadWord() {
-  const content = document.getElementById("previewContent").innerHTML;
+  const content = getPreviewExportHTML();
   const co = S.companyName || "회사";
   const eff = S.effectiveDate || "";
 

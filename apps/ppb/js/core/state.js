@@ -5,6 +5,8 @@ let S = {
   editMode: false,
   editBase: null,
   editView: null,
+  // 미리보기 표 칸 너비 사용자 조절값 — { 표키: ["22%","28%",...] }
+  tableColW: {},
   companyName: "",
   serviceName: "",
   effectiveDate: "",

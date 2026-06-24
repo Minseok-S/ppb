@@ -60,6 +60,104 @@ function applyRowMerge() {
   });
 }
 
+// ── 표 칸 너비 드래그 조절 ──────────────────────
+// 미리보기 표의 헤더 경계를 드래그해 칸 너비를 바꾼다.
+// 너비는 표키(헤더 라벨 시그니처+출현순서) 기준으로 S.tableColW에 % 배열로 저장돼
+// 재렌더·저장/불러오기·HTML 내보내기에 모두 반영된다.
+function twTableKey(table, seen) {
+  const ths = table.querySelectorAll(":scope > thead th");
+  const sig =
+    Array.from(ths)
+      .map((t) => t.textContent.replace(/\s+/g, " ").trim())
+      .join("│") || "tbl";
+  const n = (seen[sig] = (seen[sig] || 0) + 1);
+  return sig + "##" + n;
+}
+function twColCount(table) {
+  const headRow = table.querySelector(":scope > thead > tr");
+  if (!headRow) return 0;
+  let n = 0;
+  headRow.querySelectorAll(":scope > th, :scope > td").forEach((c) => {
+    n += c.colSpan || 1;
+  });
+  return n;
+}
+function twEnsureCols(table, n) {
+  let cg = table.querySelector(":scope > colgroup");
+  if (!cg) {
+    cg = document.createElement("colgroup");
+    table.insertBefore(cg, table.firstChild);
+  }
+  while (cg.children.length < n) cg.appendChild(document.createElement("col"));
+  return Array.from(cg.children).slice(0, n);
+}
+function enableColResize() {
+  if (!S.tableColW) S.tableColW = {};
+  const seen = {};
+  document
+    .querySelectorAll("#previewContent table")
+    .forEach((table) => {
+      const n = twColCount(table);
+      if (n < 2) return;
+      const cols = twEnsureCols(table, n);
+      const key = twTableKey(table, seen);
+      // 저장된 너비 적용
+      const stored = S.tableColW[key];
+      if (Array.isArray(stored) && stored.length === n) {
+        stored.forEach((w, i) => {
+          if (w) cols[i].style.width = w;
+        });
+      }
+      // 헤더 첫 줄의 th가 칸과 1:1일 때만 핸들 부착 (colspan 헤더는 건너뜀)
+      const ths = Array.from(
+        table.querySelectorAll(":scope > thead > tr:first-child > th"),
+      );
+      if (ths.length !== n) return;
+      table.classList.add("tw-resizable");
+      ths.forEach((th, i) => {
+        if (i >= n - 1) return;
+        const h = document.createElement("span");
+        h.className = "tw-resizer";
+        h.contentEditable = "false";
+        th.appendChild(h);
+        h.addEventListener("mousedown", (e) =>
+          twStartResize(e, table, cols, ths, i, key),
+        );
+      });
+    });
+}
+function twStartResize(e, table, cols, ths, i, key) {
+  e.preventDefault();
+  e.stopPropagation();
+  const total = table.offsetWidth || 1;
+  // 현재 렌더 너비를 % 로 고정 — 드래그 중 다른 칸이 흔들리지 않게
+  const pct = ths.map((t) => (t.offsetWidth / total) * 100);
+  pct.forEach((p, idx) => (cols[idx].style.width = p.toFixed(3) + "%"));
+  const startX = e.clientX;
+  const leftStart = pct[i];
+  const pair = pct[i] + pct[i + 1];
+  const minPct = (36 / total) * 100; // 칸 최소 36px
+  document.body.classList.add("tw-resizing");
+  function move(ev) {
+    const dPct = ((ev.clientX - startX) / total) * 100;
+    let left = leftStart + dPct;
+    left = Math.max(minPct, Math.min(pair - minPct, left));
+    pct[i] = left;
+    pct[i + 1] = pair - left;
+    cols[i].style.width = pct[i].toFixed(3) + "%";
+    cols[i + 1].style.width = pct[i + 1].toFixed(3) + "%";
+  }
+  function up() {
+    document.removeEventListener("mousemove", move);
+    document.removeEventListener("mouseup", up);
+    document.body.classList.remove("tw-resizing");
+    S.tableColW[key] = pct.map((p) => p.toFixed(3) + "%");
+    if (typeof scheduleAutosave === "function") scheduleAutosave();
+  }
+  document.addEventListener("mousemove", move);
+  document.addEventListener("mouseup", up);
+}
+
 function updatePreview() {
   readFields();
   // 편집모드 중에는 재렌더하지 않는다 — 입력 중인 수동 편집 보존
@@ -68,6 +166,7 @@ function updatePreview() {
   applyRowMerge();
   snapshotRender();
   applyUserEdits();
+  enableColResize();
   // bind TOC scroll
   const panel = document.getElementById("previewPanel");
   document.querySelectorAll("#previewContent .pp-toc-link").forEach((a) => {

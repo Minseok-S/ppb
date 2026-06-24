@@ -1145,6 +1145,19 @@ textarea.autoline {
 .policy_table table td.c { text-align: center; }
 p.sub_txt { font-size: 11px; color: #888; margin: 4px 0 0; }
 
+/* 표 칸 너비 드래그 조절 핸들 */
+#previewContent table.tw-resizable th { position: relative; }
+#previewContent .tw-resizer {
+  position: absolute; top: 0; right: -4px; width: 8px; height: 100%;
+  cursor: col-resize; user-select: none; z-index: 3;
+}
+#previewContent .tw-resizer::after {
+  content: ""; position: absolute; top: 18%; right: 3px; width: 2px; height: 64%;
+  background: transparent; border-radius: 1px; transition: background .12s;
+}
+#previewContent .tw-resizer:hover::after { background: #4a90d9; }
+body.tw-resizing, body.tw-resizing * { cursor: col-resize !important; user-select: none !important; }
+
 /* TOAST */
 .toast {
   position: fixed;
