@@ -1429,6 +1429,7 @@ ${buildPolicyTable(
     { key: "items", label: "수집해가는 행태정보 항목" },
     { key: "purpose", label: "수집해가는 목적" },
   ],
+  "",
   true,
 )}
 ${(() => {
