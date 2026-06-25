@@ -35,6 +35,9 @@
   var _origBlobUrl = null;
   var _editBlobUrl = null;
 
+  /* ── 불러온 원본 파일명 (내보내기 파일명에 사용) ── */
+  var loadedFileName = "";
+
   /* ── Link modal state ── */
   var linkSavedRange = null;
 
@@ -64,6 +67,7 @@
         resetFileBtn();
         return;
       }
+      loadedFileName = file.name;
       loadBothPanels(html, "", "파일 로드 완료 — " + file.name);
       loadingOverlay.classList.remove("active");
       resetFileBtn();
@@ -742,7 +746,13 @@
     var blob = new Blob([content], { type: "text/html;charset=utf-8" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "개인정보처리방침_" + new Date().toISOString().slice(0, 10) + ".html";
+    var base = (loadedFileName || "개인정보처리방침").replace(/\.html?$/i, "");
+    var d = new Date();
+    var date =
+      d.getFullYear() +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      String(d.getDate()).padStart(2, "0");
+    a.download = base + "_" + date + ".html";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1410,6 +1420,7 @@
       var html = ev.target.result;
       if (!html) return;
       loadingOverlay.classList.add("active");
+      loadedFileName = file.name;
       loadBothPanels(html, "", "파일 로드 완료 — " + file.name);
     };
     reader.readAsText(file, "UTF-8");
