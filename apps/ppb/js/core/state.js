@@ -17,8 +17,15 @@ let S = {
   child: "no",
   childItems: "",
   childMethod: "",
-  retention: { contract: true, dispute: true, ad: true, log: true },
-  customRetentionLegal: [],
+  retention: { contract: true, dispute: true, ad: true, log: true }, // 레거시(불러오기 마이그레이션용)
+  customRetentionLegal: [], // 레거시(불러오기 마이그레이션용)
+  // 법령 보존항목 통합 목록 — 기본 항목(preset)과 직접 추가 항목(custom)을 한 배열에서 자유 정렬
+  retentionLegal: [
+    { kind: "preset", key: "contract", on: true },
+    { kind: "preset", key: "dispute", on: true },
+    { kind: "preset", key: "ad", on: true },
+    { kind: "preset", key: "log", on: true },
+  ],
   customRetentionOther: [],
   destroy: { electronic: true, paper: true },
   thirdParty: "no",

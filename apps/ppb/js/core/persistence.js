@@ -454,6 +454,10 @@ function applyState(payload) {
   Object.keys(st).forEach((k) => {
     S[k] = st[k];
   });
+  // 구버전 파일 호환: 통합 보존목록이 없으면 레거시(retention 토글 + customRetentionLegal)에서 생성
+  if (!Array.isArray(st.retentionLegal) && typeof migrateRetentionLegal === "function") {
+    S.retentionLegal = migrateRetentionLegal(S.retention, S.customRetentionLegal);
+  }
   // editMode는 항상 꺼진 상태로 시작하되, 저장된 수동 편집은 복원한다.
   S.editMode = false;
   S.editBase = st.editBase || null;
@@ -487,7 +491,7 @@ function applyState(payload) {
   _rebuildCollect("consent", S.collectConsent);
   _rebuildCollect("auto", S.collectAuto);
   _rebuildCollectOther(S.collectOther);
-  _rebuildSimple("customRetentionLegal", S.customRetentionLegal, addCustomRetentionLegal, ["label", "basis", "period"]);
+  if (typeof renderRetentionLegal === "function") renderRetentionLegal();
   _rebuildSimple("customRetentionOther", S.customRetentionOther, addCustomRetentionOther, ["label", "basis", "period"]);
   _rebuildSimple("tpConsent", S.tpConsent, () => addTP("consent"), ["receiver", "purpose", "items", "retention"]);
   _rebuildSimple("tpLegal", S.tpLegal, () => addTP("legal"), ["basis", "receiver", "purpose", "items", "retention"]);

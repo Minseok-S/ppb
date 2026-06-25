@@ -8,7 +8,7 @@ function addPrevPolicy() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">이전 방침</span><button class="btn-icon" onclick="removePrevPolicy('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncPrevPolicies">⠿</span><span class="card-title">이전 방침</span><span class="card-tools"><button class="btn-icon" onclick="removePrevPolicy('${id}')">✕</button></span></div>
     <div class="field-group">
       <label class="field-label">시행일</label>
       <div class="date-wrapper">
@@ -52,7 +52,7 @@ function addDept() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">담당부서</span><button class="btn-icon" onclick="removeAndSyncDept('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncDepts">⠿</span><span class="card-title">담당부서</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncDept('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">부서명</label><input type="text" data-field="name" placeholder="부서명" oninput="syncDepts();updatePreview()"></div>
       <div class="field-group"><label class="field-label">전화번호</label><input type="text" data-field="phone" placeholder="전화번호" oninput="syncDepts();updatePreview()"></div>

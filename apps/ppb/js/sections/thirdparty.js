@@ -12,7 +12,7 @@ function addTP(type) {
       ? `<div class="field-group"><label class="field-label">제공 법적 근거</label><input type="text" data-field="basis" placeholder="예: 개인정보보호법 제17조①2호, 소득세법 제165조" oninput="syncTP();updatePreview()"></div>`
       : "";
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">제공 대상</span><button class="btn-icon" onclick="removeAndSyncTP('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncTP">⠿</span><span class="card-title">제공 대상</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncTP('${id}')">✕</button></span></div>
     ${legalBasisHtml}
     <div class="field-row">
       <div class="field-group"><label class="field-label">제공받는 자</label><input type="text" data-field="receiver" placeholder="기관·업체명" oninput="syncTP();updatePreview()"></div>

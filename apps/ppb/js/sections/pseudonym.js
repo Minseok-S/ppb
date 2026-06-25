@@ -8,7 +8,7 @@ function addPseudo() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">가명처리 항목</span><button class="btn-icon" onclick="removePseudo('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncPseudo">⠿</span><span class="card-title">가명처리 항목</span><span class="card-tools"><button class="btn-icon" onclick="removePseudo('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">구분</label><input type="text" data-field="category" placeholder="예: 내부 통계, 연구 목적" oninput="syncPseudo();updatePreview()"></div>
       <div class="field-group"><label class="field-label">처리 목적</label><input type="text" data-field="purpose" placeholder="예: 통계작성, 과학적 연구" oninput="syncPseudo();updatePreview()"></div>
@@ -47,7 +47,7 @@ function addPseudoProvide() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">제공 항목</span><button class="btn-icon" onclick="removePseudoProvide('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncPseudoProvide">⠿</span><span class="card-title">제공 항목</span><span class="card-tools"><button class="btn-icon" onclick="removePseudoProvide('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">제공받는 자</label><input type="text" data-field="recipient" placeholder="기관·업체명" oninput="syncPseudoProvide();updatePreview()"></div>
       <div class="field-group"><label class="field-label">제공 항목</label><input type="text" data-field="items" placeholder="예: 연령대, 접속지역" oninput="syncPseudoProvide();updatePreview()"></div>

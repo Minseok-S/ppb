@@ -185,30 +185,9 @@ function renderSteps() {
       </div>
       <div class="section-desc">법령에 따른 보존 항목과 직접 추가 항목을 관리합니다.</div>
       <div class="field-group">
-        <label class="field-label">법령 보존 항목</label>
-        <div class="toggle-group" id="retentionToggles">
-          <div class="toggle-item checked" data-key="contract" onclick="toggleItem(this,'retention')">
-            <div><div class="toggle-label">계약·청약철회·대금결제·재화공급 기록</div><div class="toggle-sub">전자상거래법 · 5년</div></div>
-            <div class="toggle-switch"></div>
-          </div>
-          <div class="toggle-item checked" data-key="dispute" onclick="toggleItem(this,'retention')">
-            <div><div class="toggle-label">소비자 불만·분쟁처리 기록</div><div class="toggle-sub">전자상거래법 · 3년</div></div>
-            <div class="toggle-switch"></div>
-          </div>
-          <div class="toggle-item checked" data-key="ad" onclick="toggleItem(this,'retention')">
-            <div><div class="toggle-label">표시·광고에 관한 기록</div><div class="toggle-sub">전자상거래법 · 6개월</div></div>
-            <div class="toggle-switch"></div>
-          </div>
-          <div class="toggle-item checked" data-key="log" onclick="toggleItem(this,'retention')">
-            <div><div class="toggle-label">웹사이트 방문기록(로그, IP 등)</div><div class="toggle-sub">통신비밀보호법 · 3개월</div></div>
-            <div class="toggle-switch"></div>
-          </div>
-        </div>
-      </div>
-      <div class="field-group" style="margin-top:10px">
-        <label class="field-label">법적 보존항목 <span class="opt">(위 목록에 없는 법령 근거 항목)</span></label>
-        <div id="customRetentionLegal"></div>
-        <button class="btn-add" onclick="addCustomRetentionLegal()">＋ 항목 추가</button>
+        <label class="field-label">법령 보존 항목 <span class="opt">(기본 항목은 스위치로 포함/제외, ↑↓로 순서 변경, 직접 추가 가능)</span></label>
+        <div id="retentionLegalList"></div>
+        <button class="btn-add" onclick="addRetentionLegalCustom()">＋ 항목 추가</button>
       </div>
       <div class="field-group" style="margin-top:10px">
         <label class="field-label">그외 보존항목 <span class="opt">(사내규정·기타사유)</span></label>

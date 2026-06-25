@@ -7,7 +7,7 @@ function addBhOwnDevice() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">자동수집장치</span><button class="btn-icon" onclick="removeAndSyncBhOwnDevice('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncBhOwnDevices">⠿</span><span class="card-title">자동수집장치</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncBhOwnDevice('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">수집장치 명칭</label><input type="text" data-field="name" placeholder="예: 쿠키, 픽셀, SDK" oninput="syncBhOwnDevices();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집장치 종류</label><input type="text" data-field="type" placeholder="예: 웹 쿠키, 자바스크립트 태그" oninput="syncBhOwnDevices();updatePreview()"></div>
@@ -41,7 +41,7 @@ function addBehavioral() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">행태정보 항목</span><button class="btn-icon" onclick="removeAndSyncBH('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncBH">⠿</span><span class="card-title">행태정보 항목</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncBH('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group bh-legal-field" style="display:${S.bhIdentifyMode === 'identify' ? 'block' : 'none'}"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 정보주체 동의" oninput="syncBH();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 웹사이트 방문·이용 이력" oninput="syncBH();updatePreview()"></div>
@@ -87,7 +87,7 @@ function addTpItem() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">제3자 제공 항목</span><button class="btn-icon" onclick="removeAndSyncBhTP('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncBhTP">⠿</span><span class="card-title">제3자 제공 항목</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncBhTP('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group bh-legal-field" style="display:${S.bhIdentifyMode === 'identify' ? 'block' : 'none'}"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 정보주체 동의" oninput="syncBhTP();updatePreview()"></div>
       <div class="field-group"><label class="field-label">제공받는 자</label><input type="text" data-field="recipient" placeholder="예: 광고사업자명" oninput="syncBhTP();updatePreview()"></div>
@@ -134,7 +134,7 @@ function addBhThirdOutItem() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">제3자 수집 항목</span><button class="btn-icon" onclick="removeAndSyncBhThirdOut('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncBhThirdOut">⠿</span><span class="card-title">제3자 수집 항목</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncBhThirdOut('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">수집장치 명칭</label><input type="text" data-field="device" placeholder="예: □□ 태그, △△ SDK" oninput="syncBhThirdOut();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집장치 종류</label><input type="text" data-field="type" placeholder="예: 자바스크립트(웹), SDK(앱)" oninput="syncBhThirdOut();updatePreview()"></div>
@@ -180,7 +180,7 @@ function addAutoDevice() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">제3자 웹·앱 수집 항목</span><button class="btn-icon" onclick="removeAndSyncAD('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncAD">⠿</span><span class="card-title">제3자 웹·앱 수집 항목</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncAD('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group bh-legal-field" style="display:${S.bhIdentifyMode === 'identify' ? 'block' : 'none'}"><label class="field-label">법적 근거</label><input type="text" data-field="legal" placeholder="예: 「개인정보 보호법」제15조제1항제1호 (동의)" oninput="syncAD();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집 항목</label><input type="text" data-field="items" placeholder="예: 타사 웹사이트 방문·이용 이력" oninput="syncAD();updatePreview()"></div>
@@ -226,7 +226,7 @@ function addCookieExtDevice() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">제3자 자동수집장치</span><button class="btn-icon" onclick="removeAndSyncCED('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncCED">⠿</span><span class="card-title">제3자 자동수집장치</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncCED('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">수집장치 명칭</label><input type="text" data-field="device" placeholder="예: □□ 태그, △△ SDK" oninput="syncCED();updatePreview()"></div>
       <div class="field-group"><label class="field-label">수집장치 종류</label><input type="text" data-field="type" placeholder="예: 자바스크립트(웹), SDK(앱)" oninput="syncCED();updatePreview()"></div>

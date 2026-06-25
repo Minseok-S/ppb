@@ -36,7 +36,8 @@ function renderCCTVLocations(type) {
   const container = document.getElementById("cctv" + cap + "Locations");
   if (!container) return;
   container.innerHTML = arr.map((item, i) => `
-    <div class="card-item" style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+    <div class="card-item" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+      <span class="drag-handle" title="끌어서 순서 변경" data-reorder-array="cctv${cap}Locations" data-reorder-render="renderCCTVLocations('${type}')">⠿</span>
       <input type="text" placeholder="설치 위치 (예: 로비, 주차장)" value="${item.location}"
         oninput="S.cctv${cap}Locations[${i}].location=this.value;updatePreview()" style="flex:2" />
       <input type="text" placeholder="대수" value="${item.count}"
@@ -66,7 +67,8 @@ function renderCCTVDelegates(type) {
   const container = document.getElementById("cctv" + cap + "DelegateItems");
   if (!container) return;
   container.innerHTML = arr.map((item, i) => `
-    <div class="card-item" style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+    <div class="card-item" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+      <span class="drag-handle" title="끌어서 순서 변경" data-reorder-array="cctv${cap}DelegateItems" data-reorder-render="renderCCTVDelegates('${type}')">⠿</span>
       <input type="text" placeholder="수탁업체명" value="${item.company}"
         oninput="S.cctv${cap}DelegateItems[${i}].company=this.value;updatePreview()" style="flex:2" />
       <input type="text" placeholder="담당자" value="${item.manager}"

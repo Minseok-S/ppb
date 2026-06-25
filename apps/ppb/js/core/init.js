@@ -3,6 +3,8 @@
 // ════════════════════════════════════════
 window.onload = function () {
   renderSteps();
+  // 법령 보존항목 통합 목록 초기 렌더 (기본 4개 항목 표시)
+  if (typeof renderRetentionLegal === "function") renderRetentionLegal();
   // 설정 패널 입력칸을 줄바꿈 가능(Shift+Enter)하도록 전환 + 이후 추가 행 감시
   if (typeof setupAutoLine === "function") setupAutoLine();
   // 항상 빈 문서로 시작. 이전 작업이 있으면 상단 배너로 안내하고,

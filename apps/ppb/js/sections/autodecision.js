@@ -8,7 +8,7 @@ function addAdInfo() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">개인정보 유형</span><button class="btn-icon" onclick="removeAdInfo('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncAdInfo">⠿</span><span class="card-title">개인정보 유형</span><span class="card-tools"><button class="btn-icon" onclick="removeAdInfo('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">처리 단계 / 결정명</label><input type="text" data-field="stage" placeholder="예: AI 서류전형, AI 면접전형" oninput="syncAdInfo();updatePreview()"></div>
       <div class="field-group"><label class="field-label">개인정보 유형</label><input type="text" data-field="infoType" placeholder="예: 자기소개서, 학부성적, 응답패턴" oninput="syncAdInfo();updatePreview()"></div>

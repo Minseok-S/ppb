@@ -420,36 +420,18 @@ function buildPreview() {
   const eff = S.effectiveDate || "YYYY. MM. DD";
   const alias = "회사";
 
-  // Retention table
-  const retMap = {
-    contract: {
-      label: "계약 또는 청약철회, 대금결제, 재화 등의 공급기록",
-      basis: "전자상거래 등에서의 소비자보호에 관한 법률 제6조",
-      period: "5년",
-    },
-    dispute: {
-      label: "소비자의 불만 또는 분쟁처리에 관한 기록",
-      basis: "전자상거래 등에서의 소비자보호에 관한 법률 제6조",
-      period: "3년",
-    },
-    ad: {
-      label: "표시·광고에 관한 기록",
-      basis: "전자상거래 등에서의 소비자보호에 관한 법률 제6조",
-      period: "6개월",
-    },
-    log: {
-      label: "웹사이트 방문기록(로그기록, IP 등) 및 본인확인 기록",
-      basis: "통신비밀보호법 시행령 제41조",
-      period: "3개월",
-    },
-  };
-  const activeRet = Object.keys(S.retention)
-    .filter((k) => S.retention[k])
-    .map((k) => retMap[k]);
-  const legalRet = [
-    ...activeRet,
-    ...(S.customRetentionLegal || []).filter((r) => r.label),
-  ];
+  // Retention table — 통합 목록(S.retentionLegal) 순서를 그대로 따른다.
+  //   preset: 켜진 것만, RETENTION_PRESETS 정의값으로 출력
+  //   custom: 항목명이 있는 것만
+  const legalRet = (S.retentionLegal || [])
+    .filter((it) =>
+      it.kind === "preset" ? it.on : (it.label || "").trim(),
+    )
+    .map((it) =>
+      it.kind === "preset"
+        ? RETENTION_PRESETS[it.key]
+        : { label: it.label, basis: it.basis, period: it.period },
+    );
   const otherRet = (S.customRetentionOther || []).filter((r) => r.label);
 
   // Security

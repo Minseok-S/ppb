@@ -8,7 +8,7 @@ function addAU() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">이용·제공 항목</span><button class="btn-icon" onclick="removeAU('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncAU">⠿</span><span class="card-title">이용·제공 항목</span><span class="card-tools"><button class="btn-icon" onclick="removeAU('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">제공받는 자</label><input type="text" data-field="recipient" placeholder="기관·업체명" oninput="syncAU();updatePreview()"></div>
       <div class="field-group"><label class="field-label">항목</label><input type="text" data-field="items" placeholder="휴대전화번호, 위치정보" oninput="syncAU();updatePreview()"></div>

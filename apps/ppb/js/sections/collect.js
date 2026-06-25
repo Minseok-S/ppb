@@ -30,6 +30,20 @@ function cap(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// ── 카드(행) 순서 이동 — 같은 컨테이너 안에서 한 칸씩 ↑/↓ ──
+// 직속 .card-item 의 #번호 라벨을 다시 매긴다.
+function renumberCards(container) {
+  let i = 0;
+  container.querySelectorAll(":scope > .card-item").forEach((c) => {
+    i++;
+    const t = c.querySelector(".card-title");
+    // 숫자 라벨(#1, #2…)만 다시 매김 — 고정 제목("수탁업체" 등)은 건드리지 않음
+    if (t && /^#\d+$/.test(t.textContent.trim())) t.textContent = "#" + i;
+  });
+}
+
+// (순서 변경은 드래그 손잡이 .drag-handle + core/sortable.js 가 담당)
+
 // 영역 접기/펼치기
 function toggleCollectBlock(head) {
   head.parentElement.classList.toggle("collapsed");
@@ -54,7 +68,7 @@ function updateCollectCounts() {
 function collectCardInner(type, cid, num) {
   const needBasis = type !== "auto";
   return `
-    <div class="card-header"><span class="card-title">#${num}</span><button class="btn-icon" onclick="removeAndSync('${cid}','${type}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncCollect('${type}')">⠿</span><span class="card-title">#${num}</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSync('${cid}','${type}')">✕</button></span></div>
     ${needBasis ? `<div class="field-group"><label class="field-label">법적 근거</label><select data-field="basis" onchange="onBasisChange(this,()=>syncCollect('${type}'))">${basisOpts.map((o) => `<option value="${o.v}">${o.l}</option>`).join("")}</select><input type="text" class="basis-custom" data-field="basisCustom" placeholder="법적 근거를 직접 입력하세요" style="display:none;margin-top:6px;" oninput="syncCollect('${type}');updatePreview()"></div>` : ""}
     <div class="field-row">
       <div class="field-group"><label class="field-label">구분</label><input type="text" data-field="category" placeholder="예: 회원 서비스 운영" oninput="syncCollect('${type}');updatePreview()"></div>
@@ -176,7 +190,7 @@ function addCollectOther() {
   div.className = "card-item";
   div.id = id;
   div.innerHTML = `
-    <div class="card-header"><span class="card-title">#${num}</span><button class="btn-icon" onclick="removeAndSyncCollectOther('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncCollectOther">⠿</span><span class="card-title">#${num}</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncCollectOther('${id}')">✕</button></span></div>
     <div class="field-group"><label class="field-label">법적 근거</label><select data-field="basis" onchange="onBasisChange(this,syncCollectOther)">${basisOpts.map((o) => `<option value="${o.v}">${o.l}</option>`).join("")}</select><input type="text" class="basis-custom" data-field="basisCustom" placeholder="법적 근거를 직접 입력하세요" style="display:none;margin-top:6px;" oninput="syncCollectOther();updatePreview()"></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">수집 목적</label><input type="text" data-field="purpose" placeholder="예: 간편로그인" oninput="syncCollectOther();updatePreview()"></div>

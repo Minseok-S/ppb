@@ -8,7 +8,7 @@ function addSensitive() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">항목</span><button class="btn-icon" onclick="removeSensitive('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncSensitive">⠿</span><span class="card-title">항목</span><span class="card-tools"><button class="btn-icon" onclick="removeSensitive('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">재화 또는 서비스 명</label><input type="text" data-field="service" placeholder="예: 지도 서비스, 커뮤니티" oninput="syncSensitive();updatePreview()"></div>
       <div class="field-group"><label class="field-label">민감정보</label><input type="text" data-field="types" placeholder="예: 건강, 유전정보" oninput="syncSensitive();updatePreview()"></div>

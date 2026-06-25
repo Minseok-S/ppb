@@ -527,12 +527,14 @@ textarea.autoline {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
   margin-bottom: 8px;
 }
 .card-title {
   font-size: 11px;
   font-weight: 700;
   color: var(--sb-text2);
+  margin-right: auto; /* 손잡이+제목은 왼쪽, 도구(삭제 등)는 오른쪽으로 분리 */
 }
 .btn-icon {
   width: 26px;
@@ -552,6 +554,75 @@ textarea.autoline {
 .btn-icon:hover {
   border-color: #ff6b6b;
   color: #ff6b6b;
+}
+.card-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* 법령 보존항목 통합 목록 — 기본(preset) 카드 */
+.retlegal-preset.off {
+  opacity: 0.5;
+}
+.retlegal-readonly {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.retlegal-meta {
+  color: var(--sb-text3);
+  font-size: 11px;
+}
+.retlegal-sw {
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  background: #cbd2e0;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.retlegal-sw::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+}
+.retlegal-sw.on {
+  background: var(--accent);
+}
+.retlegal-sw.on::after {
+  left: 18px;
+}
+/* 드래그 손잡이 — 잡고 끌어 순서 변경 */
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  color: #b6bdd0;
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 3px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+.drag-handle:hover {
+  color: var(--accent);
+  background: #eef1fb;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.card-item.dragging {
+  opacity: 0.45;
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
 }
 .btn-add {
   width: 100%;

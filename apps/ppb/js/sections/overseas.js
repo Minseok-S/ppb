@@ -29,7 +29,7 @@ function buildOTCard(id) {
   ).join("");
 
   return `
-    <div class="card-header"><span class="card-title">이전 대상</span><button class="btn-icon" onclick="removeAndSyncOT('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncOT">⠿</span><span class="card-title">이전 대상</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncOT('${id}')">✕</button></span></div>
     <div class="field-group">
       <label class="field-label">관련 근거</label>
       <div class="radio-group ot-basis-group">${basisChips}</div>

@@ -8,7 +8,7 @@ function addDelegate() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">수탁업체</span><button class="btn-icon" onclick="removeAndSyncDL('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncDL">⠿</span><span class="card-title">수탁업체</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncDL('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">수탁자</label><input type="text" data-field="company" placeholder="업체명" oninput="syncDL();updatePreview()"></div>
       <div class="field-group"><label class="field-label">위탁 업무</label><input type="text" data-field="task" placeholder="업무 내용" oninput="syncDL();updatePreview()"></div>
@@ -38,7 +38,7 @@ function addSubDelegate() {
   d.className = "card-item";
   d.id = id;
   d.innerHTML = `
-    <div class="card-header"><span class="card-title">재수탁업체</span><button class="btn-icon" onclick="removeAndSyncSDL('${id}')">✕</button></div>
+    <div class="card-header"><span class="drag-handle" title="끌어서 순서 변경" data-reorder="syncSDL">⠿</span><span class="card-title">재수탁업체</span><span class="card-tools"><button class="btn-icon" onclick="removeAndSyncSDL('${id}')">✕</button></span></div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">재수탁자</label><input type="text" data-field="company" placeholder="업체명" oninput="syncSDL();updatePreview()"></div>
       <div class="field-group"><label class="field-label">위탁 업무</label><input type="text" data-field="task" placeholder="업무 내용" oninput="syncSDL();updatePreview()"></div>
