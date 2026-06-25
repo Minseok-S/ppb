@@ -51,31 +51,53 @@ function renderSteps() {
         개인정보 수집·이용 항목 <span class="badge-req">필수</span>
       </div>
       <div class="section-desc">
-        동의 없이 처리 / 동의 받아 처리 / 그 밖에 수집으로 구분하여 입력합니다.
+        동의 없이 처리 / 동의 받아 처리 / 그 밖에 수집으로 구분하여 입력합니다. 제목을 누르면 영역을 접거나 펼 수 있습니다.
       </div>
-      <div class="field-group">
-        <label class="field-label" style="font-size:12px;color:var(--text);margin-bottom:8px">① 동의 없이 처리하는 개인정보</label>
-        <div id="collectNoConsent"></div>
-        <button class="btn-add" onclick="addCollect('noConsent')">＋ 항목 추가</button>
+
+      <div class="collect-block">
+        <div class="collect-block-head" onclick="toggleCollectBlock(this)">
+          <span class="cb-icon">①</span>
+          <span class="cb-title">동의 없이 처리하는 개인정보</span>
+          <span class="cb-chevron">▾</span>
+        </div>
+        <div class="collect-block-body">
+          <div id="collectNoConsent"></div>
+          <p class="collect-empty" id="empty-noConsent">아직 추가된 항목이 없습니다.</p>
+          <button class="btn-add" onclick="addCollect('noConsent')">＋ 항목 추가</button>
+          <div id="collectNoConsentGroups"></div>
+          <button class="btn-add btn-add-group" onclick="addCollectGroup('noConsent')">＋ 소제목 추가</button>
+        </div>
       </div>
-      <div class="field-group" style="margin-top:14px">
-        <label class="field-label" style="font-size:12px;color:var(--text);margin-bottom:8px">② 동의 받아 처리하는 개인정보</label>
-        <div id="collectConsent"></div>
-        <button class="btn-add" onclick="addCollect('consent')">＋ 항목 추가</button>
+
+      <div class="collect-block">
+        <div class="collect-block-head" onclick="toggleCollectBlock(this)">
+          <span class="cb-icon">②</span>
+          <span class="cb-title">동의 받아 처리하는 개인정보</span>
+          <span class="cb-chevron">▾</span>
+        </div>
+        <div class="collect-block-body">
+          <div id="collectConsent"></div>
+          <p class="collect-empty" id="empty-consent">아직 추가된 항목이 없습니다.</p>
+          <button class="btn-add" onclick="addCollect('consent')">＋ 항목 추가</button>
+          <div id="collectConsentGroups"></div>
+          <button class="btn-add btn-add-group" onclick="addCollectGroup('consent')">＋ 소제목 추가</button>
+        </div>
       </div>
-      <div class="field-group" style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:14px">
-        <label class="field-label" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">
-          3. 그 밖에 수집하는 개인정보
-          <span style="font-size:11px;color:#aaa;font-weight:400">(해당 시)</span>
-        </label>
-        <label class="field-label" style="font-size:12px;color:var(--text);margin-bottom:8px;margin-top:10px">가. 정보주체 이외로부터 수집한 개인정보</label>
-        <div id="collectOther"></div>
-        <button class="btn-add" onclick="addCollectOther()">＋ 항목 추가</button>
-      </div>
-      <div class="field-group" style="margin-top:14px">
-        <label class="field-label" style="font-size:12px;color:var(--text);margin-bottom:8px">나. 자동으로 생성·수집되는 개인정보</label>
-        <div id="collectAuto"></div>
-        <button class="btn-add" onclick="addCollect('auto')">＋ 항목 추가</button>
+
+      <div class="collect-block">
+        <div class="collect-block-head" onclick="toggleCollectBlock(this)">
+          <span class="cb-icon">③</span>
+          <span class="cb-title">그 밖에 수집하는 개인정보 <span class="cb-opt">(해당 시)</span></span>
+          <span class="cb-chevron">▾</span>
+        </div>
+        <div class="collect-block-body">
+          <div class="cb-sublabel">가. 정보주체 이외로부터 수집한 개인정보</div>
+          <div id="collectOther"></div>
+          <button class="btn-add" onclick="addCollectOther()">＋ 항목 추가</button>
+          <div class="cb-sublabel" style="margin-top:14px">나. 자동으로 생성·수집되는 개인정보</div>
+          <div id="collectAuto"></div>
+          <button class="btn-add" onclick="addCollect('auto')">＋ 항목 추가</button>
+        </div>
       </div>
     </div>
 

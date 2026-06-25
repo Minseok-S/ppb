@@ -12,10 +12,9 @@ const PPB_STATE_TAG_ID = "ppb-state";
 // ── 직렬화 ──────────────────────────────
 function serializeState() {
   const clone = JSON.parse(JSON.stringify(S));
-  // 편집모드 관련 휘발성 값은 저장하지 않는다
+  // editMode는 휘발성 UI 플래그라 저장하지 않지만,
+  // 수동 편집 결과(editBase/editView)는 보존해 불러오기 시 그대로 재현한다.
   delete clone.editMode;
-  delete clone.editBase;
-  delete clone.editView;
   return {
     app: "ppb",
     version: 1,
@@ -276,19 +275,34 @@ function _setBasis(card, basisVal) {
 }
 
 function _rebuildCollect(type, arr) {
-  const containerId = "collect" + cap(type);
-  const c = document.getElementById(containerId);
+  const c = document.getElementById("collect" + cap(type));
   if (!c) return;
   c.innerHTML = "";
-  (arr || []).forEach((item) => {
-    addCollect(type);
-    const card = c.lastElementChild;
+  const groupsWrap = document.getElementById("collect" + cap(type) + "Groups");
+  if (groupsWrap) groupsWrap.innerHTML = "";
+  const fillCard = (card, item) => {
     if (!card) return;
     ["category", "purpose", "items", "retention"].forEach((f) => {
       const el = card.querySelector('[data-field="' + f + '"]');
       if (el) el.value = item[f] == null ? "" : item[f];
     });
     if (type !== "auto") _setBasis(card, item.basis);
+  };
+  const seen = {};
+  (arr || []).forEach((item) => {
+    const gid = (item.gid || "") + "";
+    if (!gid || !groupsWrap) {
+      addCollect(type);
+      fillCard(c.lastElementChild, item);
+    } else {
+      if (!seen[gid]) {
+        addCollectGroup(type, gid, item.group || "");
+        seen[gid] = true;
+      }
+      addCollectInGroup(type, gid);
+      const itemsWrap = document.getElementById(gid + "_items");
+      fillCard(itemsWrap && itemsWrap.lastElementChild, item);
+    }
   });
   syncCollect(type);
 }
@@ -440,9 +454,10 @@ function applyState(payload) {
   Object.keys(st).forEach((k) => {
     S[k] = st[k];
   });
+  // editMode는 항상 꺼진 상태로 시작하되, 저장된 수동 편집은 복원한다.
   S.editMode = false;
-  S.editBase = null;
-  S.editView = null;
+  S.editBase = st.editBase || null;
+  S.editView = st.editView || null;
 
   // 모듈 로컬 상태 복원
   if (
@@ -538,6 +553,7 @@ function applyState(payload) {
   // 8) 라디오(selectR) — 상세 패널까지 함께 복원
   _restoreRadios();
 
-  // 9) 최종 렌더
+  // 9) 최종 렌더 (editView가 있으면 updatePreview 내부 applyUserEdits가 반영)
   updatePreview();
+  if (typeof updateEditUI === "function") updateEditUI();
 }

@@ -94,37 +94,35 @@ function twEnsureCols(table, n) {
 function enableColResize() {
   if (!S.tableColW) S.tableColW = {};
   const seen = {};
-  document
-    .querySelectorAll("#previewContent table")
-    .forEach((table) => {
-      const n = twColCount(table);
-      if (n < 2) return;
-      const cols = twEnsureCols(table, n);
-      const key = twTableKey(table, seen);
-      // 저장된 너비 적용
-      const stored = S.tableColW[key];
-      if (Array.isArray(stored) && stored.length === n) {
-        stored.forEach((w, i) => {
-          if (w) cols[i].style.width = w;
-        });
-      }
-      // 헤더 첫 줄의 th가 칸과 1:1일 때만 핸들 부착 (colspan 헤더는 건너뜀)
-      const ths = Array.from(
-        table.querySelectorAll(":scope > thead > tr:first-child > th"),
-      );
-      if (ths.length !== n) return;
-      table.classList.add("tw-resizable");
-      ths.forEach((th, i) => {
-        if (i >= n - 1) return;
-        const h = document.createElement("span");
-        h.className = "tw-resizer";
-        h.contentEditable = "false";
-        th.appendChild(h);
-        h.addEventListener("mousedown", (e) =>
-          twStartResize(e, table, cols, ths, i, key),
-        );
+  document.querySelectorAll("#previewContent table").forEach((table) => {
+    const n = twColCount(table);
+    if (n < 2) return;
+    const cols = twEnsureCols(table, n);
+    const key = twTableKey(table, seen);
+    // 저장된 너비 적용
+    const stored = S.tableColW[key];
+    if (Array.isArray(stored) && stored.length === n) {
+      stored.forEach((w, i) => {
+        if (w) cols[i].style.width = w;
       });
+    }
+    // 헤더 첫 줄의 th가 칸과 1:1일 때만 핸들 부착 (colspan 헤더는 건너뜀)
+    const ths = Array.from(
+      table.querySelectorAll(":scope > thead > tr:first-child > th"),
+    );
+    if (ths.length !== n) return;
+    table.classList.add("tw-resizable");
+    ths.forEach((th, i) => {
+      if (i >= n - 1) return;
+      const h = document.createElement("span");
+      h.className = "tw-resizer";
+      h.contentEditable = "false";
+      th.appendChild(h);
+      h.addEventListener("mousedown", (e) =>
+        twStartResize(e, table, cols, ths, i, key),
+      );
     });
+  });
 }
 function twStartResize(e, table, cols, ths, i, key) {
   e.preventDefault();
@@ -248,6 +246,38 @@ function buildCollectTable(arr, showBasis) {
     ? '<th style="width:22%">법적 근거</th><th style="width:12%">구분</th><th style="width:28%">처리 목적</th><th style="width:24%">처리 항목</th><th style="width:14%">보유기간</th>'
     : '<th style="width:18%">구분</th><th style="width:40%">처리 목적</th><th style="width:42%">처리 항목</th>';
   return `<table class="pp-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// 소제목(gid)으로 나뉜 수집 항목을 평면 표 또는 소제목별 표로 출력
+function buildCollectGrouped(arr) {
+  const ungrouped = arr.filter((r) => !r.gid);
+  const order = [];
+  const byGid = {};
+  arr.forEach((r) => {
+    if (!r.gid) return;
+    if (!byGid[r.gid]) {
+      byGid[r.gid] = { name: r.group || "", items: [] };
+      order.push(r.gid);
+    }
+    byGid[r.gid].items.push(r);
+    if (r.group) byGid[r.gid].name = r.group;
+  });
+  // 소제목이 하나도 없으면 기존처럼 단일 표
+  if (order.length === 0) return buildCollectTable(arr, true);
+
+  let html = "";
+  if (ungrouped.some((r) => r.category || r.items))
+    html += buildCollectTable(ungrouped, true);
+  let n = 0;
+  order.forEach((gid) => {
+    const g = byGid[gid];
+    if (!g.items.some((r) => r.category || r.items)) return;
+    n++;
+    const title = g.name || "소제목 " + n;
+    html += `<p class="pp-sub-title" style="font-size:12px;padding-left:4px;">${n}) ${title}</p>
+${buildCollectTable(g.items, true)}`;
+  });
+  return html;
 }
 
 function buildCollectOtherTable(arr) {
@@ -954,7 +984,7 @@ ${
     ? `
 <p class="pp-sub-title">1. 정보주체의 동의 없이 처리하는 개인정보</p>
 <p>${alias}는 다음의 개인정보 항목을 정보주체의 동의 없이 처리하고 있습니다.</p>
-${buildCollectTable(S.collectNoConsent, true)}`
+${buildCollectGrouped(S.collectNoConsent)}`
     : ""
 }
 
@@ -964,7 +994,7 @@ ${
     ? `
 <p class="pp-sub-title">${S.collectNoConsent.length > 0 && S.collectNoConsent.some((r) => r.category || r.items) ? "2" : "1"}. 정보주체의 동의를 받아 처리하는 개인정보</p>
 <p>${alias}는 다음의 개인정보 항목을 정보주체의 동의를 받아 처리하고 있습니다.</p>
-${buildCollectTable(S.collectConsent, true)}`
+${buildCollectGrouped(S.collectConsent)}`
     : ""
 }
 

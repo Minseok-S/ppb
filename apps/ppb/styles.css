@@ -574,6 +574,134 @@ textarea.autoline {
   color: var(--accent);
   background: #f5f7ff;
 }
+.subgroup-box {
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid #cfd5e8;
+  border-left: 3px solid var(--accent);
+  border-radius: 7px;
+  background: #f3f5fc;
+}
+.subgroup-box .card-header {
+  gap: 8px;
+}
+.subgroup-name {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #d5d9e8;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Noto Sans KR", sans-serif;
+  background: #fff;
+}
+.subgroup-name:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.subgroup-head {
+  gap: 6px;
+}
+.sg-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.subgroup-box.collapsed .sg-toggle {
+  transform: rotate(-90deg);
+}
+.subgroup-box.collapsed .subgroup-items,
+.subgroup-box.collapsed > .btn-add {
+  display: none;
+}
+
+/* ── 수집항목 구획 카드 ── */
+.collect-block {
+  border: 1px solid #dde1ec;
+  border-radius: 9px;
+  background: #fff;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.collect-block-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+  cursor: pointer;
+  background: #f4f6fc;
+  border-bottom: 1px solid #e6e9f3;
+  user-select: none;
+  transition: background 0.15s;
+}
+.collect-block-head:hover {
+  background: #eaeefb;
+}
+.collect-block.collapsed .collect-block-head {
+  border-bottom-color: transparent;
+}
+.cb-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cb-title {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.cb-opt {
+  font-size: 11px;
+  font-weight: 400;
+  color: #aaa;
+}
+.cb-chevron {
+  color: var(--sb-text3);
+  font-size: 11px;
+  transition: transform 0.2s;
+}
+.collect-block.collapsed .cb-chevron {
+  transform: rotate(-90deg);
+}
+.collect-block-body {
+  padding: 12px;
+}
+.collect-block.collapsed .collect-block-body {
+  display: none;
+}
+.collect-empty {
+  margin: 0 0 8px;
+  padding: 12px;
+  text-align: center;
+  color: #aaa;
+  font-size: 11.5px;
+  font-style: italic;
+  border: 1px dashed #e0e4ef;
+  border-radius: 7px;
+}
+.cb-sublabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.btn-add-group {
+  margin-top: 6px;
+  border-style: solid;
+  border-color: #d3d9ea;
+  color: var(--sb-text2);
+}
 .sec-extra-row {
   display: flex;
   gap: 6px;
