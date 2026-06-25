@@ -139,6 +139,27 @@
             </button>
           </span>
           <div style="flex: 1"></div>
+          <div id="formatPicker" class="fmt-picker" style="display: none">
+            <span class="fmt-label">서식</span>
+            <div class="fmt-seg">
+              <button
+                class="fmt-btn active"
+                id="fmtBoldBtn"
+                onclick="setEditFormat('bold')"
+                title="굵게 (Ctrl+B)"
+              >
+                <b>B</b> 볼드
+              </button>
+              <button
+                class="fmt-btn"
+                id="fmtHlBtn"
+                onclick="setEditFormat('highlight')"
+                title="노란 배경색 (Ctrl+B)"
+              >
+                🖍 배경
+              </button>
+            </div>
+          </div>
           <button
             class="btn btn-ghost"
             id="revertEditBtn"
@@ -155,6 +176,7 @@
           >
             ✏️ 편집
           </button>
+          <span class="toolbar-divider"></span>
           <button
             class="btn btn-ghost"
             style="font-size: 10px; padding: 5px 10px"
@@ -178,6 +200,7 @@
             style="display: none"
             onchange="loadProjectFromFile(this)"
           />
+          <span class="toolbar-divider"></span>
           <button
             class="btn btn-ghost"
             style="font-size: 10px; padding: 5px 10px"

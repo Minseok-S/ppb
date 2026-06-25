@@ -184,9 +184,107 @@ function revertEdits() {
   showToast("↺ 편집 전 원본으로 되돌렸습니다.");
 }
 
+// ────────────────────────────────────────
+//  글자 서식 — 편집모드에서 선택 글자에 볼드 또는 노란 배경 (단축키 Ctrl+B)
+//  상단 선택기로 적용할 서식을 고르고, Ctrl+B 또는 버튼으로 선택영역에 적용.
+//  이미 같은 서식이 걸린 영역이면 해제(토글).
+// ────────────────────────────────────────
+const HILITE_COLOR = "#fff3a0"; // 노란색 하이라이트 배경
+
+// 서식 종류별 정의: 식별 class와 적용 스타일
+const EDIT_FORMATS = {
+  bold: { cls: "ppb-bold", style: (el) => (el.style.fontWeight = "bold") },
+  highlight: {
+    cls: "ppb-hl",
+    style: (el) => (el.style.backgroundColor = HILITE_COLOR),
+  },
+};
+
+let _activeFormat = "bold"; // 상단 선택기에서 고른 서식
+
+// node에서 위로 올라가며 해당 class의 span을 찾는다 (없으면 null)
+function _closestFormat(node, root, cls) {
+  while (node && node !== root) {
+    if (node.nodeType === 1 && node.classList?.contains(cls)) return node;
+    node = node.parentNode;
+  }
+  return null;
+}
+
+// 선택 양끝이 같은 서식 span 안이면 그 span을 반환
+function _enclosingFormat(range, root, cls) {
+  const a = _closestFormat(range.startContainer, root, cls);
+  const b = _closestFormat(range.endContainer, root, cls);
+  return a && a === b ? a : null;
+}
+
+// span을 풀어 내용만 남긴다
+function _unwrapFormat(span) {
+  const parent = span.parentNode;
+  while (span.firstChild) parent.insertBefore(span.firstChild, span);
+  parent.removeChild(span);
+  parent.normalize();
+}
+
+// 선택영역에 서식 적용/해제 (type: 'bold' | 'highlight')
+function applyEditFormat(type) {
+  if (!S.editMode) return;
+  const fmt = EDIT_FORMATS[type];
+  if (!fmt) return;
+  const root = document.getElementById("previewContent");
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+  if (!root.contains(range.commonAncestorContainer)) return;
+
+  const existing = _enclosingFormat(range, root, fmt.cls);
+  if (existing) {
+    _unwrapFormat(existing);
+  } else {
+    const span = document.createElement("span");
+    span.className = fmt.cls;
+    fmt.style(span);
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      // 선택이 여러 요소 경계를 가로지르면 추출 후 감싼다
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+  }
+  sel.removeAllRanges();
+}
+
+// 상단 선택기 — 적용할 서식을 고르고, 선택영역이 있으면 바로 적용
+function setEditFormat(type) {
+  if (!EDIT_FORMATS[type]) return;
+  _activeFormat = type;
+  updateFormatPickerUI();
+  applyEditFormat(type);
+}
+
+function updateFormatPickerUI() {
+  const boldBtn = document.getElementById("fmtBoldBtn");
+  const hlBtn = document.getElementById("fmtHlBtn");
+  if (boldBtn) boldBtn.classList.toggle("active", _activeFormat === "bold");
+  if (hlBtn) hlBtn.classList.toggle("active", _activeFormat === "highlight");
+}
+
+// 단축키 Ctrl+B (Mac은 Cmd+B) — 편집모드에서 현재 선택된 서식을 적용.
+// metaKey도 가로채야 브라우저 기본 볼드(Cmd+B)가 활성 서식을 덮어쓰지 않는다.
+document.addEventListener("keydown", function (e) {
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "b" || e.key === "B")) {
+    if (!S.editMode) return;
+    e.preventDefault();
+    applyEditFormat(_activeFormat);
+  }
+});
+
 function updateEditUI() {
   const btn = document.getElementById("editModeBtn");
   const revertBtn = document.getElementById("revertEditBtn");
+  const picker = document.getElementById("formatPicker");
   const banner = document.getElementById("editBanner");
   const doc = document.querySelector(".preview-doc");
   const hasEdits = !!S.editView;
@@ -194,11 +292,13 @@ function updateEditUI() {
   btn.textContent = S.editMode ? "✅ 편집완료" : "✏️ 편집";
   btn.classList.toggle("editing", S.editMode);
   revertBtn.style.display = S.editMode || hasEdits ? "" : "none";
+  if (picker) picker.style.display = S.editMode ? "inline-flex" : "none";
+  updateFormatPickerUI();
   doc.classList.toggle("edit-active", S.editMode);
 
   if (S.editMode) {
     banner.textContent =
-      "✏️ 편집모드 — 미리보기 문서를 클릭해 내용을 직접 수정하세요. [편집완료]를 누르면 수정 내용이 다운로드에 반영됩니다.";
+      "✏️ 편집모드 — 미리보기 문서를 클릭해 내용을 직접 수정하세요. 상단에서 [볼드] 또는 [배경색]을 고른 뒤 글자를 선택하고 Ctrl+B(또는 버튼)로 적용하세요. [편집완료]를 누르면 수정 내용이 다운로드에 반영됩니다.";
     banner.style.display = "";
   } else if (hasEdits) {
     banner.textContent =
