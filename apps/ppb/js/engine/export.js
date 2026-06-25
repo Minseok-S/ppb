@@ -80,7 +80,12 @@ function downloadHTML() {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   const name = (S.companyName || "company").replace(/[^a-zA-Z0-9가-힣]/g, "");
-  a.download = "개인정보처리방침_" + name + ".html";
+  const today = new Date();
+  const date =
+    today.getFullYear() +
+    String(today.getMonth() + 1).padStart(2, "0") +
+    String(today.getDate()).padStart(2, "0");
+  a.download = name + "_개인정보처리방침_" + date + ".html";
   a.click();
   showToast("✅ HTML 파일이 다운로드되었습니다!", "success");
 }
@@ -210,7 +215,12 @@ ${wordContent}
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   const name = (S.companyName || "company").replace(/[^a-zA-Z0-9가-힣]/g, "");
-  a.download = "개인정보처리방침_" + name + ".doc";
+  const today = new Date();
+  const date =
+    today.getFullYear() +
+    String(today.getMonth() + 1).padStart(2, "0") +
+    String(today.getDate()).padStart(2, "0");
+  a.download = name + "_개인정보처리방침_" + date + ".doc";
   a.click();
   showToast("✅ Word 파일이 다운로드되었습니다!", "success");
 }
