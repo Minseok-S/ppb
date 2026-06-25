@@ -719,6 +719,61 @@ textarea.autoline {
   background: var(--accent3);
   animation: pulse 1.5s infinite;
 }
+.loaded-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 260px;
+  padding: 3px 5px 3px 9px;
+  background: #eef2ff;
+  border: 1px solid #d3dcf7;
+  border-radius: 999px;
+  font-size: 10px;
+  color: #3a4a7a;
+  line-height: 1.4;
+  animation: chipIn 0.25s ease;
+}
+.loaded-file-icon {
+  font-size: 10px;
+  flex: 0 0 auto;
+}
+.loaded-file-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.loaded-file-close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #8a93b5;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.loaded-file-close:hover {
+  background: #d3dcf7;
+  color: #3a4a7a;
+}
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @keyframes pulse {
   0%,
   100% {

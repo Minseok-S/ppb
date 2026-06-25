@@ -121,6 +121,23 @@
             <div class="live-dot"></div>
             실시간 미리보기
           </div>
+          <span
+            class="loaded-file-chip"
+            id="loadedFileChip"
+            style="display: none"
+          >
+            <span class="loaded-file-icon">📂</span>
+            <span class="loaded-file-name" id="loadedFileName"></span>
+            <button
+              type="button"
+              class="loaded-file-close"
+              onclick="clearLoadedFileChip()"
+              title="파일명 표시 닫기"
+              aria-label="파일명 표시 닫기"
+            >
+              ×
+            </button>
+          </span>
           <div style="flex: 1"></div>
           <button
             class="btn btn-ghost"

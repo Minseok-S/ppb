@@ -107,12 +107,32 @@ function loadProjectFromFile(input) {
         showToast("⚠️ 불러올 수 있는 데이터를 찾지 못했습니다.", "error");
     } else {
       applyState(payload);
+      setLoadedFileChip(file.name);
       if (typeof showToast === "function")
         showToast("✅ 불러오기가 완료되었습니다.", "success");
     }
     input.value = "";
   };
   reader.readAsText(file);
+}
+
+// ── 불러온 파일명 표시 칩 ─────────────────
+function setLoadedFileChip(name) {
+  const chip = document.getElementById("loadedFileChip");
+  const label = document.getElementById("loadedFileName");
+  if (!chip || !label) return;
+  if (!name) {
+    clearLoadedFileChip();
+    return;
+  }
+  label.textContent = name;
+  chip.title = name;
+  chip.style.display = "inline-flex";
+}
+
+function clearLoadedFileChip() {
+  const chip = document.getElementById("loadedFileChip");
+  if (chip) chip.style.display = "none";
 }
 
 function extractStateFromHTML(html) {
