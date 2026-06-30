@@ -103,6 +103,7 @@ function addCollectGroup(type, gid, name) {
   box.id = gid;
   box.innerHTML = `
     <div class="card-header subgroup-head">
+      <span class="drag-handle" title="끌어서 소제목 순서 변경" data-reorder="syncCollect('${type}')">⠿</span>
       <button class="cb-chevron sg-toggle" onclick="toggleSubgroup(this)">▾</button>
       <input type="text" class="subgroup-name" data-field="groupName" placeholder="소제목 이름 (예: 소제목 ${num})" value="${(name || "").replace(/"/g, "&quot;")}" oninput="syncCollect('${type}');updatePreview()">
       <button class="btn-icon" onclick="removeCollectGroup('${gid}','${type}')">✕</button>

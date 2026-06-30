@@ -11,6 +11,9 @@
 //  핸들을 누르는 동안만 카드를 draggable 로 만들어, 입력칸 텍스트 선택을 방해하지 않는다.
 // ════════════════════════════════════════
 (function () {
+  // 정렬 단위 — 카드(.card-item) 또는 소제목 그룹(.subgroup-box).
+  // 핸들에서 가장 가까운 단위를 잡으므로, 소제목 안의 카드는 카드가, 소제목 헤더는 그룹이 선택된다.
+  const ITEM = ".card-item, .subgroup-box";
   let dragEl = null;
 
   function run(code) {
@@ -25,18 +28,20 @@
   document.addEventListener("mousedown", (e) => {
     const h = e.target.closest && e.target.closest(".drag-handle");
     if (!h) return;
-    const card = h.closest(".card-item");
+    const card = h.closest(ITEM);
     if (card) card.setAttribute("draggable", "true");
   });
 
   document.addEventListener("mouseup", () => {
     document
-      .querySelectorAll('.card-item[draggable="true"]')
+      .querySelectorAll(
+        '.card-item[draggable="true"],.subgroup-box[draggable="true"]',
+      )
       .forEach((c) => c.removeAttribute("draggable"));
   });
 
   document.addEventListener("dragstart", (e) => {
-    const card = e.target.closest && e.target.closest(".card-item");
+    const card = e.target.closest && e.target.closest(ITEM);
     if (!card || card.getAttribute("draggable") !== "true") return;
     dragEl = card;
     card.classList.add("dragging");
@@ -65,7 +70,11 @@
     card.classList.remove("dragging");
     card.removeAttribute("draggable");
 
-    const handle = card.querySelector(".drag-handle");
+    // 잡은 단위에 직접 붙은 핸들만 — 소제목 그룹을 옮길 때 안쪽 카드 핸들을 잘못 집지 않도록
+    const handle =
+      Array.from(card.querySelectorAll(".drag-handle")).find(
+        (h) => h.closest(ITEM) === card,
+      ) || null;
     const container = card.parentElement;
     if (handle && container) {
       const arrName = handle.dataset.reorderArray;
@@ -87,7 +96,9 @@
   // 끌고 있는 카드를 뺀 나머지 중, 커서(y) 바로 아래에 올 카드를 찾는다
   function afterElement(container, y) {
     const els = Array.from(
-      container.querySelectorAll(":scope > .card-item:not(.dragging)"),
+      container.querySelectorAll(
+        ":scope > :is(.card-item, .subgroup-box):not(.dragging)",
+      ),
     );
     let closest = { offset: -Infinity, el: null };
     for (const el of els) {

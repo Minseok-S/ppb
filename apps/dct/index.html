@@ -338,16 +338,27 @@ function buildParts(oldText,newText,unit){
    - "제N조"(제1조, 제2조의2 …) 머리에 뒤따르는 항·호·목을 합쳐 한 행(=한 표 칸)으로 묶는다.
    - 편/장/절/관 제목은 그 자체로 경계이자 독립 행이 된다(직전 조에 흡수되지 않음).
    - 이런 머리표지가 전혀 없는 문서는 문단별과 동일하게 동작. */
-const HEAD_RE=/^\s*제\s*\d+\s*(편|장|절|관)/;          // 편·장·절·관: 경계 + 독립 행
-const ARTICLE_RE=/^\s*제\s*\d+\s*조(\s*의\s*\d+)?/;     // 조: 새 묶음 시작
+// 숫자는 반각(0-9)·전각(０-９) 모두 허용 — 한글에서 IME로 친 '제１９조'도 인식되도록.
+const NUM="[0-9\\uFF10-\\uFF19]";
+const HEAD_RE=new RegExp("^\\s*제\\s*"+NUM+"+\\s*(편|장|절|관)");                  // 편·장·절·관: 경계 + 독립 행
+const ARTICLE_RE=new RegExp("^\\s*제\\s*"+NUM+"+\\s*조(\\s*의\\s*"+NUM+"+)?");     // 조: 새 묶음 시작
+/* 표지(제N조·제N장 …)인지 본문 속 상호참조인지 구분한다.
+   "제19조(목적)"·"제2장 총칙"은 제목이지만, "제19조의 규정에 따라…"·"제2장에서…"처럼
+   표지 바로 뒤가 한글 조사로 이어지면 새 조/장이 아니라 참조 → 본문으로 본다. */
+function headMatch(re, text){
+  const m=re.exec(text); if(!m) return false;
+  const next=text.charAt(m[0].length);
+  return !(next>="가" && next<="힣");
+}
 function groupByArticle(items){
-  const groups=[]; let cur=null;
+  const groups=[]; let cur=null, inArticle=false, label="";
   for(const it of items){
-    if(it.type==="table"){ groups.push(it); cur=null; }    // 표는 묶지 않고 독립 행 + 경계
-    else if(HEAD_RE.test(it.text)){ groups.push({type:"para",text:it.text}); cur=null; }  // 장/절 등은 경계
-    else if(ARTICLE_RE.test(it.text)){ cur={type:"para",text:it.text}; groups.push(cur); }
-    else if(cur){ cur.text+="\n"+it.text; }                // 항·호·목 → 현재 조에 합침
-    else groups.push({type:"para",text:it.text});          // 그 외(제목 등)는 각자 한 묶음
+    if(it.type==="table"){ groups.push(inArticle ? {type:"table",rows:it.rows,cols:it.cols,article:label} : it); cur=null; }  // 표는 독립 행. 조 안의 표면 '제N조' 꼬리표를 달아 같은 조임을 표시
+    else if(headMatch(HEAD_RE,it.text)){ groups.push({type:"para",text:it.text}); cur=null; inArticle=false; label=""; }  // 편/장/절/관: 경계
+    else if(headMatch(ARTICLE_RE,it.text)){ label=ARTICLE_RE.exec(it.text)[0].trim(); cur={type:"para",text:it.text}; groups.push(cur); inArticle=true; } // 조: 새 묶음 시작
+    else if(cur){ cur.text+="\n"+it.text; }                                     // 항·호·목 → 현재 조에 합침
+    else if(inArticle){ cur={type:"para",text:label+"\n"+it.text}; groups.push(cur); }  // 표 뒤로 이어지는 같은 조의 본문 → '제N조'를 머리에 달아 다시 한 묶음으로
+    else groups.push({type:"para",text:it.text});                              // 그 외(제목 등)는 각자 한 묶음
   }
   return groups;
 }
@@ -364,7 +375,7 @@ function computeRows(ops,unit){
   return ops.map((o,idx)=>{
     const base={idx:idx+1};
     if((o.old&&o.old.type==="table")||(o.neu&&o.neu.type==="table"))
-      return Object.assign(base, computeTableRow(o,unit));
+      return Object.assign(base, computeTableRow(o,unit), {articleLabel:(o.old&&o.old.article)||(o.neu&&o.neu.article)||""});
     const oldT=o.old?o.old.text:null, newT=o.neu?o.neu.text:null;
     if(o.type==="equal") return Object.assign(base,{tag:"유지",type:"equal",kind:"para",oldParts:[{type:"eq",text:oldT}],newParts:[{type:"eq",text:newT}]});
     if(o.type==="delete") return Object.assign(base,{tag:"삭제",type:"delete",kind:"para",oldParts:[{type:"del",text:oldT}],newParts:null});
@@ -573,10 +584,11 @@ function buildExportHtml(rows,title,oldName,newName,full){
   const tr=rows.map((r,i)=>{
     const tc={신설:"#3d5af1",삭제:"#d94040",개정:"#00b896",유지:"#9298b0"}[r.tag];
     const remark=esc(state.remarks[r.idx]||"");
+    const elbl = r.articleLabel ? '<div style="font-size:11px;color:#9298b0;margin-bottom:4px">'+esc(r.articleLabel)+'</div>' : '';
     return '<tr style="page-break-inside:avoid">'
       +'<td style="border:1px solid #e0e4ef;padding:8px 10px;text-align:center;font-size:11px;color:#9298b0;vertical-align:top;white-space:nowrap">'+(i+1)+'<br><span style="color:'+tc+';font-weight:700">'+r.tag+'</span></td>'
-      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+(r.kind==="table"?gridHtmlInline(r.oldGrid,"old"):partsToHtmlInline(r.oldParts,"old"))+'</td>'
-      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+(r.kind==="table"?gridHtmlInline(r.newGrid,"new"):partsToHtmlInline(r.newParts,"new"))+'</td>'
+      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+(r.kind==="table"?(r.oldGrid?elbl:'')+gridHtmlInline(r.oldGrid,"old"):partsToHtmlInline(r.oldParts,"old"))+'</td>'
+      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+(r.kind==="table"?(r.newGrid?elbl:'')+gridHtmlInline(r.newGrid,"new"):partsToHtmlInline(r.newParts,"new"))+'</td>'
       +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:14%;color:#4a4e55">'+remark+'</td></tr>';
   }).join("");
   const table='<table style="border-collapse:collapse;width:100%;font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;font-size:14px;color:#1a1d2e">'
@@ -721,8 +733,9 @@ function renderTable(){
     const oc=para?' class="cell-old-changed"':"";
     const nc=para?' class="cell-new-changed"':"";
     const remark=esc(state.remarks[r.idx]||"");
-    const oldHtml = r.kind==="table" ? gridHtml(r.oldGrid,"old") : cellHtml(r.oldParts,"old");
-    const newHtml = r.kind==="table" ? gridHtml(r.newGrid,"new") : cellHtml(r.newParts,"new");
+    const tlbl = r.articleLabel ? '<span class="sgd-rownum">'+esc(r.articleLabel)+'</span>' : '';
+    const oldHtml = r.kind==="table" ? (r.oldGrid?tlbl:'')+gridHtml(r.oldGrid,"old") : cellHtml(r.oldParts,"old");
+    const newHtml = r.kind==="table" ? (r.newGrid?tlbl:'')+gridHtml(r.newGrid,"new") : cellHtml(r.newParts,"new");
     return '<tr class="row-'+r.type+'"><td class="c-gut"><span class="sgd-rownum">'+(i+1)+'</span><span class="sgd-tag t-'+TAGKEY[r.tag]+'">'+r.tag+'</span></td>'
       +'<td'+oc+'>'+oldHtml+'</td><td'+nc+'>'+newHtml+'</td>'
       +'<td class="c-remark" contenteditable="true" data-remark="'+r.idx+'">'+remark+'</td></tr>';
@@ -740,7 +753,7 @@ async function doCopy(){
   const rows=computeRows(state.ops,state.unit);
   const html=buildExportHtml(rows,state.title,state.old.name,state.new.name,false);
   const sideText=(r,side)=>{
-    if(r.kind==="table"){ const g=side==="old"?r.oldGrid:r.newGrid; return g?gridPlainText(g):(side==="old"?"(신설)":"(삭제)"); }
+    if(r.kind==="table"){ const g=side==="old"?r.oldGrid:r.newGrid; if(!g) return side==="old"?"(신설)":"(삭제)"; return (r.articleLabel?r.articleLabel+"\n":"")+gridPlainText(g); }
     const parts=side==="old"?r.oldParts:r.newParts; return parts?parts.map(p=>p.text).join(""):(side==="old"?"(신설)":"(삭제)");
   };
   const plain=rows.map(r=>{ const rm=state.remarks[r.idx]?(" | 비고: "+state.remarks[r.idx]):""; return "["+r.tag+"] "+sideText(r,"old")+"  ⇒  "+sideText(r,"new")+rm; }).join("\n");
@@ -765,9 +778,10 @@ function partsToRich(parts,side){
   });
   return runs.length? { richText:runs } : "";
 }
-function gridToRich(grid,side){
+function gridToRich(grid,side,label){
   if(!grid) return { richText:[{ text: side==="old"?"〈신설〉":"〈삭제〉", font:{ italic:true, color:{argb:"FF9298B0"} } }] };
   const runs=[];
+  if(label) runs.push({ text:label+"\n", font:{ color:{argb:"FF9298B0"} } });   // 표 칸 머리에 '제N조' 꼬리표
   grid.forEach((row,ri)=>{
     if(ri) runs.push({ text:"\n" });
     row.cells.forEach((cell,ci)=>{
@@ -803,8 +817,8 @@ async function doXlsx(){
       c.border=xlBorder();
     });
     vis.forEach((r,i)=>{
-      const oldVal = r.kind==="table"?gridToRich(r.oldGrid,"old"):partsToRich(r.oldParts,"old");
-      const newVal = r.kind==="table"?gridToRich(r.newGrid,"new"):partsToRich(r.newParts,"new");
+      const oldVal = r.kind==="table"?gridToRich(r.oldGrid,"old",r.articleLabel):partsToRich(r.oldParts,"old");
+      const newVal = r.kind==="table"?gridToRich(r.newGrid,"new",r.articleLabel):partsToRich(r.newParts,"new");
       const row=ws.addRow({ no:i+1, tag:r.tag, old:oldVal, new:newVal, remark:state.remarks[r.idx]||"" });
       row.getCell("no").alignment={vertical:"top",horizontal:"center"};
       const tc=row.getCell("tag"); tc.alignment={vertical:"top",horizontal:"center"}; tc.font={bold:true,color:{argb:TAGCOLOR[r.tag]}};

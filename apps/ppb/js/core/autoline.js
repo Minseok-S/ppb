@@ -56,6 +56,10 @@
     }
   }
 
+  // 불러오기 복원 시: 동적 행을 채우기 전에 동기적으로 input→textarea 전환.
+  // (MutationObserver는 비동기라, 값 주입 시점엔 아직 input이고 \n 줄바꿈이 제거된다)
+  window.convertAutoLineWithin = convertWithin;
+
   window.setupAutoLine = function () {
     const sidebar = document.querySelector(".sidebar");
     if (!sidebar) return;

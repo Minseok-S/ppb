@@ -619,7 +619,8 @@ textarea.autoline {
 .drag-handle:active {
   cursor: grabbing;
 }
-.card-item.dragging {
+.card-item.dragging,
+.subgroup-box.dragging {
   opacity: 0.45;
   outline: 2px dashed var(--accent);
   outline-offset: -2px;

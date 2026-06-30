@@ -245,6 +245,7 @@ function _rebuildSimple(containerId, arr, addFn, fields) {
     addFn();
     const card = c.lastElementChild;
     if (!card) return;
+    if (typeof convertAutoLineWithin === "function") convertAutoLineWithin(card);
     fields.forEach((f) => {
       const el = card.querySelector('[data-field="' + f + '"]');
       if (el) el.value = item[f] == null ? "" : item[f];
@@ -282,6 +283,7 @@ function _rebuildCollect(type, arr) {
   if (groupsWrap) groupsWrap.innerHTML = "";
   const fillCard = (card, item) => {
     if (!card) return;
+    if (typeof convertAutoLineWithin === "function") convertAutoLineWithin(card);
     ["category", "purpose", "items", "retention"].forEach((f) => {
       const el = card.querySelector('[data-field="' + f + '"]');
       if (el) el.value = item[f] == null ? "" : item[f];
@@ -315,6 +317,7 @@ function _rebuildCollectOther(arr) {
     addCollectOther();
     const card = c.lastElementChild;
     if (!card) return;
+    if (typeof convertAutoLineWithin === "function") convertAutoLineWithin(card);
     ["purpose", "items", "provider", "retention"].forEach((f) => {
       const el = card.querySelector('[data-field="' + f + '"]');
       if (el) el.value = item[f] == null ? "" : item[f];
@@ -333,6 +336,7 @@ function _rebuildOverseas(type, arr) {
     addOverseas(type);
     const card = c.lastElementChild;
     if (!card) return;
+    if (typeof convertAutoLineWithin === "function") convertAutoLineWithin(card);
     ["receiver", "country", "items", "purpose", "method", "retention"].forEach(
       (f) => {
         const el = card.querySelector('[data-field="' + f + '"]');
@@ -357,6 +361,7 @@ function _rebuildDepts(arr) {
     addDept();
     const card = c.lastElementChild;
     if (!card) continue;
+    if (typeof convertAutoLineWithin === "function") convertAutoLineWithin(card);
     ["name", "phone", "email"].forEach((f) => {
       const el = card.querySelector('[data-field="' + f + '"]');
       if (el) el.value = list[i][f] == null ? "" : list[i][f];
