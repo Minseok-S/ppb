@@ -323,6 +323,11 @@
           실시간 편집기
           <span class="seg-tag green">LSE</span>
         </button>
+        <button class="seg-btn" id="tab-sgt" onclick="switchTab('sgt')">
+          <span class="seg-icon">🔀</span>
+          신구대조표
+          <span class="seg-tag orange">DCT</span>
+        </button>
         <!-- <button class="seg-btn" id="tab-pdf" onclick="switchTab('pdf')">
           <span class="seg-icon">📄</span>
           PDF 편집기
@@ -349,6 +354,13 @@
         <div class="loader-icon">✏️</div>
         <div class="loader-name">실시간 편집기</div>
         <div class="loader-desc">loading LSE...</div>
+        <div class="loader-track"><div class="loader-bar"></div></div>
+      </div>
+
+      <div class="loader done" id="loader-sgt">
+        <div class="loader-icon">🔀</div>
+        <div class="loader-name">신구대조표</div>
+        <div class="loader-desc">loading SGT...</div>
         <div class="loader-track"><div class="loader-bar"></div></div>
       </div>
 
@@ -379,6 +391,12 @@
         onload="typeof onFrameLoad === 'function' && onFrameLoad('lse')"
       ></iframe>
       <iframe
+        id="frame-sgt"
+        class="hidden"
+        data-src="apps/dct/index.html"
+        onload="typeof onFrameLoad === 'function' && onFrameLoad('sgt')"
+      ></iframe>
+      <iframe
         id="frame-csb"
         class="hidden"
         data-src="apps/consent/index.html"
@@ -394,12 +412,13 @@
 
     <script>
       let current = "ppb";
-      const loaded = { ppb: false, lse: false, csb: false, pdf: false };
+      const loaded = { ppb: false, lse: false, sgt: false, csb: false, pdf: false };
 
       const TITLES = {
         ppb: "개인정보처리방침 빌더 — CELA",
         csb: "동의서 빌더 — CELA",
         lse: "실시간 편집기 — CELA",
+        sgt: "신구대조표 — CELA",
         pdf: "PDF 편집기 — CELA",
       };
 
