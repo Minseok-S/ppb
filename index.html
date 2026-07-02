@@ -313,11 +313,6 @@
           개인정보처리방침 빌더
           <span class="seg-tag">PPB</span>
         </button>
-        <!-- <button class="seg-btn" id="tab-csb" onclick="switchTab('csb')">
-          <span class="seg-icon">📝</span>
-          동의서 빌더
-          <span class="seg-tag purple">CSB</span>
-        </button> -->
         <button class="seg-btn" id="tab-lse" onclick="switchTab('lse')">
           <span class="seg-icon">✏️</span>
           실시간 편집기
@@ -328,11 +323,16 @@
           신구대조표
           <span class="seg-tag orange">DCT</span>
         </button>
-        <button class="seg-btn" id="tab-mdv" onclick="switchTab('mdv')">
+        <!-- <button class="seg-btn" id="tab-csb" onclick="switchTab('csb')">
+          <span class="seg-icon">📝</span>
+          동의서 빌더
+          <span class="seg-tag purple">CSB</span>
+        </button> -->
+        <!-- <button class="seg-btn" id="tab-mdv" onclick="switchTab('mdv')">
           <span class="seg-icon">📖</span>
           문서 뷰어
           <span class="seg-tag purple">MD</span>
-        </button>
+        </button> -->
         <!-- <button class="seg-btn" id="tab-pdf" onclick="switchTab('pdf')">
           <span class="seg-icon">📄</span>
           PDF 편집기
@@ -430,7 +430,14 @@
 
     <script>
       let current = "ppb";
-      const loaded = { ppb: false, lse: false, sgt: false, mdv: false, csb: false, pdf: false };
+      const loaded = {
+        ppb: false,
+        lse: false,
+        sgt: false,
+        mdv: false,
+        csb: false,
+        pdf: false,
+      };
 
       const TITLES = {
         ppb: "개인정보처리방침 빌더 — CELA",
