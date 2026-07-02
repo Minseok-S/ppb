@@ -129,6 +129,8 @@ html,body{margin:0; background:#f6f7fb}
 .sgd-table td.c-remark{background:#f8f9fc; cursor:text; color:var(--ink-2); font-size:13.5px; outline:none}
 .sgd-table td.c-remark:focus{background:#fff; box-shadow:inset 0 0 0 2px var(--accent)}
 .sgd-table td.c-remark:empty::before{content:"입력"; color:#c7c7cc}
+.sgd-table td[data-cell]{cursor:text; outline:none}
+.sgd-table td[data-cell]:focus{box-shadow:inset 0 0 0 2px var(--accent); background:#fff}
 .sgd-table td{padding:13px 16px; vertical-align:top; border-bottom:1px solid var(--line); border-right:1px solid var(--line); word-break:break-word}
 .sgd-table td:last-child{border-right:none}
 .sgd-table tbody tr:last-child td{border-bottom:none}
@@ -137,6 +139,9 @@ html,body{margin:0; background:#f6f7fb}
 .sgd-table td.cell-old-changed:hover, .sgd-table td.cell-new-changed:hover{background:inherit}
 .row-equal td{color:var(--ink)}
 .sgd-rownum{display:block; font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:6px}
+.sgd-rowdel{display:flex; align-items:center; justify-content:center; margin:8px auto 0; padding:4px; border:none; background:transparent;
+  color:var(--muted); cursor:pointer; border-radius:6px; transition:background .15s, color .15s}
+.sgd-rowdel:hover{background:var(--del-bg); color:var(--del)}
 .sgd-tag{display:inline-block; font-size:10px; padding:2px 8px; border-radius:5px; font-weight:700; letter-spacing:-.01em; border:1px solid transparent}
 .t-sin{color:var(--add); background:var(--add-bg); border-color:#c5cffb}
 .t-del{color:var(--del); background:var(--del-bg); border-color:#f0c0c0}
@@ -203,20 +208,20 @@ html,body{margin:0; background:#f6f7fb}
   <section id="stage" class="sgd-stage sgd-noprint">
     <div class="sgd-panel sgd-panel-left">
       <div class="sgd-panel-h"><span class="sgd-panel-label">현행</span><span class="sgd-panel-cap">이전 문서</span></div>
-      <input id="file-old" type="file" accept=".docx,.hwp,.hwpx" hidden />
+      <input id="file-old" type="file" accept=".docx,.hwp,.hwpx,.md,.markdown" hidden />
       <div id="drop-old" class="sgd-drop" role="button" tabindex="0" aria-label="현행 문서 파일 선택"></div>
     </div>
     <div class="sgd-seam" aria-hidden="true"><div class="sgd-seal-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13l-3-3"/><path d="M20 15H7l3 3"/></svg></div></div>
     <div class="sgd-panel sgd-panel-right">
       <div class="sgd-panel-h"><span class="sgd-panel-label">개정</span><span class="sgd-panel-cap">수정 문서</span></div>
-      <input id="file-new" type="file" accept=".docx,.hwp,.hwpx" hidden />
+      <input id="file-new" type="file" accept=".docx,.hwp,.hwpx,.md,.markdown" hidden />
       <div id="drop-new" class="sgd-drop" role="button" tabindex="0" aria-label="개정 문서 파일 선택"></div>
     </div>
   </section>
 
   <div id="cta" class="sgd-cta sgd-noprint">
     <button id="genBtn" class="sgd-btn-primary" disabled>대조표 만들기</button>
-    <p class="sgd-cta-hint">지원 형식 .docx · .hwp · .hwpx — 모든 처리는 브라우저 안에서만 이루어지며 서버로 전송되지 않습니다.</p>
+    <p class="sgd-cta-hint">지원 형식 .docx · .hwp · .hwpx · .md — 모든 처리는 브라우저 안에서만 이루어지며 서버로 전송되지 않습니다.</p>
   </div>
 
   <section id="result" class="sgd-result" hidden></section>
@@ -240,7 +245,8 @@ function icon(name, size){
     download:'<path d="M12 3v12"/><path d="m7 11 5 4 5-4"/><path d="M5 21h14"/>',
     sheet:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16"/><path d="M4 15h16"/><path d="M10 3v18"/>',
     refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
-    swap:'<path d="M4 9h12l-3-3"/><path d="M20 15H8l3 3"/>'
+    swap:'<path d="M4 9h12l-3-3"/><path d="M20 15H8l3 3"/>',
+    trash:'<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>'
   };
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+p[name]+'</svg>';
 }
@@ -562,6 +568,55 @@ async function parseHwp(file){
   return blocks.map(t=>({type:"para",text:t}));
 }
 
+/* ───────── 파싱: Markdown (.md) ───────── */
+// 인라인 마크업(굵게·기울임·코드·링크·이미지·취소선)은 텍스트만 남기고 벗겨낸다 — 대조는 글자 기준이므로.
+function mdInline(s){
+  return s
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g,"$1")   // 이미지 → 대체텍스트
+    .replace(/\[([^\]]*)\]\([^)]*\)/g,"$1")     // 링크 → 표시텍스트
+    .replace(/`([^`]+)`/g,"$1")                  // 인라인 코드
+    .replace(/(\*\*|__)(.*?)\1/g,"$2")           // 굵게
+    .replace(/(\*|_)(.*?)\1/g,"$2")              // 기울임
+    .replace(/~~(.*?)~~/g,"$1");                 // 취소선
+}
+// 파이프 표의 한 줄을 셀 배열로. 양끝 파이프·이스케이프된 \| 처리.
+function mdSplitRow(line){
+  let s=line.trim();
+  if(s.startsWith("|")) s=s.slice(1);
+  if(s.endsWith("|")) s=s.slice(0,-1);
+  return s.split(/\|/).map(c=>clean(mdInline(c.replace(/\\\|/g,"|"))));
+}
+// 구분행: | --- | :--: | ... — 헤더행 바로 아래에 오면 파이프 표로 인식
+const MD_SEP_RE=/^\s*\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)*\|?\s*$/;
+async function parseMd(file){
+  const text=await file.text();
+  const lines=text.replace(/\r\n?/g,"\n").split("\n");
+  const items=[]; let para=[];
+  const flush=()=>{ if(para.length){ const t=clean(para.join(" ")); if(t) items.push({type:"para",text:t}); para=[]; } };
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i].trim();
+    // 파이프 표: 헤더행 + 구분행(---)이 연이어 오면 표로 묶는다
+    if(line.includes("|") && i+1<lines.length && MD_SEP_RE.test(lines[i+1])){
+      flush();
+      const rows=[mdSplitRow(line)]; i++;                     // 구분행 건너뜀
+      while(i+1<lines.length && lines[i+1].includes("|") && lines[i+1].trim()!==""){ rows.push(mdSplitRow(lines[++i])); }
+      items.push({type:"table", rows, cols:rows.reduce((m,r)=>Math.max(m,r.length),0)});
+      continue;
+    }
+    if(line===""){ flush(); continue; }
+    if(/^([-*_])\s*(\1\s*){2,}$/.test(line)){ flush(); continue; }  // 수평 구분선(---, ***) 무시
+    // 제목(#)·인용(>)·목록(-,*,+,1.)은 각각 독립 항목으로 — 조/장 인식과 정렬에 유리
+    const isBlock=/^(#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+)/.test(line);
+    if(isBlock){
+      flush();
+      const t=clean(mdInline(line.replace(/^#{1,6}\s+/,"").replace(/^>\s?/,"").replace(/^[-*+]\s+/,"").replace(/^\d+[.)]\s+/,"")));
+      if(t) items.push({type:"para",text:t});
+    } else { para.push(mdInline(line)); }
+  }
+  flush();
+  return items;
+}
+
 /* ───────── 내보내기용 HTML ───────── */
 function partsToHtmlInline(parts,side){
   if(!parts) return '<span style="color:#9298b0;font-style:italic">'+(side==="old"?"〈신설〉":"〈삭제〉")+'</span>';
@@ -580,15 +635,24 @@ function gridHtmlInline(grid,side){
   }).join("");
   return '<table style="border-collapse:collapse;width:100%;font-size:13px">'+tr+'</table>';
 }
+function cellExportHtml(r,side){
+  const ed=state.edits[r.idx];
+  if(ed && ed[side]!=null) return escBr(ed[side]);
+  if(r.kind==="table"){
+    const g=side==="old"?r.oldGrid:r.newGrid;
+    const elbl = (g&&r.articleLabel) ? '<div style="font-size:11px;color:#9298b0;margin-bottom:4px">'+esc(r.articleLabel)+'</div>' : '';
+    return elbl+gridHtmlInline(g,side);
+  }
+  return partsToHtmlInline(side==="old"?r.oldParts:r.newParts, side);
+}
 function buildExportHtml(rows,title,oldName,newName,full){
   const tr=rows.map((r,i)=>{
     const tc={신설:"#3d5af1",삭제:"#d94040",개정:"#00b896",유지:"#9298b0"}[r.tag];
     const remark=esc(state.remarks[r.idx]||"");
-    const elbl = r.articleLabel ? '<div style="font-size:11px;color:#9298b0;margin-bottom:4px">'+esc(r.articleLabel)+'</div>' : '';
     return '<tr style="page-break-inside:avoid">'
       +'<td style="border:1px solid #e0e4ef;padding:8px 10px;text-align:center;font-size:11px;color:#9298b0;vertical-align:top;white-space:nowrap">'+(i+1)+'<br><span style="color:'+tc+';font-weight:700">'+r.tag+'</span></td>'
-      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+(r.kind==="table"?(r.oldGrid?elbl:'')+gridHtmlInline(r.oldGrid,"old"):partsToHtmlInline(r.oldParts,"old"))+'</td>'
-      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+(r.kind==="table"?(r.newGrid?elbl:'')+gridHtmlInline(r.newGrid,"new"):partsToHtmlInline(r.newParts,"new"))+'</td>'
+      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+cellExportHtml(r,"old")+'</td>'
+      +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:40%">'+cellExportHtml(r,"new")+'</td>'
       +'<td style="border:1px solid #e0e4ef;padding:8px 12px;vertical-align:top;line-height:1.7;width:14%;color:#4a4e55">'+remark+'</td></tr>';
   }).join("");
   const table='<table style="border-collapse:collapse;width:100%;font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;font-size:14px;color:#1a1d2e">'
@@ -627,7 +691,8 @@ function gridPlainText(grid){
 }
 
 /* ───────── 상태 & UI ───────── */
-const state={ old:null, new:null, oldBusy:false, newBusy:false, ops:null, view:"changed", unit:"word", group:"article", title:"신구대조표", remarks:{} };
+const state={ old:null, new:null, oldBusy:false, newBusy:false, ops:null, view:"changed", unit:"word", group:"article", title:"신구대조표", remarks:{}, edits:{}, deleted:{} };
+const visibleRows=(rows)=> rows.filter(r=>!state.deleted[r.idx]);
 const $=(id)=>document.getElementById(id);
 const fmtSize=(n)=> n<1024?n+" B": n<1048576?(n/1024).toFixed(0)+" KB":(n/1048576).toFixed(1)+" MB";
 
@@ -643,7 +708,7 @@ function renderPanel(which){
       +'<button class="sgd-link">바꾸기</button></div>';
     el.querySelector(".sgd-link").onclick=(e)=>{ e.stopPropagation(); state[which]=null; state.ops=null; hideResult(); renderPanel(which); updateGen(); setError(""); };
   } else {
-    el.innerHTML='<div class="sgd-drop-empty">'+icon("upload",22)+'<span>여기로 <b>.docx · .hwp · .hwpx</b> 파일을 끌어다 놓거나 클릭</span></div>';
+    el.innerHTML='<div class="sgd-drop-empty">'+icon("upload",22)+'<span>여기로 <b>.docx · .hwp · .hwpx · .md</b> 파일을 끌어다 놓거나 클릭</span></div>';
   }
 }
 function updateGen(){ $("genBtn").disabled = !(state.old&&state.new); }
@@ -651,8 +716,8 @@ function updateGen(){ $("genBtn").disabled = !(state.old&&state.new); }
 async function handlePick(which,file){
   setError("");
   const ext=(file.name.toLowerCase().split(".").pop());
-  const parsers={ docx:parseDocx, hwpx:parseHwpx, hwp:parseHwp };
-  if(!parsers[ext]){ setError("지원하지 않는 형식이에요. .docx · .hwp · .hwpx 파일을 올려 주세요."); return; }
+  const parsers={ docx:parseDocx, hwpx:parseHwpx, hwp:parseHwp, md:parseMd, markdown:parseMd };
+  if(!parsers[ext]){ setError("지원하지 않는 형식이에요. .docx · .hwp · .hwpx · .md 파일을 올려 주세요."); return; }
   state[which+"Busy"]=true; renderPanel(which);
   try{
     const items = await parsers[ext](file);
@@ -711,8 +776,20 @@ function showResult(){
   $("btn-copy").onclick=doCopy;
   $("btn-reset").onclick=reset;
   $("tbody").addEventListener("input",(e)=>{
-    const cell=e.target.closest("[data-remark]");
-    if(cell){ state.remarks[+cell.getAttribute("data-remark")]=cell.textContent; }
+    const remarkCell=e.target.closest("[data-remark]");
+    if(remarkCell){ state.remarks[+remarkCell.getAttribute("data-remark")]=remarkCell.textContent; return; }
+    const cell=e.target.closest("[data-cell]");
+    if(cell){
+      const idx=+cell.getAttribute("data-idx"), side=cell.getAttribute("data-cell");
+      if(!state.edits[idx]) state.edits[idx]={};
+      state.edits[idx][side]=cell.innerText;
+    }
+  });
+  $("tbody").addEventListener("click",(e)=>{
+    const btn=e.target.closest("[data-del]");
+    if(!btn) return;
+    state.deleted[+btn.getAttribute("data-del")]=true;
+    renderTable();
   });
   renderTable();
 }
@@ -720,12 +797,12 @@ function showResult(){
 function renderTable(){
   const rows=computeRows(state.ops,state.unit);
   const stats={신설:0,삭제:0,개정:0};
-  for(const o of state.ops){ if(o.type==="insert")stats.신설++; else if(o.type==="delete")stats.삭제++; else if(o.type==="modify")stats.개정++; }
+  for(const r of rows){ if(state.deleted[r.idx]) continue; if(r.type==="insert")stats.신설++; else if(r.type==="delete")stats.삭제++; else if(r.type==="modify")stats.개정++; }
   $("chips").innerHTML='<span class="sgd-chip add">신설 '+stats.신설+'</span><span class="sgd-chip del">삭제 '+stats.삭제+'</span><span class="sgd-chip mod">개정 '+stats.개정+'</span>';
   const changed=stats.신설+stats.삭제+stats.개정;
   const noted=$("noted");
   if(changed===0){ noted.hidden=false; noted.textContent="두 문서의 내용이 같습니다. 변경된 부분이 없습니다."; } else noted.hidden=true;
-  const vis = state.view==="changed"? rows.filter(r=>r.tag!=="유지") : rows;
+  const vis = visibleRows(state.view==="changed"? rows.filter(r=>r.tag!=="유지") : rows);
   const tb=$("tbody");
   if(!vis.length){ tb.innerHTML='<tr><td class="c-gut">–</td><td colspan="3" class="sgd-empty" style="text-align:center;padding:24px">표시할 행이 없습니다.</td></tr>'; return; }
   tb.innerHTML=vis.map((r,i)=>{
@@ -734,25 +811,29 @@ function renderTable(){
     const nc=para?' class="cell-new-changed"':"";
     const remark=esc(state.remarks[r.idx]||"");
     const tlbl = r.articleLabel ? '<span class="sgd-rownum">'+esc(r.articleLabel)+'</span>' : '';
-    const oldHtml = r.kind==="table" ? (r.oldGrid?tlbl:'')+gridHtml(r.oldGrid,"old") : cellHtml(r.oldParts,"old");
-    const newHtml = r.kind==="table" ? (r.newGrid?tlbl:'')+gridHtml(r.newGrid,"new") : cellHtml(r.newParts,"new");
-    return '<tr class="row-'+r.type+'"><td class="c-gut"><span class="sgd-rownum">'+(i+1)+'</span><span class="sgd-tag t-'+TAGKEY[r.tag]+'">'+r.tag+'</span></td>'
-      +'<td'+oc+'>'+oldHtml+'</td><td'+nc+'>'+newHtml+'</td>'
+    const ed=state.edits[r.idx]||{};
+    const oldHtml = ed.old!=null ? escBr(ed.old) : (r.kind==="table" ? (r.oldGrid?tlbl:'')+gridHtml(r.oldGrid,"old") : cellHtml(r.oldParts,"old"));
+    const newHtml = ed.new!=null ? escBr(ed.new) : (r.kind==="table" ? (r.newGrid?tlbl:'')+gridHtml(r.newGrid,"new") : cellHtml(r.newParts,"new"));
+    return '<tr class="row-'+r.type+'"><td class="c-gut"><span class="sgd-rownum">'+(i+1)+'</span><span class="sgd-tag t-'+TAGKEY[r.tag]+'">'+r.tag+'</span>'
+      +'<button class="sgd-rowdel sgd-noprint" data-del="'+r.idx+'" title="행 삭제" aria-label="행 삭제">'+icon("trash",13)+'</button></td>'
+      +'<td'+oc+' contenteditable="true" data-cell="old" data-idx="'+r.idx+'">'+oldHtml+'</td><td'+nc+' contenteditable="true" data-cell="new" data-idx="'+r.idx+'">'+newHtml+'</td>'
       +'<td class="c-remark" contenteditable="true" data-remark="'+r.idx+'">'+remark+'</td></tr>';
   }).join("");
 }
 
 function doDownload(){
-  const rows=computeRows(state.ops,state.unit);
+  const rows=visibleRows(computeRows(state.ops,state.unit));
   const html=buildExportHtml(rows,state.title,state.old.name,state.new.name,true);
   const url=URL.createObjectURL(new Blob([html],{type:"text/html"}));
   const a=document.createElement("a"); a.href=url; a.download=(state.title||"신구대조표")+".html"; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function doCopy(){
-  const rows=computeRows(state.ops,state.unit);
+  const rows=visibleRows(computeRows(state.ops,state.unit));
   const html=buildExportHtml(rows,state.title,state.old.name,state.new.name,false);
   const sideText=(r,side)=>{
+    const ed=state.edits[r.idx];
+    if(ed && ed[side]!=null) return ed[side];
     if(r.kind==="table"){ const g=side==="old"?r.oldGrid:r.newGrid; if(!g) return side==="old"?"(신설)":"(삭제)"; return (r.articleLabel?r.articleLabel+"\n":"")+gridPlainText(g); }
     const parts=side==="old"?r.oldParts:r.newParts; return parts?parts.map(p=>p.text).join(""):(side==="old"?"(신설)":"(삭제)");
   };
@@ -798,7 +879,7 @@ function gridToRich(grid,side,label){
 }
 async function doXlsx(){
   if(typeof ExcelJS==="undefined"){ setError("엑셀 모듈을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."); return; }
-  const rows=computeRows(state.ops,state.unit);
+  const rows=visibleRows(computeRows(state.ops,state.unit));
   const vis = state.view==="changed"? rows.filter(r=>r.tag!=="유지") : rows;
   const TAGCOLOR={신설:"FF3D5AF1",삭제:"FFD94040",개정:"FF00B896",유지:"FF9298B0"};
   try{
@@ -817,8 +898,9 @@ async function doXlsx(){
       c.border=xlBorder();
     });
     vis.forEach((r,i)=>{
-      const oldVal = r.kind==="table"?gridToRich(r.oldGrid,"old",r.articleLabel):partsToRich(r.oldParts,"old");
-      const newVal = r.kind==="table"?gridToRich(r.newGrid,"new",r.articleLabel):partsToRich(r.newParts,"new");
+      const ed=state.edits[r.idx]||{};
+      const oldVal = ed.old!=null ? ed.old : (r.kind==="table"?gridToRich(r.oldGrid,"old",r.articleLabel):partsToRich(r.oldParts,"old"));
+      const newVal = ed.new!=null ? ed.new : (r.kind==="table"?gridToRich(r.newGrid,"new",r.articleLabel):partsToRich(r.newParts,"new"));
       const row=ws.addRow({ no:i+1, tag:r.tag, old:oldVal, new:newVal, remark:state.remarks[r.idx]||"" });
       row.getCell("no").alignment={vertical:"top",horizontal:"center"};
       const tc=row.getCell("tag"); tc.alignment={vertical:"top",horizontal:"center"}; tc.font={bold:true,color:{argb:TAGCOLOR[r.tag]}};
@@ -835,7 +917,7 @@ async function doXlsx(){
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(e){ console.error(e); setError("엑셀 저장에 실패했어요. 다시 시도해 주세요."); }
 }
-function reset(){ state.old=null; state.new=null; state.ops=null; state.remarks={}; setError(""); renderPanel("old"); renderPanel("new"); updateGen(); hideResult(); }
+function reset(){ state.old=null; state.new=null; state.ops=null; state.remarks={}; state.edits={}; state.deleted={}; setError(""); renderPanel("old"); renderPanel("new"); updateGen(); hideResult(); }
 
 /* ───────── 초기화 ───────── */
 function wireDrop(which){
