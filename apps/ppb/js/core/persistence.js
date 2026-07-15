@@ -107,6 +107,10 @@ function loadProjectFromFile(input) {
     } else {
       applyState(payload);
       setLoadedFileChip(file.name);
+      // 신구대조표 기준(현행): 불러온 시점의 문서를 스냅샷으로 고정한다.
+      // 이후 사용자가 18단계를 수정하면 이 스냅샷과의 차이가 대조표로 나온다.
+      if (typeof captureCompareBaseline === "function")
+        captureCompareBaseline(file.name);
       if (typeof showToast === "function")
         showToast("✅ 불러오기가 완료되었습니다.", "success");
     }

@@ -144,19 +144,19 @@
             <div class="fmt-seg">
               <button
                 class="fmt-btn active"
-                id="fmtBoldBtn"
-                onclick="setEditFormat('bold')"
-                title="굵게 (Ctrl+B)"
+                id="fmtHlBtn"
+                onclick="setEditFormat('highlight')"
+                title="형광펜 — 선택 글자를 칠하기/제거 (Ctrl+B)"
               >
-                <b>B</b> 볼드
+                🖍 형광펜
               </button>
               <button
                 class="fmt-btn"
-                id="fmtHlBtn"
-                onclick="setEditFormat('highlight')"
-                title="노란 배경색 (Ctrl+B)"
+                id="fmtBoldBtn"
+                onclick="setEditFormat('bold')"
+                title="굵게"
               >
-                🖍 배경
+                <b>B</b> 볼드
               </button>
             </div>
           </div>
@@ -203,6 +203,16 @@
           <span class="toolbar-divider"></span>
           <button
             class="btn btn-ghost"
+            id="compareBtn"
+            style="font-size: 10px; padding: 5px 10px"
+            onclick="openCompare()"
+            title="고객사 기존 처리방침 파일과 지금 만든 개정안을 신구대조표로 비교합니다"
+          >
+            🔀 신구대조표
+          </button>
+          <span class="toolbar-divider"></span>
+          <button
+            class="btn btn-ghost"
             style="font-size: 10px; padding: 5px 10px"
             onclick="downloadWord()"
           >
@@ -242,6 +252,134 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- ══════════════ 시작 모드 선택 ══════════════ -->
+    <style>
+      .mode-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 22, 34, 0.6);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: "Noto Sans KR", sans-serif;
+      }
+      .mode-box {
+        background: #fff;
+        border-radius: 16px;
+        width: min(760px, 96vw);
+        padding: 32px 30px 26px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+      }
+      .mode-title {
+        font-size: 19px;
+        font-weight: 800;
+        color: #1a1d2e;
+        text-align: center;
+      }
+      .mode-sub {
+        font-size: 13px;
+        color: #7b8194;
+        text-align: center;
+        margin: 8px 0 22px;
+      }
+      .mode-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      @media (max-width: 640px) {
+        .mode-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .mode-card {
+        border: 1.5px solid #e6e8f0;
+        border-radius: 12px;
+        padding: 20px 16px;
+        cursor: pointer;
+        text-align: center;
+        transition: 0.15s;
+        background: #fafbff;
+      }
+      .mode-card:hover {
+        border-color: #3d5af1;
+        background: #f2f5ff;
+        transform: translateY(-2px);
+      }
+      .mode-card-ico {
+        font-size: 30px;
+      }
+      .mode-card-name {
+        font-size: 15px;
+        font-weight: 800;
+        color: #1a1d2e;
+        margin: 10px 0 6px;
+      }
+      .mode-card-desc {
+        font-size: 12px;
+        color: #7b8194;
+        line-height: 1.6;
+      }
+      .mode-skip {
+        margin-top: 20px;
+        text-align: center;
+      }
+      .mode-skip button {
+        border: none;
+        background: transparent;
+        color: #b4b8c6;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .mode-skip button:hover {
+        color: #7b8194;
+      }
+      @keyframes btnPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(61, 90, 241, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(61, 90, 241, 0);
+        }
+      }
+      .btn-pulse {
+        animation: btnPulse 1.2s ease-out infinite;
+        border-color: #3d5af1 !important;
+        color: #3d5af1 !important;
+      }
+    </style>
+    <div class="mode-overlay" id="modeOverlay" style="display: none">
+      <div class="mode-box">
+        <div class="mode-title">개인정보처리방침 빌더</div>
+        <div class="mode-sub">어떻게 시작할까요?</div>
+        <div class="mode-grid">
+          <div class="mode-card" onclick="startMode('new')">
+            <div class="mode-card-ico">✨</div>
+            <div class="mode-card-name">신규 생성</div>
+            <div class="mode-card-desc">빈 문서에서 18단계로 새 처리방침을 작성합니다.</div>
+          </div>
+          <div class="mode-card" onclick="startMode('continue')">
+            <div class="mode-card-ico">📂</div>
+            <div class="mode-card-name">이어서 작업</div>
+            <div class="mode-card-desc">저장한 프로젝트(.json/HTML)를 불러와 이어서 편집합니다.</div>
+          </div>
+          <div class="mode-card" onclick="startMode('compare')">
+            <div class="mode-card-ico">🔀</div>
+            <div class="mode-card-name">신구대조 작업</div>
+            <div class="mode-card-desc">
+              PPB로 만든 파일을 불러와 현행 기준으로 삼고, 수정한 부분을 신구대조표로 뽑습니다.
+            </div>
+          </div>
+        </div>
+        <div class="mode-skip">
+          <button onclick="startMode('new')">건너뛰고 바로 시작 →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- modules (load order matters — js/ 폴더: core / sections / engine) -->
     <!-- core: 앱 골격 (state 가장 먼저) -->
     <script src="js/core/state.js"></script>
@@ -268,6 +406,11 @@
     <script src="js/engine/preview.js"></script>
     <script src="js/engine/export.js"></script>
     <script src="js/engine/editmode.js"></script>
+    <!-- 신구대조표: 파서 라이브러리는 apps/dct/lib 를 공유 참조 (중복 방지) -->
+    <script src="../dct/lib/mammoth.browser.min.js"></script>
+    <script src="../dct/lib/fflate.min.js"></script>
+    <script src="../dct/lib/exceljs.min.js"></script>
+    <script src="js/engine/compare.js"></script>
     <!-- core: 저장/불러오기/폼 복원 (preview·export 이후) -->
     <script src="js/core/persistence.js"></script>
     <!-- core: 설정 패널 줄바꿈(autoline) — preview 이후 로드 -->

@@ -11,7 +11,42 @@ window.onload = function () {
   // 사용자가 "이어서 작업"을 누를 때만 복원한다 (차단형 팝업 없음).
   if (typeof initAutosaveBanner === "function") initAutosaveBanner();
   updatePreview();
+  // 시작 모드 선택 오버레이 (신규 생성 / 이어서 작업 / 신구대조 작업)
+  showModeOverlay();
 };
+
+// ════════════════════════════════════════
+//  시작 모드 (신규 / 이어서 / 신구대조)
+// ════════════════════════════════════════
+function showModeOverlay() {
+  const ov = document.getElementById("modeOverlay");
+  if (ov) ov.style.display = "flex";
+}
+function hideModeOverlay() {
+  const ov = document.getElementById("modeOverlay");
+  if (ov) ov.style.display = "none";
+}
+function startMode(mode) {
+  hideModeOverlay();
+  if (mode === "continue") {
+    // 저장한 프로젝트 파일 불러오기 (자동저장본이 있으면 상단 배너로도 복원 가능)
+    const inp = document.getElementById("projectFileInput");
+    if (inp) inp.click();
+  } else if (mode === "compare") {
+    // 신구대조: PPB로 만든 파일을 불러오면 그 문서가 '현행 기준'이 된다.
+    // 이후 18단계를 수정하면 [신구대조표]에서 원본 대비 바뀐 부분이 표로 나온다.
+    const btn = document.getElementById("compareBtn");
+    if (btn) {
+      btn.classList.add("btn-pulse");
+      setTimeout(() => btn.classList.remove("btn-pulse"), 8000);
+    }
+    if (typeof showToast === "function")
+      showToast("🔀 현행으로 쓸 PPB 파일(.json/HTML)을 불러오세요. 이후 수정하면 [신구대조표]에 바뀐 부분이 나옵니다.", "");
+    const inp = document.getElementById("projectFileInput");
+    if (inp) inp.click();
+  }
+  // mode === "new" 는 이미 빈 문서 상태이므로 오버레이만 닫는다.
+}
 
 // ════════════════════════════════════════
 //  SIDEBAR RESIZE

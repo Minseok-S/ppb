@@ -45,6 +45,7 @@
 | [js/engine/preview.js](js/engine/preview.js) | `S`로부터 미리보기 HTML 생성 (~102KB) — **셀 병합 알고리즘이 가장 복잡** |
 | [js/engine/export.js](js/engine/export.js) | HTML·Word(.docx) 내보내기 (`downloadHTML`/`downloadWord`) |
 | [js/engine/editmode.js](js/engine/editmode.js) | 미리보기 직접 편집 모드 (`toggleEditMode`/`revertEdits`) — 최상위 요소 단위 3-way 병합(diff3): 순수 렌더(`S.editBase`)·편집본(`S.editView`)·새 렌더를 LCS로 비교해 수동 편집과 폼 변경을 함께 반영, 같은 요소 충돌 시 폼 우선 |
+| [js/engine/compare.js](js/engine/compare.js) | **신구대조표** (`openCompare`) — 자립 IIFE. **현행 = 불러온 시점의 문서 스냅샷(baseline), 개정안 = 현재 편집본**을 diff해 2단 대조표를 오버레이로 렌더하고 인쇄·엑셀·HTML·복사로 내보낸다. baseline은 `loadProjectFromFile` 성공 시 `captureCompareBaseline(name)`이 `previewToItems()`로 캡처한다(persistence.js). baseline이 없으면(신규 생성) 현행 파일(`.docx/.hwp/.hwpx/.md`)을 직접 업로드하는 대체 경로로 전환. diff 엔진(`alignIndices`/`buildParts`/`groupByArticle`/`diffTable`/`computeRows`)·파서는 [apps/dct](../../dct/index.html)에서 포팅, 파서 라이브러리(mammoth/fflate/exceljs/hwp)는 `../dct/lib` 를 공유 참조(중복 방지). 툴바 `🔀 신구대조표` 버튼 + 시작 모드 `신구대조 작업`(→PPB 파일 불러오기)에서 진입 |
 
 ### sections/ (위저드 단계 ↔ 파일)
 

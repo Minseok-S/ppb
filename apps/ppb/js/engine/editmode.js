@@ -200,22 +200,23 @@ const EDIT_FORMATS = {
   },
 };
 
-let _activeFormat = "bold"; // 상단 선택기에서 고른 서식
+let _activeFormat = "highlight"; // 상단 선택기에서 고른 서식 (기본: 형광펜)
 
-// node에서 위로 올라가며 해당 class의 span을 찾는다 (없으면 null)
-function _closestFormat(node, root, cls) {
-  while (node && node !== root) {
-    if (node.nodeType === 1 && node.classList?.contains(cls)) return node;
-    node = node.parentNode;
-  }
-  return null;
-}
-
-// 선택 양끝이 같은 서식 span 안이면 그 span을 반환
-function _enclosingFormat(range, root, cls) {
-  const a = _closestFormat(range.startContainer, root, cls);
-  const b = _closestFormat(range.endContainer, root, cls);
-  return a && a === b ? a : null;
+// 선택 범위와 실제로 겹치는 서식 span을 모두 반환한다.
+// (양끝이 같은 span 안에 있는지가 아니라 "영역이 걸치는지"로 판정 →
+//  경계가 요소 레벨에 잡히거나, 일부만 걸치거나, 여러 span에 걸쳐도 잡힌다.)
+// 단순히 경계만 맞닿은 이웃 span은 제외해, 새로 칠할 때 오탐하지 않는다.
+function _overlappingFormats(range, root, cls) {
+  const hits = [];
+  root.querySelectorAll("span." + cls).forEach((span) => {
+    const nr = document.createRange();
+    nr.selectNodeContents(span);
+    const overlaps =
+      range.compareBoundaryPoints(Range.END_TO_START, nr) < 0 && // 선택 시작 < span 끝
+      range.compareBoundaryPoints(Range.START_TO_END, nr) > 0; //   선택 끝  > span 시작
+    if (overlaps) hits.push(span);
+  });
+  return hits;
 }
 
 // span을 풀어 내용만 남긴다
@@ -237,9 +238,11 @@ function applyEditFormat(type) {
   const range = sel.getRangeAt(0);
   if (!root.contains(range.commonAncestorContainer)) return;
 
-  const existing = _enclosingFormat(range, root, fmt.cls);
-  if (existing) {
-    _unwrapFormat(existing);
+  const existing = _overlappingFormats(range, root, fmt.cls);
+  if (existing.length) {
+    // 선택 영역에 걸친 서식은 모두 해제(토글 OFF)
+    existing.forEach(_unwrapFormat);
+    root.normalize();
   } else {
     const span = document.createElement("span");
     span.className = fmt.cls;
@@ -271,13 +274,14 @@ function updateFormatPickerUI() {
   if (hlBtn) hlBtn.classList.toggle("active", _activeFormat === "highlight");
 }
 
-// 단축키 Ctrl+B (Mac은 Cmd+B) — 편집모드에서 현재 선택된 서식을 적용.
-// metaKey도 가로채야 브라우저 기본 볼드(Cmd+B)가 활성 서식을 덮어쓰지 않는다.
+// 단축키 Ctrl+B (Mac은 Cmd+B) — 편집모드에서 선택 글자에 형광펜을 칠하거나,
+// 이미 칠해진 영역이면 제거한다(토글). 볼드는 상단 버튼으로만 적용한다.
+// metaKey도 가로채야 브라우저 기본 볼드(Cmd+B)가 형광펜 적용을 덮어쓰지 않는다.
 document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "b" || e.key === "B")) {
     if (!S.editMode) return;
     e.preventDefault();
-    applyEditFormat(_activeFormat);
+    applyEditFormat("highlight");
   }
 });
 
@@ -298,7 +302,7 @@ function updateEditUI() {
 
   if (S.editMode) {
     banner.textContent =
-      "✏️ 편집모드 — 미리보기 문서를 클릭해 내용을 직접 수정하세요. 상단에서 [볼드] 또는 [배경색]을 고른 뒤 글자를 선택하고 Ctrl+B(또는 버튼)로 적용하세요. [편집완료]를 누르면 수정 내용이 다운로드에 반영됩니다.";
+      "✏️ 편집모드 — 미리보기 문서를 클릭해 내용을 직접 수정하세요. 글자를 선택하고 Ctrl+B로 형광펜을 칠하거나 다시 눌러 제거할 수 있습니다(볼드는 상단 [볼드] 버튼). [편집완료]를 누르면 수정 내용이 다운로드에 반영됩니다.";
     banner.style.display = "";
   } else if (hasEdits) {
     banner.textContent =
