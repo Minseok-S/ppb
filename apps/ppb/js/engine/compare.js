@@ -573,7 +573,8 @@
   }
   function doDownload() {
     const rows = visibleRows(computeRows(C.ops, C.unit));
-    const html = buildExportHtml(rows, C.title, C.old.name, C.new.name, true);
+    const vis = C.view === "changed" ? rows.filter((r) => r.tag !== "유지") : rows; // 화면의 전체/변경만 선택을 그대로 반영
+    const html = buildExportHtml(vis, C.title, C.old.name, C.new.name, true);
     const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
     const a = document.createElement("a"); a.href = url; a.download = (C.title || "신구대조표") + ".html"; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
