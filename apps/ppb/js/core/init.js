@@ -11,8 +11,8 @@ window.onload = function () {
   // 사용자가 "이어서 작업"을 누를 때만 복원한다 (차단형 팝업 없음).
   if (typeof initAutosaveBanner === "function") initAutosaveBanner();
   updatePreview();
-  // 시작 모드 선택 오버레이 (신규 생성 / 이어서 작업 / 신구대조 작업)
-  showModeOverlay();
+  // 시작 모드 선택 오버레이는 띄우지 않는다 — 항상 빈 문서로 바로 시작.
+  // (이어서 작업/신구대조는 상단 툴바의 📂 불러오기 · 🔀 신구대조표로 진입)
 };
 
 // ════════════════════════════════════════
