@@ -115,7 +115,7 @@
   function groupByArticle(items) {
     const groups = []; let cur = null, inArticle = false, label = "";
     for (const it of items) {
-      if (it.type === "table") { groups.push(inArticle ? { type: "table", rows: it.rows, cols: it.cols, article: label } : it); cur = null; }
+      if (it.type === "table") { groups.push(inArticle ? { type: "table", rows: it.rows, cols: it.cols, grid: it.grid, article: label } : it); cur = null; }
       else if (headMatch(HEAD_RE, it.text)) { groups.push({ type: "para", text: it.text }); cur = null; inArticle = false; label = ""; }
       else if (headMatch(ARTICLE_RE, it.text)) { label = ARTICLE_RE.exec(it.text)[0].trim(); cur = { type: "para", text: it.text }; groups.push(cur); inArticle = true; }
       else if (cur) { cur.text += "\n" + it.text; }
@@ -125,6 +125,47 @@
     return groups;
   }
   function itemKey(it) { return it.type === "table" ? "\x02TBL\x02" + it.rows.map((r) => r.join("\x01")).join("\x01") : it.text; }
+
+  // ── 표 셀 그리드 (병합 셀 지원) ──────────
+  //  colspan/rowspan 을 반영한 2차원 그리드로 표를 표현한다.
+  //    grid[r][c] = { text, cs, rs }  ← 병합의 시작(앵커) 칸
+  //               | { cover:true }    ← 다른 칸의 병합에 가려진 자리
+  //    rows        = 가려진 칸을 ""로 채운 정규 텍스트 행렬(행 정렬·키 비교용)
+  //  → 모든 행의 열 수가 일정해져 열 단위 비교가 어긋나지 않고,
+  //    렌더 시 cs/rs 로 colspan/rowspan 을 복원해 병합을 그대로 보여준다.
+  function layoutGrid(tdRows) {
+    const grid = [], occ = [];
+    const isOcc = (r, c) => occ[r] && occ[r].has(c);
+    const setOcc = (r, c) => (occ[r] = occ[r] || new Set()).add(c);
+    for (let r = 0; r < tdRows.length; r++) {
+      grid[r] = grid[r] || [];
+      let c = 0;
+      for (const cell of tdRows[r]) {
+        while (isOcc(r, c) || grid[r][c]) c++;
+        grid[r][c] = { text: cell.text, cs: cell.cs, rs: cell.rs };
+        for (let dr = 0; dr < cell.rs; dr++)
+          for (let dc = 0; dc < cell.cs; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const rr = r + dr, cc = c + dc;
+            (grid[rr] = grid[rr] || [])[cc] = { cover: true };
+            setOcc(rr, cc);
+          }
+        c += cell.cs;
+      }
+    }
+    return grid;
+  }
+  function tableItemFromGrid(grid) {
+    const cols = grid.reduce((m, row) => Math.max(m, row.length), 0);
+    for (const row of grid) for (let c = 0; c < cols; c++) if (!row[c]) row[c] = { text: "", cs: 1, rs: 1 };
+    const rows = grid.map((row) => row.map((cell) => (cell.cover ? "" : cell.text)));
+    return { type: "table", grid, rows, cols };
+  }
+  // 병합 정보가 없는 파서(hwpx/md)용 — 각 칸을 1×1 앵커로 감싼다.
+  function tableItemFromRows(rows) {
+    return tableItemFromGrid(rows.map((r) => r.map((t) => ({ text: t == null ? "" : t, cs: 1, rs: 1 }))));
+  }
+  const spanAttr = (cell) => (cell.cs > 1 ? ' colspan="' + cell.cs + '"' : "") + (cell.rs > 1 ? ' rowspan="' + cell.rs + '"' : "");
 
   const TAGKEY = { 신설: "sin", 삭제: "del", 개정: "mod", 유지: "keep" };
 
@@ -142,37 +183,49 @@
       return Object.assign(base, { tag: "개정", type: "modify", kind: "para", oldParts: r.oldParts, newParts: r.newParts });
     });
   }
-  function gridPlain(tab, partType) {
+  // 렌더용 셀: 병합 앵커 { parts, cs, rs } | 가려진 자리 { cover:true }
+  function rowFromGrid(gridRow, partType) {
     const rt = partType === "ins" ? "insert" : partType === "del" ? "delete" : "equal";
-    return tab.rows.map((r) => ({ rowType: rt, cells: r.map((c) => [{ type: partType, text: c }]) }));
+    return {
+      rowType: rt,
+      cells: gridRow.map((cell) =>
+        cell.cover ? { cover: true } : { parts: [{ type: partType, text: cell.text }], cs: cell.cs, rs: cell.rs }),
+    };
+  }
+  function gridPlain(tab, partType) {
+    return tab.grid.map((row) => rowFromGrid(row, partType));
   }
   function gridFromText(text, partType) {
     const rt = partType === "ins" ? "insert" : "delete";
-    return [{ rowType: rt, cells: [[{ type: partType, text: text }]] }];
+    return [{ rowType: rt, cells: [{ parts: [{ type: partType, text: text }], cs: 1, rs: 1 }] }];
+  }
+  // 한 셀의 old/new 텍스트를 비교해 해당 side 의 parts 를 만든다
+  function diffCellParts(ot, nt, unit, side) {
+    if (ot === nt) return [{ type: "eq", text: ot }];
+    if (unit === "para") return side === "old" ? [{ type: "del", text: ot }] : [{ type: "ins", text: nt }];
+    const pr = buildParts(ot, nt, unit);
+    const parts = side === "old" ? pr.oldParts : pr.newParts;
+    return parts.length ? parts : [{ type: "eq", text: "" }];
   }
   function diffTable(oldT, newT, unit) {
     const rowOps = alignIndices(oldT.rows.map((r) => r.join("\x01")), newT.rows.map((r) => r.join("\x01")));
     const oldGrid = [], newGrid = [];
     for (const op of rowOps) {
       if (op.type === "equal") {
-        oldGrid.push({ rowType: "equal", cells: oldT.rows[op.ai].map((c) => [{ type: "eq", text: c }]) });
-        newGrid.push({ rowType: "equal", cells: newT.rows[op.bi].map((c) => [{ type: "eq", text: c }]) });
+        oldGrid.push(rowFromGrid(oldT.grid[op.ai], "eq"));
+        newGrid.push(rowFromGrid(newT.grid[op.bi], "eq"));
       } else if (op.type === "delete") {
-        oldGrid.push({ rowType: "delete", cells: oldT.rows[op.ai].map((c) => [{ type: "del", text: c }]) });
+        oldGrid.push(rowFromGrid(oldT.grid[op.ai], "del"));
       } else if (op.type === "insert") {
-        newGrid.push({ rowType: "insert", cells: newT.rows[op.bi].map((c) => [{ type: "ins", text: c }]) });
+        newGrid.push(rowFromGrid(newT.grid[op.bi], "ins"));
       } else {
-        const orow = oldT.rows[op.ai], nrow = newT.rows[op.bi];
+        const orow = oldT.grid[op.ai], nrow = newT.grid[op.bi];
         const cols = Math.max(orow.length, nrow.length), oCells = [], nCells = [];
         for (let c = 0; c < cols; c++) {
-          const ot = orow[c] == null ? "" : orow[c], nt = nrow[c] == null ? "" : nrow[c];
-          if (ot === nt) { oCells.push([{ type: "eq", text: ot }]); nCells.push([{ type: "eq", text: nt }]); }
-          else if (unit === "para") { oCells.push([{ type: "del", text: ot }]); nCells.push([{ type: "ins", text: nt }]); }
-          else {
-            const pr = buildParts(ot, nt, unit);
-            oCells.push(pr.oldParts.length ? pr.oldParts : [{ type: "eq", text: "" }]);
-            nCells.push(pr.newParts.length ? pr.newParts : [{ type: "eq", text: "" }]);
-          }
+          const oc = orow[c], nc = nrow[c];
+          const ot = oc && !oc.cover ? oc.text : "", nt = nc && !nc.cover ? nc.text : "";
+          if (oc) oCells.push(oc.cover ? { cover: true } : { parts: diffCellParts(ot, nt, unit, "old"), cs: oc.cs, rs: oc.rs });
+          if (nc) nCells.push(nc.cover ? { cover: true } : { parts: diffCellParts(ot, nt, unit, "new"), cs: nc.cs, rs: nc.rs });
         }
         oldGrid.push({ rowType: "modify", cells: oCells });
         newGrid.push({ rowType: "modify", cells: nCells });
@@ -196,13 +249,18 @@
 
   // ── 파싱: 현행 원본 파일 (DCT 포팅) ──────
   function docxTable(tableEl) {
-    const rows = [];
-    for (const tr of tableEl.querySelectorAll(":scope > tbody > tr, :scope > tr")) {
-      const cells = [...tr.children].filter((c) => /^(td|th)$/i.test(c.tagName)).map((c) => clean(c.textContent));
-      if (cells.length) rows.push(cells);
+    const trs = [...tableEl.querySelectorAll(":scope > thead > tr, :scope > tbody > tr, :scope > tfoot > tr, :scope > tr")];
+    const tdRows = [];
+    for (const tr of trs) {
+      const cells = [...tr.children].filter((c) => /^(td|th)$/i.test(c.tagName)).map((td) => ({
+        text: clean(td.textContent),
+        cs: Math.max(1, parseInt(td.getAttribute("colspan"), 10) || 1),
+        rs: Math.max(1, parseInt(td.getAttribute("rowspan"), 10) || 1),
+      }));
+      if (cells.length) tdRows.push(cells);
     }
-    if (!rows.length) return null;
-    return { type: "table", rows, cols: rows.reduce((m, r) => Math.max(m, r.length), 0) };
+    if (!tdRows.length) return null;
+    return tableItemFromGrid(layoutGrid(tdRows));
   }
   async function parseDocx(file) {
     if (typeof mammoth === "undefined") throw new Error("docx 모듈 로딩 실패");
@@ -241,7 +299,7 @@
       if (cells.length) rows.push(cells);
     }
     if (!rows.length) return null;
-    return { type: "table", rows, cols: rows.reduce((m, r) => Math.max(m, r.length), 0) };
+    return tableItemFromRows(rows);
   }
   function hwpxWalk(node, items) {
     for (const child of node.childNodes) {
@@ -331,7 +389,7 @@
         flush();
         const rows = [mdSplitRow(line)]; i++;
         while (i + 1 < lines.length && lines[i + 1].includes("|") && lines[i + 1].trim() !== "") { rows.push(mdSplitRow(lines[++i])); }
-        items.push({ type: "table", rows, cols: rows.reduce((m, r) => Math.max(m, r.length), 0) });
+        items.push(tableItemFromRows(rows));
         continue;
       }
       if (line === "") { flush(); continue; }
@@ -346,7 +404,28 @@
     flush();
     return items;
   }
-  const PARSERS = { docx: parseDocx, hwpx: parseHwpx, hwp: parseHwp, md: parseMd, markdown: parseMd };
+  // .html·.htm — PPB 'HTML 저장' 결과물, .doc — PPB 'Word 저장'(Word용 HTML). 둘 다 HTML 문서라 DOMParser 로 읽는다.
+  async function parseHtml(file) {
+    const text = await file.text();
+    // 옛 Word(.doc) 바이너리(CFB)는 HTML 이 아니라서 읽을 수 없다
+    if (!/^\uFEFF?\s*</.test(text)) throw new Error("BINARY_DOC");
+    const doc = new DOMParser().parseFromString(text.replace(/^\uFEFF/, ""), "text/html");
+    // 스크립트·스타일과 PPB 장식 요소(아이콘 내비·목차 상자·숨김 조항)는 본문이 아니므로 제외
+    doc.querySelectorAll("script,style,noscript,.pp-icon-nav,.pp-toc-box,.pp-sec-icons,.pp-hidden").forEach((el) => el.remove());
+    doc.querySelectorAll("p").forEach((p) => { if (p.textContent.includes("목차를 클릭")) p.remove(); });
+    const items = [];
+    const walk = (node) => {
+      for (const el of node.children) {
+        const tag = el.tagName.toLowerCase();
+        if (tag === "table") { const t = docxTable(el); if (t) items.push(t); }
+        else if (/^(ul|ol|div|section|article|header|footer|main|nav)$/.test(tag)) { walk(el); }
+        else { const t = clean(el.textContent); if (t) items.push({ type: "para", text: t }); }
+      }
+    };
+    walk(doc.body);
+    return items;
+  }
+  const PARSERS = { docx: parseDocx, hwpx: parseHwpx, hwp: parseHwp, md: parseMd, markdown: parseMd, html: parseHtml, htm: parseHtml, doc: parseHtml };
 
   // ── 개정안(new): PPB 미리보기 → items ────
   // #previewContent 를 문서 순서대로 걸어 문단/표 items 를 만든다. (docx walk 와 동일 규칙)
@@ -402,13 +481,14 @@
     if (!grid) return '<span class="cmp-empty">' + (side === "old" ? "〈신설〉" : "〈삭제〉") + "</span>";
     const tr = grid.map((row) => {
       const cls = row.rowType === "insert" ? ' class="trow-ins"' : row.rowType === "delete" ? ' class="trow-del"' : row.rowType === "modify" ? ' class="trow-mod"' : "";
-      return "<tr" + cls + ">" + row.cells.map((c) => "<td>" + cellHtml(c) + "</td>").join("") + "</tr>";
+      const tds = row.cells.map((c) => (c.cover ? "" : "<td" + spanAttr(c) + ">" + cellHtml(c.parts) + "</td>")).join("");
+      return "<tr" + cls + ">" + tds + "</tr>";
     }).join("");
     return '<table class="cmp-subtable"><tbody>' + tr + "</tbody></table>";
   }
   function gridPlainText(grid) {
     if (!grid) return "";
-    return grid.map((row) => row.cells.map((c) => c.map((p) => p.text).join("")).join(" | ")).join("\n");
+    return grid.map((row) => row.cells.filter((c) => !c.cover).map((c) => c.parts.map((p) => p.text).join("")).join(" | ")).join("\n");
   }
 
   function renderTable() {
@@ -452,7 +532,7 @@
     if (!grid) return '<span style="color:#9298b0;font-style:italic">' + (side === "old" ? "〈신설〉" : "〈삭제〉") + "</span>";
     const tr = grid.map((row) => {
       const bg = row.rowType === "insert" ? "#eef1fe" : row.rowType === "delete" ? "#fff0f0" : row.rowType === "modify" ? "#e6faf6" : "transparent";
-      const tds = row.cells.map((c) => '<td style="border:1px solid #e0e4ef;padding:5px 8px;vertical-align:top;background:' + bg + '">' + partsToHtmlInline(c) + "</td>").join("");
+      const tds = row.cells.map((c) => (c.cover ? "" : '<td' + spanAttr(c) + ' style="border:1px solid #e0e4ef;padding:5px 8px;vertical-align:top;background:' + bg + '">' + partsToHtmlInline(c.parts) + "</td>")).join("");
       return "<tr>" + tds + "</tr>";
     }).join("");
     return '<table style="border-collapse:collapse;width:100%;font-size:13px">' + tr + "</table>";
@@ -533,9 +613,12 @@
     if (label) runs.push({ text: label + "\n", font: { color: { argb: "FF9298B0" } } });
     grid.forEach((row, ri) => {
       if (ri) runs.push({ text: "\n" });
-      row.cells.forEach((cell, ci) => {
-        if (ci) runs.push({ text: " | ", font: { color: { argb: "FF9298B0" } } });
-        for (const p of cell) {
+      let first = true;
+      row.cells.forEach((cell) => {
+        if (cell.cover) return;
+        if (!first) runs.push({ text: " | ", font: { color: { argb: "FF9298B0" } } });
+        first = false;
+        for (const p of cell.parts) {
           if (p.text === "") continue;
           if (p.type === "del") runs.push({ text: p.text, font: { color: { argb: "FFD94040" }, strike: true } });
           else if (p.type === "ins") runs.push({ text: p.text, font: { color: { argb: "FF3D5AF1" }, underline: true } });
@@ -607,7 +690,7 @@
   async function handleOldFile(file) {
     if (!file) return;
     const ext = file.name.toLowerCase().split(".").pop();
-    if (!PARSERS[ext]) { if (typeof showToast === "function") showToast("⚠️ .docx · .hwp · .hwpx · .md 파일만 지원합니다.", "error"); return; }
+    if (!PARSERS[ext]) { if (typeof showToast === "function") showToast("⚠️ .docx · .hwp · .hwpx · .md · .html 파일만 지원합니다.", "error"); return; }
     const info = document.getElementById("cmpOldInfo");
     if (info) info.innerHTML = '<span class="cmp-file-sub">읽는 중…</span>';
     try {
@@ -616,7 +699,10 @@
       C.old = { name: file.name, size: fmtSize(file.size), items, paraN: items.filter((x) => x.type === "para").length, tableN: items.filter((x) => x.type === "table").length, kind: ext };
     } catch (err) {
       console.error(err);
-      if (typeof showToast === "function") showToast("⚠️ 문서를 읽지 못했어요. 손상되지 않은 파일인지 확인해 주세요.", "error");
+      if (typeof showToast === "function") {
+        if (err && err.message === "BINARY_DOC") showToast("⚠️ 옛 Word(.doc) 바이너리 파일은 읽을 수 없어요. .docx로 저장한 뒤 올려 주세요.", "error");
+        else showToast("⚠️ 문서를 읽지 못했어요. 손상되지 않은 파일인지 확인해 주세요.", "error");
+      }
       C.old = null;
     }
     updateOldPanel();
@@ -694,10 +780,10 @@
         '<p class="cmp-lead">불러온 원본이 없어 현행 문서를 직접 올려야 합니다. 고객사 기존 처리방침 파일을 올리면 현재 편집본과의 차이를 대조표로 보여줍니다.<br><span style="color:#9298b0">※ PPB로 만든 파일을 <b>📂 불러오기</b>로 열면, 그 문서가 자동으로 현행 기준이 되어 이 단계가 생략됩니다.</span></p>' +
         '<div class="cmp-newwarn" id="cmpNewWarn" hidden>⚠️ 지금 미리보기(개정안)가 비어 있습니다. 왼쪽 18단계를 채운 뒤 진행하세요.</div>' +
         '<div class="cmp-drop" id="cmpDrop" tabindex="0">' +
-          '<div class="cmp-drop-inner">📄<div>여기로 <b>.docx · .hwp · .hwpx · .md</b> 파일을 끌어다 놓거나 클릭</div></div>' +
+          '<div class="cmp-drop-inner">📄<div>여기로 <b>.docx · .hwp · .hwpx · .md · .html</b> 파일을 끌어다 놓거나 클릭</div></div>' +
         "</div>" +
         '<div class="cmp-oldinfo" id="cmpOldInfo"></div>' +
-        '<input type="file" id="cmpFileInput" accept=".docx,.hwp,.hwpx,.md,.markdown" style="display:none" />' +
+        '<input type="file" id="cmpFileInput" accept=".docx,.doc,.hwp,.hwpx,.md,.markdown,.html,.htm" style="display:none" />' +
         '<div class="cmp-actions">' +
           '<button class="btn cmp-primary" id="cmpGenBtn" disabled>대조표 만들기 →</button>' +
         "</div>" +
