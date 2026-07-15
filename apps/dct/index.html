@@ -135,8 +135,6 @@ html,body{margin:0; background:#f6f7fb}
 .sgd-table td:last-child{border-right:none}
 .sgd-table tbody tr:last-child td{border-bottom:none}
 .sgd-table tbody tr:hover td{background:#f8f9fc}
-.sgd-table td.cell-old-changed{background:#fff5f5} .sgd-table td.cell-new-changed{background:#f3f5ff}
-.sgd-table td.cell-old-changed:hover, .sgd-table td.cell-new-changed:hover{background:inherit}
 .row-equal td{color:var(--ink)}
 .sgd-rownum{display:block; font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:6px}
 .sgd-rowdel{display:flex; align-items:center; justify-content:center; margin:8px auto 0; padding:4px; border:none; background:transparent;
@@ -152,9 +150,6 @@ html,body{margin:0; background:#f6f7fb}
 .sgd-empty{color:var(--muted); font-style:italic}
 .sgd-subtable{width:100%; border-collapse:collapse; font-size:13.5px; line-height:1.6}
 .sgd-subtable td{border:1px solid var(--line-strong); padding:6px 9px; vertical-align:top; word-break:break-word}
-.sgd-subtable tr.trow-ins td{background:var(--add-bg)}
-.sgd-subtable tr.trow-del td{background:var(--del-bg)}
-.sgd-subtable tr.trow-mod td{background:var(--mod-bg)}
 
 .sgd-foot{margin-top:44px; text-align:center; color:var(--muted); font-size:12px; letter-spacing:-.01em}
 
@@ -182,7 +177,7 @@ html,body{margin:0; background:#f6f7fb}
   .sgd-table{min-width:0; font-size:11.5px}
   .sgd-table thead th{position:static; background:#f1f3f8 !important; color:#1a1d2e !important; border-right-color:#e0e4ef; -webkit-print-color-adjust:exact; print-color-adjust:exact}
   .sgd-table tr{page-break-inside:avoid}
-  .sgd-del,.sgd-ins,.sgd-tag,.cell-old-changed,.cell-new-changed,.sgd-subtable tr td{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  .sgd-del,.sgd-ins,.sgd-tag{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   .sgd-subtable{font-size:10.5px}
   .sgd-table td.c-remark:empty::before{content:""}
   @page{size:A4 portrait; margin:14mm}
@@ -708,8 +703,7 @@ function partsToHtmlInline(parts,side){
 function gridHtmlInline(grid,side){
   if(!grid) return '<span style="color:#9298b0;font-style:italic">'+(side==="old"?"〈신설〉":"〈삭제〉")+'</span>';
   const tr=grid.map(row=>{
-    const bg = row.rowType==="insert"?"#eef1fe": row.rowType==="delete"?"#fff0f0": row.rowType==="modify"?"#e6faf6":"transparent";
-    const tds=row.cells.map(c=> c.cover?"":'<td'+spanAttr(c)+' style="border:1px solid #e0e4ef;padding:5px 8px;vertical-align:top;background:'+bg+'">'+partsToHtmlInline(c.parts)+'</td>').join("");
+    const tds=row.cells.map(c=> c.cover?"":'<td'+spanAttr(c)+' style="border:1px solid #e0e4ef;padding:5px 8px;vertical-align:top">'+partsToHtmlInline(c.parts)+'</td>').join("");
     return '<tr>'+tds+'</tr>';
   }).join("");
   return '<table style="border-collapse:collapse;width:100%;font-size:13px">'+tr+'</table>';
@@ -886,9 +880,6 @@ function renderTable(){
   const tb=$("tbody");
   if(!vis.length){ tb.innerHTML='<tr><td class="c-gut">–</td><td colspan="3" class="sgd-empty" style="text-align:center;padding:24px">표시할 행이 없습니다.</td></tr>'; return; }
   tb.innerHTML=vis.map((r,i)=>{
-    const para = r.kind==="para" && r.type==="modify" && state.unit==="para";
-    const oc=para?' class="cell-old-changed"':"";
-    const nc=para?' class="cell-new-changed"':"";
     const remark=esc(state.remarks[r.idx]||"");
     const tlbl = r.articleLabel ? '<span class="sgd-rownum">'+esc(r.articleLabel)+'</span>' : '';
     const ed=state.edits[r.idx]||{};
@@ -896,7 +887,7 @@ function renderTable(){
     const newHtml = ed.new!=null ? escBr(ed.new) : (r.kind==="table" ? (r.newGrid?tlbl:'')+gridHtml(r.newGrid,"new") : cellHtml(r.newParts,"new"));
     return '<tr class="row-'+r.type+'"><td class="c-gut"><span class="sgd-rownum">'+(i+1)+'</span><span class="sgd-tag t-'+TAGKEY[r.tag]+'">'+r.tag+'</span>'
       +'<button class="sgd-rowdel sgd-noprint" data-del="'+r.idx+'" title="행 삭제" aria-label="행 삭제">'+icon("trash",13)+'</button></td>'
-      +'<td'+oc+' contenteditable="true" data-cell="old" data-idx="'+r.idx+'">'+oldHtml+'</td><td'+nc+' contenteditable="true" data-cell="new" data-idx="'+r.idx+'">'+newHtml+'</td>'
+      +'<td contenteditable="true" data-cell="old" data-idx="'+r.idx+'">'+oldHtml+'</td><td contenteditable="true" data-cell="new" data-idx="'+r.idx+'">'+newHtml+'</td>'
       +'<td class="c-remark" contenteditable="true" data-remark="'+r.idx+'">'+remark+'</td></tr>';
   }).join("");
 }

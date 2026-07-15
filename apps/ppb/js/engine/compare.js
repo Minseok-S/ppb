@@ -531,8 +531,7 @@
   function gridHtmlInline(grid, side) {
     if (!grid) return '<span style="color:#9298b0;font-style:italic">' + (side === "old" ? "〈신설〉" : "〈삭제〉") + "</span>";
     const tr = grid.map((row) => {
-      const bg = row.rowType === "insert" ? "#eef1fe" : row.rowType === "delete" ? "#fff0f0" : row.rowType === "modify" ? "#e6faf6" : "transparent";
-      const tds = row.cells.map((c) => (c.cover ? "" : '<td' + spanAttr(c) + ' style="border:1px solid #e0e4ef;padding:5px 8px;vertical-align:top;background:' + bg + '">' + partsToHtmlInline(c.parts) + "</td>")).join("");
+      const tds = row.cells.map((c) => (c.cover ? "" : '<td' + spanAttr(c) + ' style="border:1px solid #e0e4ef;padding:5px 8px;vertical-align:top">' + partsToHtmlInline(c.parts) + "</td>")).join("");
       return "<tr>" + tds + "</tr>";
     }).join("");
     return '<table style="border-collapse:collapse;width:100%;font-size:13px">' + tr + "</table>";
@@ -922,9 +921,6 @@
 .cmp-empty{color:#b4b8c6;font-style:italic}
 .cmp-subtable{border-collapse:collapse;width:100%;font-size:12px}
 .cmp-subtable td{border:1px solid #e8eaf2;padding:4px 7px}
-.cmp-subtable .trow-ins td{background:#eef1fe}
-.cmp-subtable .trow-del td{background:#fff0f0}
-.cmp-subtable .trow-mod td{background:#e6faf6}
 @media print{body>*:not(.cmp-overlay){display:none!important}.cmp-overlay{position:static;background:#fff;padding:0;display:block!important}.cmp-modal{box-shadow:none;max-height:none;width:100%}.cmp-head,.cmp-toolbar,.cmp-srcbar,.cmp-x,.cmp-rowdel,.cmp-newwarn{display:none!important}.cmp-table thead th{position:static}}
 `;
     document.head.appendChild(st);
