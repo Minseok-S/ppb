@@ -154,12 +154,14 @@ function toggleEditMode() {
   const content = document.getElementById("previewContent");
   if (!S.editMode) {
     S.editMode = true;
+    _resetUndo();
     content.contentEditable = "true";
     content.focus();
     updateEditUI();
     showToast("✏️ 편집모드 — 미리보기 내용을 직접 수정할 수 있습니다.");
   } else {
     S.editMode = false;
+    _resetUndo();
     content.contentEditable = "false";
     captureEdits();
     updateEditUI();
@@ -178,6 +180,7 @@ function revertEdits() {
   S.editMode = false;
   S.editBase = null;
   S.editView = null;
+  _resetUndo();
   document.getElementById("previewContent").contentEditable = "false";
   updateEditUI();
   updatePreview();
@@ -227,6 +230,49 @@ function _unwrapFormat(span) {
   parent.normalize();
 }
 
+// 선택 범위 안의 텍스트 노드를 하나씩 span으로 감싼다.
+// surroundContents/extractContents는 선택이 표 셀(td/tr) 같은 요소 경계를
+// 가로지르면 태그를 span 안으로 끌고 들어가 표 구조를 부수므로,
+// 요소 트리는 그대로 두고 텍스트 노드 단위로만 감싸 구조를 보존한다.
+function _wrapRangeTextNodes(range, fmt) {
+  let startNode = range.startContainer;
+  let endNode = range.endContainer;
+  // 경계가 텍스트 노드 중간이면 잘라서 선택된 부분만 분리
+  if (endNode.nodeType === Node.TEXT_NODE && range.endOffset < endNode.length) {
+    endNode.splitText(range.endOffset);
+  }
+  if (startNode.nodeType === Node.TEXT_NODE && range.startOffset > 0) {
+    const tail = startNode.splitText(range.startOffset);
+    if (endNode === startNode) endNode = tail;
+    startNode = tail;
+  }
+  if (startNode.nodeType === Node.TEXT_NODE) range.setStart(startNode, 0);
+  if (endNode.nodeType === Node.TEXT_NODE) range.setEnd(endNode, endNode.length);
+
+  let root = range.commonAncestorContainer;
+  if (root.nodeType === Node.TEXT_NODE) root = root.parentNode;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    // 셀 사이 공백 노드(tr 직속 등)는 감싸면 표가 다시 깨진다 — 건너뜀
+    if (!n.data.trim()) continue;
+    const nr = document.createRange();
+    nr.selectNodeContents(n);
+    const inside =
+      range.compareBoundaryPoints(Range.START_TO_START, nr) <= 0 &&
+      range.compareBoundaryPoints(Range.END_TO_END, nr) >= 0;
+    if (inside) targets.push(n);
+  }
+  targets.forEach((n) => {
+    const span = document.createElement("span");
+    span.className = fmt.cls;
+    fmt.style(span);
+    n.parentNode.insertBefore(span, n);
+    span.appendChild(n);
+  });
+  return targets.length > 0;
+}
+
 // 선택영역에 서식 적용/해제 (type: 'bold' | 'highlight')
 function applyEditFormat(type) {
   if (!S.editMode) return;
@@ -238,24 +284,18 @@ function applyEditFormat(type) {
   const range = sel.getRangeAt(0);
   if (!root.contains(range.commonAncestorContainer)) return;
 
+  const snap = root.innerHTML;
+  const pushed = _pushUndo();
   const existing = _overlappingFormats(range, root, fmt.cls);
   if (existing.length) {
     // 선택 영역에 걸친 서식은 모두 해제(토글 OFF)
     existing.forEach(_unwrapFormat);
     root.normalize();
   } else {
-    const span = document.createElement("span");
-    span.className = fmt.cls;
-    fmt.style(span);
-    try {
-      range.surroundContents(span);
-    } catch (e) {
-      // 선택이 여러 요소 경계를 가로지르면 추출 후 감싼다
-      const frag = range.extractContents();
-      span.appendChild(frag);
-      range.insertNode(span);
-    }
+    _wrapRangeTextNodes(range, fmt);
   }
+  // 실제 변화가 없었으면 스냅샷 취소 (되돌리기 스택에 빈 단계 방지)
+  if (pushed && root.innerHTML === snap) _undoStack.pop();
   sel.removeAllRanges();
 }
 
@@ -274,14 +314,85 @@ function updateFormatPickerUI() {
   if (hlBtn) hlBtn.classList.toggle("active", _activeFormat === "highlight");
 }
 
-// 단축키 Ctrl+B (Mac은 Cmd+B) — 편집모드에서 선택 글자에 형광펜을 칠하거나,
-// 이미 칠해진 영역이면 제거한다(토글). 볼드는 상단 버튼으로만 적용한다.
-// metaKey도 가로채야 브라우저 기본 볼드(Cmd+B)가 형광펜 적용을 덮어쓰지 않는다.
+// ────────────────────────────────────────
+//  되돌리기 (Ctrl+Z) / 다시실행 (Ctrl+Shift+Z, Ctrl+Y)
+//  서식 적용·해제는 DOM 직접 조작이라 브라우저 기본 undo 스택에 잡히지
+//  않는다. 편집모드 동안 미리보기 innerHTML 스냅샷 스택을 직접 관리한다.
+//  타이핑도 beforeinput 시점에 스냅샷을 쌓아 같은 스택으로 되돌린다.
+// ────────────────────────────────────────
+const UNDO_LIMIT = 100; // 스냅샷 최대 보관 수
+const TYPE_SNAP_GAP = 600; // ms — 연속 타이핑은 한 단계로 묶는다
+let _undoStack = [];
+let _redoStack = [];
+let _lastTypeSnap = 0;
+
+function _previewHTML() {
+  return document.getElementById("previewContent").innerHTML;
+}
+
+// 현재 상태를 스택에 쌓는다. 실제로 쌓였으면 true.
+function _pushUndo() {
+  const html = _previewHTML();
+  if (_undoStack.length && _undoStack[_undoStack.length - 1] === html)
+    return false;
+  _undoStack.push(html);
+  if (_undoStack.length > UNDO_LIMIT) _undoStack.shift();
+  _redoStack = [];
+  return true;
+}
+
+function _resetUndo() {
+  _undoStack = [];
+  _redoStack = [];
+  _lastTypeSnap = 0;
+}
+
+function editUndo() {
+  if (!S.editMode || !_undoStack.length) return;
+  const cur = _previewHTML();
+  let html = _undoStack.pop();
+  // 스냅샷이 현재와 같으면(변화 직전 중복) 한 단계 더 내려간다
+  if (html === cur && _undoStack.length) html = _undoStack.pop();
+  if (html === cur) return;
+  _redoStack.push(cur);
+  document.getElementById("previewContent").innerHTML = html;
+}
+
+function editRedo() {
+  if (!S.editMode || !_redoStack.length) return;
+  _undoStack.push(_previewHTML());
+  document.getElementById("previewContent").innerHTML = _redoStack.pop();
+}
+
+// 타이핑 스냅샷 — 입력이 반영되기 직전 상태를 묶음 단위로 보관
+document.addEventListener("beforeinput", function (e) {
+  if (!S.editMode) return;
+  const root = document.getElementById("previewContent");
+  if (!root || !root.contains(e.target)) return;
+  const now = Date.now();
+  if (now - _lastTypeSnap > TYPE_SNAP_GAP) _pushUndo();
+  _lastTypeSnap = now;
+});
+
+// 단축키 — 편집모드에서만 동작한다.
+//  Ctrl+B (Cmd+B): 선택 글자에 형광펜 칠하기/제거(토글). 볼드는 상단 버튼.
+//  Ctrl+Z (Cmd+Z): 되돌리기 / +Shift 또는 Ctrl+Y: 다시실행.
+//  metaKey도 가로채야 브라우저 기본 동작(볼드·네이티브 undo)이 스냅샷
+//  스택과 어긋난 상태를 만들지 않는다.
 document.addEventListener("keydown", function (e) {
-  if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "b" || e.key === "B")) {
-    if (!S.editMode) return;
+  if (!S.editMode) return;
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k === "b") {
     e.preventDefault();
     applyEditFormat("highlight");
+  } else if (k === "z") {
+    e.preventDefault();
+    if (e.shiftKey) editRedo();
+    else editUndo();
+  } else if (k === "y") {
+    e.preventDefault();
+    editRedo();
   }
 });
 
@@ -302,7 +413,7 @@ function updateEditUI() {
 
   if (S.editMode) {
     banner.textContent =
-      "✏️ 편집모드 — 미리보기 문서를 클릭해 내용을 직접 수정하세요. 글자를 선택하고 Ctrl+B로 형광펜을 칠하거나 다시 눌러 제거할 수 있습니다(볼드는 상단 [볼드] 버튼). [편집완료]를 누르면 수정 내용이 다운로드에 반영됩니다.";
+      "✏️ 편집모드 — 미리보기 문서를 클릭해 내용을 직접 수정하세요. 글자를 선택하고 Ctrl+B로 형광펜을 칠하거나 다시 눌러 제거할 수 있습니다(볼드는 상단 [볼드] 버튼). 실수했다면 Ctrl+Z로 되돌리고 Ctrl+Shift+Z로 다시 실행합니다. [편집완료]를 누르면 수정 내용이 다운로드에 반영됩니다.";
     banner.style.display = "";
   } else if (hasEdits) {
     banner.textContent =
